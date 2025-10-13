@@ -1,0 +1,84 @@
+/* Midnight footer: deep neutral with subtle purple wash */
+.ft{
+  color:#fff;
+  /* If you have tokens, you can define --footer-bg / --footer-edge in tokens.css.
+     Fallbacks below keep it dark but not flat black. */
+  --footer-bg: color-mix(in oklab, var(--brand-900, #243A66) 50%, #0b0d12);
+  --footer-edge: #ffffff22;
+  background:
+    radial-gradient(1200px 420px at 85% -10%, color-mix(in oklab, var(--brand-600, #243A66) 22%, transparent), transparent),
+    linear-gradient(0deg, color-mix(in oklab, var(--footer-bg) 94%, black) 0%, color-mix(in oklab, var(--footer-bg) 86%, black) 100%);
+  padding:32px 0 20px;
+}
+
+/* top row */
+.ft-top{
+  display:grid; gap:20px;
+  grid-template-columns: 1.2fr 1fr;
+}
+@media (max-width: 992px){ .ft-top{ grid-template-columns: 1fr; } }
+
+/* brand */
+.ft-brand{ display:flex; gap:12px; align-items:flex-start; }
+.ft-logo{ width:48px; height:48px; border-radius:10px; object-fit:cover; background:#fff; }
+.ft-logo.ph{ background: #fff2; }
+.ft-bcopy{ display:grid; gap:6px; }
+.ft-name{ font-weight:900; font-size:16px; }
+.ft-tag{ margin:0; color:#ffffffcc; }
+.ft-socials{ display:flex; gap:8px; margin-top:4px; }
+.ft-soc{
+  display:grid; place-items:center; width:34px; height:34px; border-radius:999px;
+  border:1px solid #ffffff33; color:#fff; background: transparent;
+  transition: border-color .14s ease, color .14s ease, background .14s ease;
+}
+.ft-soc:hover{ border-color:#fff; background:#ffffff14; }
+
+/* quick actions (replaces form) */
+.ft-acts{
+  display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; align-content:start;
+}
+@media (max-width: 992px){ .ft-acts{ justify-content:flex-start; } }
+
+.ft-act{
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid #ffffff33; color:#fff; text-decoration:none;
+  padding:8px 12px; border-radius:999px; font-weight:800;
+  background: #ffffff12;
+  transition: transform .12s ease, border-color .14s ease, background .14s ease;
+}
+.ft-act:hover{ transform: translateY(-1px); border-color:#fff; background:#ffffff22; }
+.ft-act .i{ display:grid; place-items:center; }
+.ft-act .t{ white-space:nowrap; }
+
+/* link columns */
+.ft-cols{
+  margin-top:18px; display:grid; gap:16px;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 992px){ .ft-cols{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px){ .ft-cols{ grid-template-columns: 1fr; } }
+
+.ft-col{}
+.ft-hc{ margin:0 0 8px; font-weight:900; }
+.ft-list{ list-style:none; padding:0; margin:0; display:grid; gap:6px; }
+.ft-link{
+  color:#ffffffcc; text-decoration:none; font-weight:700; position:relative; display:inline-block;
+}
+.ft-link:hover{ color:#fff; }
+.ft-link::after{
+  content:""; position:absolute; left:0; right:100%; bottom:-2px; height:2px; background: var(--brand-600, #6f42c1);
+  transition:right .16s ease;
+}
+.ft-link:hover::after{ right:0; }
+
+/* bottom bar */
+.ft-bottom{
+  margin-top:18px; padding-top:12px;
+  border-top:1px solid var(--footer-edge);
+  display:flex; gap:12px; align-items:center; justify-content:space-between;
+}
+@media (max-width:560px){ .ft-bottom{ flex-direction:column; align-items:flex-start; gap:8px; } }
+.ft-copy{ color:#ffffffa6; font-weight:700; }
+.ft-bl{ display:flex; gap:12px; flex-wrap:wrap; }
+.ft-blink{ color:#ffffffcc; text-decoration:none; font-weight:700; }
+.ft-blink:hover{ color:#fff; }

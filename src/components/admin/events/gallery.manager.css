@@ -1,0 +1,91 @@
+/* GalleryManager scoped styles — tidy and unobtrusive */
+.gm { display: grid; gap: 10px; }
+
+.gm-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.gm-title { font-weight: 900; }
+
+.gm-drop {
+  position: relative;
+  border: 1.5px dashed var(--dash-line, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  background: #fafafa;
+}
+.gm-drop.is-over {
+  background: #f0f6ff;
+  border-color: #93c5fd;
+}
+.gm-drop-input {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.gm-drop-icon { font-size: 20px; }
+.gm-drop-text { color: #475569; }
+.gm-link { color: #111827; font-weight: 800; text-decoration: underline; }
+
+.gm-queue { display: grid; gap: 6px; }
+.gm-qrow { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
+.gm-qname { font-size: 12px; color: #374151; }
+.gm-qbar { height: 8px; background: #eef2f7; border-radius: 999px; overflow: hidden; }
+.gm-qbar-fill { height: 100%; background: #8b5cf6; } /* neutral purple for progress only */
+.gm-qbar-fill.is-err { background: #ef4444; }
+.gm-qpct { font-size: 12px; color: #475569; }
+
+.gm-error {
+  padding: 8px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+}
+
+/* Grid of tiles */
+.gm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.gm-item {
+  position: relative;
+  border: 1px solid var(--dash-line, #e5e7eb);
+  border-radius: 10px;
+  padding: 8px;
+  background: #fff;
+}
+.gm-item.is-cover { outline: 2px solid var(--dash-brand, #5562ff); outline-offset: 1px; }
+
+.gm-thumb {
+  width: 100%;
+  height: 96px;
+  border-radius: 8px;
+  background: center/cover no-repeat #f3f4f6;
+  border: 1px solid var(--dash-line, #e5e7eb);
+}
+
+.gm-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: #111827; color: #fff; font-size: 11px; font-weight: 800;
+  padding: 2px 6px; border-radius: 999px; opacity: 0.9;
+}
+
+.gm-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.btn.tiny {
+  height: 28px; padding: 0 8px; border-radius: 8px;
+  font-size: 12px; font-weight: 800;
+}
+.btn.tiny.danger {
+  background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c;
+}
+.btn.tiny.danger:hover { background: #fecaca; }
+
+/* Media kind chip for non-images */
+.gm-kind {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: rgba(0,0,0,.35); color: #fff; font-weight: 900; letter-spacing: .5px;
+  border-radius: 8px;
+}
+.gm-video { }
+.gm-pdf { }

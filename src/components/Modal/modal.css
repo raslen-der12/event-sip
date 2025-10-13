@@ -1,0 +1,91 @@
+/* uses tokens.css variables */
+.modal-overlay{
+  position: fixed; inset: 0;
+  z-index: 2000;              /* above header/search/etc */
+  pointer-events: none;       /* children opt-in */
+}
+
+.modal{
+  position: fixed;
+  inset: 0; margin: auto;
+  width: min(560px, 92%);
+  background: var(--surface, #fff);
+  color: var(--ink, #0f1221);
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: var(--radius-xl, 16px);
+  pointer-events: auto;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-height: min(78vh, 720px);
+  overflow: hidden;
+  transform: translateY(12px) scale(.98);
+  opacity: 0;
+  animation: modalIn .16s ease forwards;
+}
+.modal--sm{ width: min(420px, 92%);   height: max-content;
+ }
+.modal--md{ width: min(560px, 92%); }
+.modal--lg{ width: min(780px, 96%); }
+
+@keyframes modalIn {
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-head{
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 12px 14px;
+  border-bottom: 1px solid var(--line, #e5e7eb);
+  background: var(--surface-2, #fafafa);
+}
+.modal-title{
+  margin: 0; font-weight: 900; letter-spacing: .2px;
+  font-size: clamp(18px, 2.6vw, 20px);
+  color: var(--ink-1, #0f1221);
+}
+.modal-x{
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line, #e5e7eb);
+  background: var(--surface, #fff);
+  color: var(--ink, #0f1221);
+  display: grid; place-items: center;
+  font-size: 22px; line-height: 1;
+  cursor: pointer;
+}
+.modal-x:hover{ background: #f5f7fb; }
+
+.modal-body{
+  padding: 14px;
+  overflow: auto;
+}
+.modal-text{
+  margin: 0;
+  color: var(--muted, #64748b);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.modal-foot{
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line, #e5e7eb);
+  background: var(--surface-2, #fafafa);
+}
+
+/* primary button */
+.modal-btn{
+  padding: 10px 16px; border-radius: 999px; border: 1px solid transparent;
+  color: #fff; font-weight: 900; cursor: pointer;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-2) 22%, transparent);
+}
+
+/* backdrop that blocks the page */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  pointer-events: auto;
+  background: color-mix(in oklab, #0a0c1c 70%, transparent);
+  backdrop-filter: blur(2px);
+  animation: fadeIn .16s ease forwards;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

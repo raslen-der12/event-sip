@@ -1,0 +1,91 @@
+/* uses tokens.css variables */
+.auth-wrap{
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #fafbff;
+}
+
+.auth-card{
+  width: min(460px, 92%);
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 24px 48px rgba(2, 6, 23, .06);
+  padding: 18px;
+}
+
+.auth-head{ text-align: left; margin-bottom: 8px; }
+.auth-title{ margin: 0; font-weight: 900; letter-spacing: .2px; color: var(--ink-1, #0f1221); font-size: 22px; }
+.auth-sub{ margin: 4px 0 0; color: var(--muted, #6b7280); font-weight: 700; }
+
+.auth-alert{
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-weight: 800;
+}
+
+.btn-google{
+  width: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--line, #e5e7eb);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 900; color: var(--ink, #0f1221);
+  cursor: pointer;
+}
+.btn-google:hover{ background: #f7f8fc; }
+
+.auth-sep{
+  display: grid; place-items: center;
+  margin: 12px 0; position: relative; color: var(--muted, #6b7280);
+}
+.auth-sep::before{
+  content:""; position: absolute; left: 0; right: 0; height: 1px; top: 50%;
+  background: var(--line, #e5e7eb);
+}
+.auth-sep span{
+  position: relative; padding: 0 8px; background: #fff; border-radius: 999px;
+  border: 1px solid var(--line, #e5e7eb); font-weight: 800; font-size: 12px;
+}
+
+.auth-field{ display: grid; gap: 6px; margin-top: 10px; }
+.auth-label{ font-weight: 900; color: var(--ink-1, #0f1221); }
+.auth-input{
+  width: 100%;
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 10px; padding: 10px 12px;
+  background: #fff; color: var(--ink-1, #0f1221); font-weight: 800;
+}
+.auth-input:focus{
+  outline: 3px solid color-mix(in oklab, var(--brand-600, #6f42c1) 25%, transparent);
+  outline-offset: 2px;
+}
+
+.auth-actions{
+  margin-top: 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+
+.auth-btn{
+  padding: 10px 16px; border-radius: 999px; border: 1px solid transparent;
+  color: #fff; font-weight: 900; cursor: pointer;
+  background: var(--brand-2);
+  box-shadow: 0 10px 22px color-mix(in oklab, var(--brand-600, #6f42c1) 22%, transparent);
+}
+.auth-btn:disabled{ opacity: .7; cursor: not-allowed; }
+
+.link-muted{ color: var(--muted, #6b7280); font-weight: 800; text-decoration: none; }
+.link-muted:hover{ text-decoration: underline; }
+
+.auth-foot{
+  margin-top: 12px; text-align: center; color: var(--muted, #6b7280);
+}
+.link-strong{ color: var(--brand-700, #5a35a2); font-weight: 900; text-decoration: none; }
+.link-strong:hover{ text-decoration: underline; }

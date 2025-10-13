@@ -1,0 +1,61 @@
+/* Marketplace (mp-*) — visually aligned with Community page */
+
+.mp { background:#fff; color:#0f1221; }
+.mp .container { padding: 0 12px; }
+
+.mp-hero{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:16px 0 8px; border-bottom:1px solid var(--line-1);
+}
+.mp-title{ font-weight:900; font-size:clamp(20px,2.6vw,26px); letter-spacing:.2px; }
+.mp-sub{ color:#6b7280; }
+.mp-cta{
+  margin-left:auto; text-decoration:none; font-weight:900;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  color:#fff; padding:10px 14px; border-radius:12px;
+  box-shadow:0 10px 18px rgba(0,0,0,.08);
+}
+@media (max-width:720px){ .mp-cta{ margin-left:0; } }
+
+.mp-body{ display:grid; gap:16px; padding:16px 0; }
+
+/* Row */
+.mp-row{ display:grid; gap:10px; }
+.mp-row-head{
+  display:flex; align-items:center; justify-content:space-between;
+}
+.mp-row-title{ margin:0; font-weight:900; letter-spacing:.2px; }
+.mp-row-ctrls{ display:flex; gap:8px; }
+.mp-nav{
+  appearance:none; border:1px solid var(--line-1); background:#fff; color:#0f1221;
+  width:34px; height:34px; border-radius:10px; display:grid; place-items:center; cursor:pointer;
+}
+.mp-nav:hover{ background:#f6f7fb; }
+
+/* Track */
+.mp-track{
+  display:grid; grid-auto-flow:column; grid-auto-columns: minmax(220px, 260px);
+  overflow-x:auto; gap:12px; padding-bottom:6px; scroll-snap-type:x mandatory;
+}
+.mp-track::-webkit-scrollbar{ height:8px; }
+.mp-track::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.16); border-radius:999px; }
+
+/* Card */
+.mp-card{
+  position:relative; scroll-snap-align:start;
+  border:1px solid var(--line-1); border-radius:14px; overflow:hidden; background:#fff;
+  display:grid; grid-template-rows: 150px auto;
+  box-shadow:0 8px 16px rgba(0,0,0,.04);
+}
+.mp-hit{ position:absolute; inset:0; border:0; background:transparent; cursor:pointer; }
+.mp-thumb{
+  background:#f5f7fc center/cover no-repeat; min-height:150px;
+}
+.mp-body{ padding:10px; display:grid; gap:6px; }
+.mp-title{ font-weight:900; color:#0f1221; line-height:1.2; }
+.mp-meta{ display:flex; gap:8px; flex-wrap:wrap; }
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px; border-radius:999px; background:#fff; border:1px solid var(--line-1);
+  font-size:12px; color:#34415f; font-weight:800;
+}

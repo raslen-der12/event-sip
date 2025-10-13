@@ -1,0 +1,193 @@
+/* ====== Section ====== */
+.esg{
+  background:#fff; color:#0f1221; padding:16px 0;
+  border-top:1px solid rgba(0,0,0,.06);
+}
+.esg-head{ margin-bottom:12px; text-align:left; }
+.esg-title{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size:clamp(22px,4.2vw,28px); color:var(--brand);
+}
+.esg-sub{ margin:6px 0 0; color:#5f6b85; }
+
+/* ====== Grid (fixed responsive) ======
+   Desktop: 3 columns
+   Tablet : 2 columns
+   Mobile : 1 column
+*/
+.esg-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:16px;
+  align-items:stretch;
+}
+@media (max-width: 1024px){ .esg-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px){  .esg-grid{ grid-template-columns: 1fr; } }
+
+/* ====== Card ====== */
+.esg-card{
+  /* kill any old span rules */
+  grid-column:auto !important;
+
+  background:#fff; border:1px solid rgba(0, 0, 0, 0.192); border-radius:16px; overflow:hidden;
+  position:relative; transition: transform .14s ease, box-shadow .14s ease;
+  min-height: 320px; display:flex; flex-direction:column;
+}
+.esg-card:hover{ transform: translateY(-2px); box-shadow: 0 16px 32px rgba(0,0,0,.08); }
+
+/* ====== Media frame ====== */
+.esg-media{
+  position:relative; width:100%;
+  background:center/cover no-repeat;
+  aspect-ratio: 16 / 10;
+  cursor:pointer;
+}
+.esg-grad{
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.34) 100%),
+    conic-gradient(
+      from 120deg,
+      color-mix(in oklab, var(--brand) 65%, #fff 0%) 0 35%,
+      color-mix(in oklab, var(--brand-2) 65%, #fff 0%) 35% 70%,
+      transparent 70% 100%
+    );
+  mix-blend-mode: overlay; opacity:.45;
+}
+
+/* ====== Body ====== */
+.esg-body{
+  padding:12px;
+  display:grid;
+  gap:8px;
+}
+.esg-name{
+  margin:0; display:flex; align-items:center; gap:8px;
+  font-weight:900; letter-spacing:.2px; font-size: clamp(16px, 3.4vw, 18px);
+}
+.esg-meta{ display:flex; flex-wrap:wrap; gap:8px; }
+.esg-pill{
+  display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+  border:1px solid rgba(0,0,0,.08); background:#fff; font-weight:700; font-size:13px;
+}
+.esg-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff; font-weight:800; font-size:12px;
+}
+.esg-open{
+  font-size:12px; font-weight:800; color: var(--brand-2);
+  background:#f6f7fb; border:1px solid rgba(0,0,0,.06);
+  padding:6px 10px; border-radius:999px;
+}
+
+/* ====== Actions ====== */
+.esg-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.esg-btn{
+  appearance:none; border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+  padding:8px 12px; border-radius:10px; font-weight:800; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  transition: background .12s ease, transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.esg-btn:hover{ background:#f6f7fb; color: #000; }
+.esg-primary{
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff; border-color:var(--line-1);
+}
+.esg-primary:hover{ filter:brightness(1.02); }
+
+/* ====== Selection toggle ====== */
+.esg-select{
+  position:absolute; top:10px; left:10px; z-index:2;
+  width:34px; height:34px; border-radius:10px; display:inline-grid; place-items:center; cursor:pointer;
+  border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+.esg-select:hover{ transform: translateY(-1px); }
+.esg-select.on{
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#fff; border-color:transparent;
+  box-shadow: 0 10px 20px rgba(30,11,58,.25);
+}
+.esg-card.is-selected{ outline:2px solid color-mix(in oklab, var(--brand) 50%, #fff 50%); outline-offset:0; }
+
+/* ====== Skeletons / Empty ====== */
+.is-skeleton{
+  height:320px;
+  background:linear-gradient(90deg,#f1f2f6,#fafafd,#f1f2f6);
+  border-radius:16px; border:1px solid rgba(0,0,0,.06);
+  animation: esg-sk 1.2s linear infinite;
+}
+@keyframes esg-sk{ from{background-position:-200% 0} to{background-position:200% 0} }
+
+.esg-empty{
+  margin:12px 0; padding:12px; background:#f7f9fc;
+  border:1px dashed rgba(0,0,0,.12); border-radius:12px; text-align:center; color:#6b7280;
+}
+
+/* ====== Anchors & sentinel ====== */
+.esg-letter-anchor{ grid-column: 1 / -1; height:0; margin:0; padding:0; }
+.esg-sentinel{ grid-column: 1 / -1; height:1px; }
+
+/* ensure badge sits above gradient */
+.esg-media { position: relative; z-index: 1; }
+.esg-grad  { z-index: 0; }
+
+/* Bigger corner triangle badge + fix text placement */
+.esg-open-badge{
+  position:absolute;
+  right:0; bottom:0;
+  width:128px; height:128px;              /* larger coverage */
+  background: var(--brand-2);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  display:block;
+  opacity:0;
+  transition: opacity .18s ease;
+  pointer-events:none;
+  z-index:3;
+}
+.esg-open-badge__txt{
+  position:absolute;
+right:0px; bottom:80px; font-size:16px;  transform: rotate(-45deg);
+  transform-origin: bottom right;
+  font-weight:900;
+  line-height:1;
+  color:#fff; letter-spacing:.08em; text-transform:uppercase;
+}
+
+/* show on hover/focus (pointer devices) */
+.esg-card:hover .esg-open-badge,
+.esg-card:focus-within .esg-open-badge{
+  opacity:0.7;
+}
+
+/* touch devices: always visible but softer */
+@media (hover: none), (pointer: coarse){
+  .esg-open-badge{ opacity:.7; }
+}
+
+/* Closed-state icon (brand-colored) */
+.esg-closed-ico{
+  position:absolute;
+  right:10px; bottom:10px;
+  width:38px; height:38px;
+  border-radius:10px;
+  display:grid; place-items:center;
+  background: rgba(255,255,255,.95);
+  color: var(--brand);                     /* icon color per request */
+  border:1px solid rgba(0,0,0,.08);
+  opacity:0;                               /* hidden by default on desktop */
+  transition: opacity .18s ease, transform .12s ease;
+  z-index:3;
+}
+.esg-card:hover .esg-closed-ico,
+.esg-card:focus-within .esg-closed-ico{ opacity:1; }
+.esg-closed-ico:hover{ transform: translateY(-1px); }
+
+/* touch devices: always visible but softer */
+@media (hover: none), (pointer: coarse){
+  .esg-closed-ico{ opacity:.75; }
+}
+
+/* Slightly smaller triangle on narrow screens for balance */
+@media (max-width: 640px){
+  .esg-open-badge{  opacity: 0.7; }
+}

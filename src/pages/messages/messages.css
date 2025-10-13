@@ -1,0 +1,146 @@
+/* =========================================================
+   ActorsMessages — Clean Messenger Layout (FULL REPLACEMENT)
+   ========================================================= */
+
+/* ---- Tokens ---- */
+:root{
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --ink: #0f1221;
+  --muted: #657085;
+  --line: rgba(0,0,0,.10);
+  --soft: rgba(15,18,33,.04);
+
+
+  --mine-grad: linear-gradient(135deg,var(--brand),var(--brand-2));
+  --shadow: 0 10px 25px rgba(15,18,33,.05);
+
+  --r-s: 10px;
+  --r-m: 14px;
+  --r-l: 18px;
+}
+
+/* ---- Layout ---- */
+.dm{background:var(--bg);color:var(--ink);min-height:100vh;padding:18px 0}
+.dm-wrap{width:min(1200px,94%);margin:0 auto;display:grid;grid-template-columns:360px 1fr;gap:16px}
+@media (max-width: 960px){ .dm-wrap{ grid-template-columns: 1fr } }
+
+/* ---- Inbox (left) ---- */
+.dm-inbox{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);display:flex;flex-direction:column;min-height:70vh;box-shadow:var(--shadow)}
+.dm-inbox.hide-sm{ display:none }
+@media (min-width: 961px){ .dm-inbox.hide-sm{ display:flex } }
+
+.dm-inbox-head{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 6px}
+.dm-title{font-weight:900;letter-spacing:.2px}
+.dm-tabs{display:flex;gap:8px}
+.dm-tabs button{appearance:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-weight:800;cursor:pointer}
+.dm-tabs button.on{background:var(--mine-grad);color:#fff;border-color:transparent}
+
+.dm-search{display:flex;align-items:center;gap:8px;margin:8px 12px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.dm-search svg{color:var(--muted)}
+.dm-search input{border:none;outline:none;background:transparent;flex:1;font-size:14px;color:var(--ink)}
+
+.dm-list{padding:6px 8px 12px;overflow:auto}
+.dm-item{
+  width:100%;display:flex;gap:10px;align-items:center;border:1px solid var(--line);
+  background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.dm-item+.dm-item{margin-top:8px}
+.dm-item:hover{background:#f6f7fb}
+.dm-item.is-active{border-color:color-mix(in oklab,var(--brand) 40%, #fff 60%)}
+
+.dm-avatar{width:44px;height:44px;border-radius:12px;background:#e9eef7 center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;color:#445}
+.dm-avatar.-sm{width:36px;height:36px;border-radius:10px}
+.dm-inits{font-weight:900}
+.dm-itxt{min-width:0;flex:1}
+.dm-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-sub{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.dm-chip{padding:2px 8px;border-radius:999px;background:#f0f3fa;border:1px solid var(--line);font-weight:800;font-size:12px}
+.dm-subtle{color:var(--muted);font-size:12px}
+
+.dm-more{display:flex;justify-content:center;margin-top:10px}
+.dm-more button{appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+.dm-more button:hover{background:#f6f7fb}
+
+/* ---- Chat (right) ---- */
+.dm-chat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);display:flex;flex-direction:column;min-height:70vh;box-shadow:var(--shadow);overflow:hidden}
+
+/* Header inside chat */
+.dm-head{height:60px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:0 10px;border-bottom:1px solid var(--line);background:#fff}
+.dm-back{display:none;appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;width:36px;height:36px;place-items:center;cursor:pointer}
+@media (max-width: 960px){ .dm-back{display:grid} }
+.dm-peer{display:flex;align-items:center;gap:10px;min-width:0}
+.dm-ptxt{min-width:0}
+.dm-pname{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-psub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-menu{appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
+
+/* Placeholder */
+.dm-placeholder{display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+
+/* Messages list */
+.dm-msgs{
+  flex:1;overflow:auto;padding:16px 12px 12px;
+  background:
+    radial-gradient(70% 60% at 80% 10%, rgba(59,130,246,.05), transparent 70%),
+    radial-gradient(70% 60% at 10% 80%, rgba(124,58,237,.05), transparent 70%);
+}
+
+/* Date divider */
+.dm-divider{display:grid;place-items:center;margin:10px 0}
+.dm-divider span{
+  font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);padding:4px 10px;border-radius:999px
+}
+
+/* Bubbles (grouped) */
+.dm-bubble{
+  max-width:min(70ch, 92%);
+  display:block; gap:6px;
+  padding:9px 12px; border:1px solid var(--line); background:#fff; border-radius:16px;
+  line-height:1.45; position:relative; margin:4px 0;
+}
+.dm-bubble.theirs{justify-self:start;border-top-left-radius:6px}
+.dm-bubble.mine{justify-self:end;background:var(--mine-grad);color:#fff;border-color:transparent;border-top-right-radius:6px}
+
+.dm-bubble.grouped.theirs{margin-top:2px;border-top-left-radius:16px}
+.dm-bubble.grouped.mine{margin-top:2px;border-top-right-radius:16px}
+
+.dm-text{white-space:pre-wrap;word-break:break-word;font-size:14.5px}
+.dm-files{display:flex;flex-wrap:wrap;gap:6px}
+.dm-file{
+  display:inline-block;padding:5px 10px;border-radius:999px;background:#f0f3fa;border:1px solid var(--line);
+  font-weight:800;color:#0f1221;text-decoration:none;max-width:46ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.dm-bubble.mine .dm-file{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.32);color:#fff}
+
+.dm-time{font-size:11px;color:#6b7280}
+.dm-bubble.mine .dm-time{color:rgba(255,255,255,.85)}
+
+/* Typing indicator */
+.dm-typing{display:flex;gap:4px;align-items:center;margin:6px 4px;color:var(--muted)}
+.dm-typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.7;animation:dot 1.2s infinite ease-in-out}
+.dm-typing span:nth-child(2){animation-delay:.15s}
+.dm-typing span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:scale(.6)}40%{transform:scale(1)}}
+
+/* Composer */
+.dm-compose{border-top:1px solid var(--line);padding:10px;background:#fff;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:end}
+.dm-attach-preview{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px}
+.dm-chip{padding:6px 10px;border-radius:999px;background:#f6f8fd;border:1px solid var(--line);font-weight:800;font-size:12px}
+
+.dm-clip{appearance:none;border:1px solid var(--line);background:#fff;border-radius:12px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer}
+.dm-clip input{display:none}
+.dm-input{
+  min-height:32px;max-height:160px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;
+  resize:vertical;outline:none;background:#fff;color:#0f1221;font-size:14.5px
+}
+.dm-input:focus{outline:2px solid color-mix(in oklab, var(--brand-2) 55%, #fff 45%); outline-offset:2px; border-color:var(--brand-2)}
+.dm-send{
+  appearance:none;border:1px solid transparent;background:var(--mine-grad);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;display:inline-flex;gap:8px;align-items:center;cursor:pointer
+}
+.dm-send:disabled{opacity:.6;cursor:not-allowed}
+
+/* Mobile overrides */
+@media (max-width: 960px){
+  .dm-chat{border-radius:var(--r-l)}
+}

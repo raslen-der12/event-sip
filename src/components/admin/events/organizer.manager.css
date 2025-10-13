@@ -1,0 +1,20 @@
+/* Organizer Manager (scoped) */
+.orgm { display: grid; gap: 10px; }
+
+.orgm-head { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+.orgm-title { font-weight: 900; }
+
+.orgm-new {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+  gap: 8px;
+}
+@media (max-width: 980px) {
+  .orgm-new { grid-template-columns: 1fr 1fr; }
+  .orgm-new .btn { grid-column: 1 / -1; }
+}
+.orgm-error {
+  background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; border-radius:8px; padding:8px; font-size:12px;
+}
+
+

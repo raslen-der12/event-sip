@@ -1,0 +1,46 @@
+/* Schedule Manager (scoped) */
+.schm { display:grid; gap:10px; }
+
+.schm-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.schm-title { font-weight:900; }
+.schm-days { display:flex; gap:6px; flex-wrap:wrap; }
+.schm-day { height:30px; padding:0 10px; border-radius:8px; border:1px solid var(--dash-line,#e5e7eb); background:#fff; font-weight:800; }
+.schm-day.is-active { background:#eef2ff; border-color:#c7d2fe; }
+
+.schm-new {
+  display:grid;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr 0.8fr 0.8fr auto;
+  gap:8px;
+}
+@media (max-width: 1100px) {
+  .schm-new { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .schm-new .btn { grid-column: 1 / -1; }
+}
+
+.schm-list { display:grid; gap:8px; }
+.schm-row {
+  display:grid; align-items:center; gap:10px;
+  grid-template-columns: 28px 1.3fr 3fr auto;
+  border:1px solid var(--dash-line,#e5e7eb); border-radius:10px; background:#fff; padding:8px;
+}
+.schm-row.is-dragging { opacity:.7; }
+.schm-handle { text-align:center; cursor:grab; user-select:none; }
+
+.schm-time { display:flex; align-items:center; gap:6px; }
+.ie-time { display:flex; gap:6px; align-items:center; }
+.schm-main { min-width:0; }
+.schm-titleline { font-weight:800; }
+.schm-sub { color:#6b7280; font-size:12px; display:flex; gap:6px; flex-wrap:wrap; }
+.select.tiny { height:28px; border-radius:8px; padding:0 8px; }
+
+.ie { display:flex; gap:6px; align-items:center; }
+.ie .input { height:32px; border-radius:8px; }
+.btn.tiny { height:28px; padding:0 8px; border-radius:8px; font-size:12px; font-weight:800; }
+.btn.tiny.danger { background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; }
+.btn.tiny.danger:hover { background:#fecaca; }
+
+.skeleton { display:grid; grid-template-columns: 28px 1.3fr 3fr auto; gap:10px; align-items:center; padding:8px;
+  border:1px solid var(--dash-line,#e5e7eb); border-radius:10px; background:#fff; }
+.sk-h { width:18px; height:18px; background:#eee; border-radius:6px; }
+.sk-s { height:12px; background:#eee; border-radius:6px; }
+.sk-r { width:60px; height:28px; background:#eee; border-radius:8px; }

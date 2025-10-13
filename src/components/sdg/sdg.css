@@ -1,0 +1,66 @@
+/* Section */
+.sdg{
+  background:#fff; color:var(--ink);
+  padding:46px 0; border-top:1px solid var(--line);
+}
+.sdg-head{ text-align:center; margin-bottom:18px; }
+.sdg-title{
+  margin:0; font-weight:800; letter-spacing:.2px;
+  font-size:clamp(24px,4.2vw,34px); color:var(--brand-900);
+}
+.sdg-title::after{
+  content:""; display:block; width:72px; height:3px; margin:10px auto 0;
+  border-radius:999px; background: var(--brand-600);
+}
+.sdg-sub{ margin:8px auto 0; color: var(--muted); max-width:62ch; }
+
+/* Marquee */
+.sdg-marquee{
+  overflow:hidden; border:1px solid var(--brand-200); border-radius:14px;
+  background:#fff; padding:10px; user-select:none;
+}
+.sdg-track{
+  display:flex; gap:14px; align-items:center; justify-content: center;
+  animation: sdg-scroll 28s linear infinite;
+}
+.sdg-marquee:hover .sdg-track{ animation-play-state: paused; }
+
+
+/* Logo cell */
+.sdg-logo{
+  width:120px; height:120px; border:1px solid var(--brand-200);
+  background:#fff; border-radius:12px; display:grid; place-items:center; padding:20px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.sdg-logo img{
+  max-width:100%; max-height:100%; display:block; opacity:.9;
+  transition: filter .12s ease, opacity .12s ease;
+}
+.sdg-link{ display:contents; } /* whole cell clickable */
+
+.sdg-logo:hover{
+  transform: translateY(-2px);
+  border-color: var(--brand-400);
+  box-shadow: 0 16px 28px rgba(30,11,58,.10);
+}
+.sdg-logo:hover img{ filter: grayscale(0%); opacity:1; }
+
+/* Fallback numeric square (if no img provided) */
+.sdg-fallback{
+  width:100%; height:100%; border-radius:8px; display:grid; place-items:center;
+  background: var(--surface-card); border:1px dashed var(--brand-200);
+}
+.sdg-fallback span{
+  font-weight:900; font-size:28px; color: var(--brand-700);
+}
+@media (max-width:883px) {
+  @keyframes sdg-scroll{
+  0%{ transform: translateX(0); }
+  33%{ transform: translateX(-66%); }
+  66%{ transform: translateX(50%); }
+  100%{ transform: translateX(0); }
+}
+.sdg-logo{
+  min-width: 120px;
+}
+}

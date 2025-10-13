@@ -1,0 +1,286 @@
+/* =========================================
+   HEADER (FULL REPLACEMENT)
+   ========================================= */
+
+:root{
+  --brand:#243A66;
+  --brand-2:#EB5434;
+  --mega-width: 980px;    /* width of the dropdown panel */
+}
+
+/* Sticky header wrapper */
+.header{
+  position: sticky;
+  top: 0;
+  z-index: 1400;          /* keep above page content/overlays */
+  overflow-x: clip;
+}
+
+/* ---------- Top utility bar ---------- */
+.topbar{
+  background: linear-gradient(90deg, rgba(30, 41, 62, 0.9), rgba(18, 27, 53, 0.9));
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  font-size: 14px;
+}
+.header .topbar .row,
+.header .nav .row{
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+.left{ width: max-content; }
+.social{ width: max-content; }
+
+.topbar .row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:.5rem 0; flex-wrap:nowrap;
+}
+.topbar .left{
+  display:flex; align-items:center; gap:18px; min-width:0;
+}
+.topbar .left .item{
+  display:flex; align-items:center; gap:8px; white-space:nowrap; opacity:.9;
+}
+.topbar .icon{
+  width:16px; height:16px; display:inline-grid; place-items:center; color:#bfc7dd;
+}
+.topbar .social{
+  display:flex; align-items:center; gap:6px; margin-left:auto; white-space:nowrap;
+}
+.topbar .social a{
+  width:28px; height:28px; display:inline-grid; place-items:center;
+  border:1px solid rgba(255,255,255,.25); border-radius:999px; color:#fff;
+}
+.topbar .social a:hover{ border-color:#fff; }
+
+/* ---------- Main nav bar ---------- */
+.nav{
+  height:72px;
+  background: rgba(14,18,35,.65);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  transition: box-shadow 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1);
+}
+.nav.elevated{
+  box-shadow:0 .8rem 2rem rgba(0,0,0,.12);
+  background: rgba(14,18,35,.9);
+}
+
+/* brand */
+.brand{
+  color:#fff; font-weight:800; font-size:1.35rem; letter-spacing:.2px; text-decoration:none;
+}
+.brand em{ color:var(--brand); font-style:normal; }
+
+/* desktop menu row */
+.menu{
+  display:flex; align-items:center; gap:8px;
+}
+
+/* top-level links */
+.link{
+  color:#fff; opacity:.9; padding:.5rem .75rem; border-radius:8px; text-decoration:none;
+}
+.link:hover{ opacity:1; background:rgba(255,255,255,.06); }
+
+/* ---------- Dropdown (MEGA GRID) ---------- */
+.dd{ position:relative; }
+
+/* Panel is HIDDEN by default */
+.dd-menu{
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  background: rgba(16,26,42,.98);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  box-shadow: 0 18px 36px rgba(0,0,0,.28);
+  padding:12px;
+  z-index:1200;
+
+  /* hidden by default */
+  display: none;
+
+  /* grid layout when shown */
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  gap:10px;
+}
+
+/* Only open the one whose parent gets .open from React state */
+.dd.open > .dd-menu{ display: grid; }
+
+/* DO NOT auto-open on hover — avoid showing all at once */
+/* (If you previously had `.dd:hover > .dd-menu{ display:grid; }`, remove it.) */
+
+/* Allow UL/LI markup inside without JSX changes */
+.dd-menu ul{ list-style:none; margin:0; padding:0; display:contents; }
+.dd-menu li{ display:contents; }
+
+/* Item tiles */
+.dd-menu a,
+.dd-menu button{
+  margin: 10px; width: fit-content;
+  appearance:none; border:0; background:transparent;
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px;
+  border-radius:10px;
+  color:#fff; text-decoration:none; font-weight:800; font-size:13px;
+  white-space:nowrap; opacity:.95;
+  transition: background .15s ease, transform .12s ease, opacity .15s ease;
+}
+.dd-menu a:hover,
+.dd-menu button:hover{
+  background: rgba(255,255,255,.10);
+  transform: translateY(-1px);
+  opacity:1;
+}
+
+/* Responsive columns for the dropdown grid */
+@media (min-width: 1200px){
+  .dd-menu{ grid-template-columns: repeat(4, minmax(200px, 1fr)); }
+}
+@media (max-width: 860px){
+  .dd-menu{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+}
+@media (max-width: 560px){
+  .dd-menu{
+    left:0; transform:none; width:100vw;
+    border-radius:0 0 12px 12px;
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- right-side controls ---------- */
+.right{
+  display:flex; align-items:center; gap:8px;
+}
+.icon-btn{
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.28); border-radius:10px;
+  display:inline-grid; place-items:center; color:#fff; background:transparent;
+}
+.cta{
+  padding:.55rem 1rem; border-radius:999px;
+}
+
+/* ---------- Mobile drawer (hidden desktop) ---------- */
+.drawer{ display:none; }
+.burger{ display:none; }
+
+@media (max-width: 992px){
+  .menu{ display:none; }
+  .burger{ display:inline-grid; }
+
+  .drawer{
+    display:block; position:fixed; inset:0 0 0 auto;
+    width: min(86%, 360px);
+    transform: translateX(100%);
+    transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+    background:#0e1223; color:#fff; z-index:1500;
+    box-shadow: -22px 0 44px rgba(0,0,0,.24);
+    outline:none;
+  }
+  .drawer.open{ transform: translateX(0); }
+
+  .drawer .section{
+    padding:16px; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .drawer a{
+    color:#fff; display:block; padding:10px 12px; border-radius:8px; text-decoration:none;
+  }
+  .drawer a:hover{ background: rgba(255,255,255,.08); }
+
+  /* header row with close button */
+  .drawer-header{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .drawer-close{
+    border-color: rgba(255,255,255,.28);
+    background: transparent;
+  }
+}
+
+/* ---------- Drawer overlay ---------- */
+.drawer-overlay{
+  display:none;
+}
+@media (max-width: 992px){
+  .drawer-overlay{
+    position: fixed; inset: 0;
+    background: rgba(10,12,28,.55);
+    backdrop-filter: blur(3px);
+    z-index: 1490;
+    display: none;
+  }
+  .drawer-overlay.open{ display:block; }
+}
+
+/* ---------- Search overlay ---------- */
+.search-overlay{
+  position: fixed; inset: 0;
+  background: rgba(10,12,28,.75);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1300;
+}
+.search-overlay.open{ display:flex; }
+.search-card{
+  width: min(800px, 96%);
+  background:#fff; border-radius:16px; padding:16px;
+}
+.search-row{ display:flex; gap:8px; }
+.search-row input{
+  flex:1; padding:14px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:16px;
+}
+.dd--fit .dd-menu{
+    grid-template-columns: repeat(2, minmax(200px, 1fr)) !important;
+}
+/* ---------- Helpers ---------- */
+.sr-only{
+  position:absolute !important; width:1px; height:1px;
+  padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
+  white-space:nowrap; border:0;
+}
+
+/* Visibility utilities if you use them */
+/* .d-none, .d-sm-flex, .d-md-flex, .d-lg-none etc. should be defined by your global CSS/framework */
+/* Only the long-titles dropdown */
+.dd--wide .dd-menu{
+  /* give it a bit more room + bigger gaps */
+  width: min(100vw - 24px, 1140px);
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 12px 14px;               /* row gap, column gap */
+}
+
+@media (max-width: 1024px){
+  .dd--wide .dd-menu{
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 560px){
+  .dd--wide .dd-menu{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* make links wrap cleanly and breathe a bit more */
+.dd--wide .dd-menu a,
+.dd--wide .dd-menu button{
+  white-space: normal;          /* allow multi-line titles */
+  line-height: 1.25;
+  align-items: flex-start;      /* align multi-line nicely */
+  padding: 12px 14px;           /* a touch more padding */
+}
+
+/* optional: finer hover so dense lists stay readable */
+.dd--wide .dd-menu a:hover,
+.dd--wide .dd-menu button:hover{
+  background: rgba(255,255,255,.08);
+  transform: translateY(-1px);
+}

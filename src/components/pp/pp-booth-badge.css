@@ -1,0 +1,106 @@
+/* Public Profile – Booth Badge
+   Brand-only accents, strong soft shadows, rounded 16.
+*/
+
+.ppbth{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  overflow:hidden;
+  border: 1px solid var(--line-1);
+}
+
+/* Media area with optional image + ribbon */
+.ppbth-media{
+  position:relative;
+  aspect-ratio: 16/8.5;
+  background:
+    radial-gradient(60% 60% at 80% 20%, color-mix(in oklab, var(--brand) 16%, #fff 84%), transparent 70%),
+    radial-gradient(60% 60% at 20% 80%, color-mix(in oklab, var(--brand-2) 16%, #fff 84%), transparent 70%),
+    linear-gradient(135deg, #0f1221 0%, #171a36 48%, #0f1221 100%);
+  background-size: cover;
+  background-position: center;
+}
+.ppbth-media[style]{ background-blend-mode: normal; }
+
+.ppbth-grad{
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.30) 100%);
+}
+
+/* Ribbon (top-right) */
+.ppbth-ribbon{
+  position:absolute; top:10px; right:10px; z-index:2;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+  padding:0;
+  width:120px; height:36px;
+  transform: skew(-16deg);
+  border-radius:10px;
+  border: 1px solid rgba(0, 0, 0, 0.202);
+  display:grid; place-items:center;
+}
+.ppbth-ribbon-txt{
+  transform: skew(16deg);
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:900; letter-spacing:.2px; font-size:13px;
+}
+
+/* Body */
+.ppbth-body{
+  padding:12px;
+  display:grid; gap:8px;
+}
+
+.ppbth-title{
+  margin:0; font-weight:900; letter-spacing:.2px; color:#0f1221;
+  font-size: clamp(16px, 3.4vw, 18px);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* Meta chips */
+.ppbth-meta{ display:flex; flex-wrap:wrap; gap:8px; }
+
+.ppbth-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff; color:#0f1221; font-weight:800; font-size:12px;
+}
+.ppbth-chip.-ok{
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff; border-color:rgba(0, 0, 0, 0.202); 
+}
+.ppbth-chip.-muted{ color:#5f6b85; background:#fff; }
+.ppbth-chip.-warn{
+  background:#fff8f6; border-color:#fcd8d3; color:#b42318;
+}
+
+/* Compact pill (inline) */
+.ppbth-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff; color:#0f1221; font-weight:900; font-size:12px;
+}
+.ppbth-pill-ico{
+  display:inline-grid; place-items:center;
+  width:20px; height:20px; border-radius:6px; color:#fff;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+.ppbth-pill-txt{ max-width:26ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ppbth-tag{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 8px; border-radius:999px; font-weight:800;
+  border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221; font-size:11px;
+}
+.ppbth-tag.-ok{
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff; border-color:transparent;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px){
+  .ppbth-media{ aspect-ratio: 16/10; }
+}

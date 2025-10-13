@@ -1,0 +1,7 @@
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{margin:0; color:var(--ink); background: var(--paper) !important;; font-family: "poppins";}
+.container{max-width:var(--container); margin:0 auto; padding:0 16px;}
+a{text-decoration:none}
+
+html{-webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; background-color: white;}

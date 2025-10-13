@@ -1,0 +1,63 @@
+/* ================= Impact Manager (scoped) ================= */
+.impactm { display: grid; gap: 12px; }
+
+.impactm .featm-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+}
+.impactm .featm-title { font-weight: 900; }
+
+/* Create form */
+.impactm .featm-new {
+  display: grid; gap: 8px;
+  grid-template-columns: 1fr auto; /* title+desc stack; button on the right */
+  align-items: start;
+}
+.impactm .featm-new .input { height: 36px; border-radius: 8px; }
+.impactm .featm-new textarea.input { min-height: 80px; resize: vertical; }
+@media (max-width: 900px){
+  .impactm .featm-new { grid-template-columns: 1fr; }
+  .impactm .featm-new .btn { justify-self: start; }
+}
+
+/* List */
+.impactm .featm-list { display: grid; gap: 10px; }
+
+.impactm .featm-row {
+  display: grid; gap: 10px;
+  grid-template-columns: 1fr auto; /* fields | actions */
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--dash-line, #e5e7eb);
+  border-radius: 12px; background: #fff;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.impactm .featm-row:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.08);
+}
+
+/* Field blocks (reusing featm-edit styles) */
+.impactm .featm-edit { display: grid; gap: 6px; }
+.impactm .featm-lbl { font-weight: 800; font-size: 12px; opacity: .9; }
+.impactm .featm-rowctrl { display: flex; gap: 6px; align-items: center; }
+.impactm .featm-edit .input { height: 36px; border-radius: 8px; width: 100%; }
+.impactm textarea.input { min-height: 80px; }
+
+/* Full-span description */
+.impactm .featm-edit.full { grid-column: 1 / -1; }
+
+/* Actions */
+.impactm .featm-actions { display: flex; gap: 6px; align-items: center; justify-self: end; }
+.impactm .btn.tiny { height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.impactm .btn.tiny.danger { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; }
+.impactm .btn.tiny.danger:hover { background: #fecaca; }
+
+/* Stack everything on mobile */
+@media (max-width: 700px) {
+  .impactm .featm-row { grid-template-columns: 1fr; }
+  .impactm .featm-actions { justify-self: start; }
+}
+
+/* Muted/empty */
+.impactm .muted { color: #6b7280; }

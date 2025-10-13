@@ -1,0 +1,82 @@
+/* ============ Features Manager (scoped, grid, responsive) ============ */
+.featm { display: grid; gap: 12px; }
+
+.featm-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+}
+.featm-title { font-weight: 900; }
+
+/* Create form */
+.featm-new {
+  display: grid; gap: 8px;
+  grid-template-columns: 1.2fr 1fr auto; /* title | image | add */
+  align-items: start;
+}
+.featm-new .input { height: 36px; border-radius: 8px; }
+.featm-new textarea.input { height: auto; min-height: 72px; resize: vertical; }
+@media (max-width: 1100px) {
+  .featm-new { grid-template-columns: 1fr 1fr; }
+  .featm-new .btn { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .featm-new { grid-template-columns: 1fr; }
+}
+
+/* List */
+.featm-list { display: grid; gap: 10px; }
+
+.featm-row {
+  display: grid; gap: 10px;
+  grid-template-columns: 1fr 1fr auto; /* two fields + actions */
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--dash-line, #e5e7eb);
+  border-radius: 12px; background: #fff;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.featm-row:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.08);
+}
+
+/* field cell */
+.featm-edit { display: grid; gap: 6px; }
+.featm-lbl { font-weight: 800; font-size: 12px; opacity: .9; }
+
+.featm-rowctrl {
+  display: flex; gap: 6px; align-items: center;
+}
+.featm-edit .input {
+  height: 36px; border-radius: 8px; width: 100%;
+}
+textarea.input {
+  height: auto; min-height: 64px; padding-top: 8px; padding-bottom: 8px;
+  resize: vertical;
+}
+
+/* Make long fields span full width when needed */
+.featm-edit.full { grid-column: 1 / -1; }
+
+/* Actions */
+.featm-actions { display: flex; gap: 6px; align-items: center; justify-self: end; }
+.btn.tiny { height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.btn.tiny.danger { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; }
+.btn.tiny.danger:hover { background: #fecaca; }
+
+/* Compact on narrow screens */
+@media (max-width: 1100px) {
+  .featm-row { grid-template-columns: 1fr auto; }
+}
+@media (max-width: 700px) {
+  .featm-row { grid-template-columns: 1fr; }
+  .featm-actions { justify-self: start; }
+}
+
+/* Muted/empty states */
+.muted { color: #6b7280; }
+
+/* Optional tiny skeleton tokens (if you keep them) */
+.skeleton .sk-a,
+.skeleton .sk-b { height: 14px; background: #eee; border-radius: 6px; }
+.skeleton .sk-c { width: 64px; height: 28px; background: #eee; border-radius: 8px; }

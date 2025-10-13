@@ -1,0 +1,92 @@
+/* Drawer shell */
+.cdw{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 900;
+  transform: translateY(110%);
+  transition: transform .18s ease;
+}
+.cdw.is-open{ transform: translateY(0%); }
+
+/* Bar + container */
+.cdw-row{
+  display:flex; align-items:center; gap:8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+}
+.cdw-title{
+  font-weight:900; letter-spacing:.2px; font-size:14px; display:flex; align-items:center; gap:8px;
+}
+.cdw-count{
+  display:inline-grid; place-items:center; min-width:22px; height:22px; padding:0 6px;
+  border-radius: 999px; background:#fff; color:#0f1221; font-weight:900; font-size:12px;
+}
+.cdw-spacer{ flex:1; }
+.cdw-close, .cdw-clear{
+  appearance:none; border:none; cursor:pointer;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 10px; border-radius:10px; color:#0f1221; background:#fff; font-weight:800;
+  transition: transform .12s ease, background .12s ease;
+}
+.cdw-clear{ background: #fff; color:#0f1221; }
+.cdw-close:hover, .cdw-clear:hover{ transform: translateY(-1px); }
+
+/* Grid of selected items */
+.cdw-grid{
+  background:#fff; color:#0f1221;
+  border-top:1px solid rgba(0,0,0,.06);
+  padding: 12px;
+  display:grid; gap:12px;
+  grid-template-columns: repeat(6, 1fr);
+}
+@media (max-width: 1200px){ .cdw-grid{ grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 800px){  .cdw-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px){  .cdw-grid{ grid-template-columns: 1fr; } }
+
+.cdw-card{
+  position:relative;
+  background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:12px;
+  display:grid; gap:8px; align-content:start;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.cdw-card:hover{ transform: translateY(-1px); box-shadow: 0 16px 28px rgba(0,0,0,.08); }
+
+.cdw-remove{
+  appearance:none; border:none; cursor:pointer;
+  position:absolute; top:8px; right:8px;
+  width:32px; height:32px; border-radius:9px;
+  display:inline-grid; place-items:center; background:#fff; color:#0f1221;
+  border:1px solid rgba(0,0,0,.08);
+}
+
+.cdw-logo{
+  width:100%; aspect-ratio: 16/10; border-radius:12px;
+  background: #fff center/70% no-repeat; background-size: contain !important;
+  border:1px solid rgba(0,0,0,.08);
+}
+
+.cdw-name{ margin:0; font-weight:900; letter-spacing:.2px; font-size:16px; }
+.cdw-ind{
+  display:inline-block; font-weight:800; font-size:12px; padding:6px 10px; border-radius:999px;
+  border:1px solid rgba(0,0,0,.08); background:#fff;
+}
+.cdw-desc{
+  margin:0; color:#344; line-height:1.4;
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+.cdw-actions{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;
+}
+.cdw-btn{
+  appearance:none; border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+  padding:8px 12px; border-radius:10px; font-weight:800; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  transition: background .12s ease, transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.cdw-btn:hover{ background:#f6f7fb; }
+.cdw-primary{
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff; border-color:transparent; 
+}
+.cdw-primary:hover{ filter:brightness(1.02); }

@@ -1,0 +1,39 @@
+@import "./attendee-register.css";
+
+/* Optional: exhibitor-specific overrides (kept minimal on purpose) */
+.role-card { cursor: pointer; }
+.role-card.active { outline: 2px solid #111827; }
+
+/* === APPEND: SubRole select & language cap for Exhibitor === */
+
+/* subRole checkbox grid */
+.subrole-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;
+  margin-top:6px
+}
+.subrole-item{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+  padding:10px;cursor:pointer;font-weight:900;color:#111827;
+  transition:transform .18s ease, box-shadow .18s ease
+}
+.subrole-item:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.subrole-item.active{outline:2px solid #111827}
+.subrole-item input{width:16px;height:16px;accent-color:#111827;cursor:pointer}
+
+/* language item hard cap (max 3) visual */
+.lang-item.disabled{
+  opacity:.55;cursor:not-allowed;
+}
+
+/* generic hint */
+.att-field .hint{
+  color:#6b7280;font-weight:700;margin-top:6px;font-size:12px
+}
+
+/* responsive */
+@media (max-width:820px){
+  .subrole-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+}

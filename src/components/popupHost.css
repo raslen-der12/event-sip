@@ -1,0 +1,16 @@
+.ph-root{position:fixed;inset:0;pointer-events:none;z-index:9999}
+.ph-toast{pointer-events:auto;position:fixed;right:20px;bottom:20px;max-width:380px;background:#0b0f1a;color:#fff;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);padding:16px 18px 14px;opacity:0;transform:translateY(10px);transition:all .25s ease;border:1px solid rgba(255,255,255,.06)}
+.ph-toast.show{opacity:1;transform:translateY(0)}
+.ph-toast.info{border-left:4px solid #3b82f6}
+.ph-toast.success{border-left:4px solid #22c55e}
+.ph-close{position:absolute;top:8px;right:10px;background:transparent;border:0;color:#9ca3af;cursor:pointer;font-size:16px}
+.ph-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;margin-bottom:8px}
+.ph-dot{width:8px;height:8px;border-radius:50%}
+.ph-dot.info{background:#3b82f6}
+.ph-dot.success{background:#22c55e}
+.ph-title{margin:0 0 6px;font-weight:700;font-size:15px;line-height:1.2}
+.ph-body{margin:0 0 10px;font-size:14px;color:#d1d5db}
+.ph-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ph-btn{appearance:none;border:0;border-radius:10px;padding:8px 10px;font-size:13px;cursor:pointer}
+.ph-btn.primary{background:#16a34a;color:#fff}
+.ph-btn.ghost{background:transparent;color:#9ca3af;outline:1px solid #374151}

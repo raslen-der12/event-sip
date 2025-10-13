@@ -1,0 +1,276 @@
+/* ===========================
+   Admin Selects — Page Styles
+   File: admin.selects.css
+   =========================== */
+
+:root {
+  --sel-line: var(--dash-line, #e5e7eb);
+  --sel-text: var(--dash-text, #111827);
+  --sel-muted: #6b7280;
+  --sel-bg: #ffffff;
+  --sel-soft: #f9fafb;
+  --sel-brand: var(--brand, #4f46e5);
+  --sel-danger: #b91c1c;
+  --sel-radius: 12px;
+  --sel-pad: 10px;
+}
+
+/* Layout wrappers */
+.sel-page {
+  display: grid;
+  gap: 14px;
+  color: var(--sel-text);
+}
+
+/* Top bar */
+.sel-top.card {
+  display: grid;
+  gap: 12px;
+}
+
+.sel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sel-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.sel-wizard {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed var(--sel-line);
+  border-radius: var(--sel-radius);
+  background: var(--sel-soft);
+}
+
+.sel-wiz-row {
+  display: grid;
+  gap: 6px;
+}
+
+.sel-lbl {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sel-muted);
+}
+
+.sel-wiz-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Body */
+.sel-body {
+  display: grid;
+  gap: 12px;
+}
+
+/* Page group */
+.sel-page-group.card {
+  display: grid;
+  gap: 12px;
+}
+
+.sel-page-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sel-page-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* Inline add-select row */
+.sel-add-select {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.sel-add-select .input {
+  min-width: 240px;
+}
+
+/* Selects grid inside a page */
+.sel-selects {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Individual select card */
+.sel-card {
+  border: 1px solid var(--sel-line);
+  border-radius: var(--sel-radius);
+  background: var(--sel-bg);
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.sel-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sel-card-title {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* Options list */
+.sel-options {
+  display: grid;
+  gap: 8px;
+}
+
+.sel-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--sel-line);
+  border-radius: 10px;
+  background: var(--sel-soft);
+}
+
+.sel-opt-kv {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.sel-opt-key {
+  font-weight: 800;
+}
+
+.sel-opt-arrow {
+  opacity: 0.5;
+}
+
+.sel-opt-val {
+  color: var(--sel-muted);
+}
+
+/* Add option row */
+.sel-add-opt {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+}
+
+@media (max-width: 800px) {
+  .sel-add-opt {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Footer bits */
+.sel-id {
+  user-select: text;
+  word-break: break-all;
+}
+
+/* ---------- Generic small utilities (scoped) ---------- */
+
+.sel-page .btn {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--sel-line);
+  background: var(--sel-bg);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sel-page .btn.brand {
+  background: var(--sel-brand);
+  border-color: var(--sel-brand);
+  color: #fff;
+}
+.sel-page .btn.brand:hover { filter: brightness(0.96); }
+
+.sel-page .btn.tiny {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sel-page .btn.ghost {
+  background: transparent;
+}
+
+.sel-page .btn.danger {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: var(--sel-danger);
+}
+.sel-page .btn.danger:hover {
+  background: #fecaca;
+}
+
+.sel-page .btn:disabled,
+.sel-page .btn[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.sel-page .input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--sel-line);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+.sel-page .input:focus {
+  border-color: var(--sel-brand);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.sel-page .muted { color: var(--sel-muted); }
+.sel-page .tiny  { font-size: 12px; }
+
+.sel-page .ml-8 { margin-left: 8px; }
+.sel-page .grow  { flex: 1 1 auto; }
+
+/* Spinners */
+.spin {
+  animation: sel-spin 1s linear infinite;
+}
+@keyframes sel-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Optional: card padding helpers if not present globally */
+.sel-page .card {
+  border: 1px solid var(--sel-line);
+  border-radius: var(--sel-radius);
+  background: var(--sel-bg);
+}
+
+.sel-page .p-10 { padding: 10px; }
+
+/* Tighter spacing on narrow screens */
+@media (max-width: 600px) {
+  .sel-head { flex-wrap: wrap; }
+  .sel-wizard { padding: 8px; }
+  .sel-selects { grid-template-columns: 1fr; }
+}

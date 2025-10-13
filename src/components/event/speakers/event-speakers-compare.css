@@ -1,0 +1,53 @@
+.esc-wrap{ position:fixed; inset:0; z-index:1250; pointer-events:none; }
+.esc-backdrop{
+  position:absolute; inset:0; background:transparent; border:none;
+}
+.esc-bar{
+  pointer-events:auto;
+  position:absolute; left:50%; bottom:16px; transform:translateX(-50%);
+  width:min(1120px, 94%); background:#fff; border:1px solid rgba(0,0,0,.08);
+  border-radius:14px;
+  overflow:hidden;
+}
+.esc-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; }
+.esc-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+.esc-chip{
+  position:relative; display:flex; align-items:center; gap:8px; padding:6px 8px; background:#fff;
+  border:1px solid rgba(0,0,0,.08); border-radius:12px;
+}
+.esc-avatar{ width:32px; height:32px; border-radius:8px; background:#f1f4f8 center/cover no-repeat; border:1px solid rgba(0,0,0,.06); }
+.esc-name{ font-weight:800; color:#0f1221; }
+.esc-badge{
+  appearance:none; border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+  width:24px; height:24px; border-radius:8px; display:inline-grid; place-items:center; cursor:pointer;
+}
+.esc-badge:hover{ background:#f6f7fb; }
+
+.esc-actions{ display:flex; align-items:center; gap:8px; }
+.esc-btn{
+    width: max-content;
+  appearance:none; border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+  padding:8px 12px; border-radius:10px; font-weight:800; cursor:pointer;
+}
+.esc-btn:hover{ background:#f6f7fb; }
+.esc-danger{ color:#b42318; border-color:#f1c5c1; }
+.esc-close{
+  appearance:none; border:none; width:14px; height:14px; border-radius:999px; background:#0f1221; opacity:.5; cursor:pointer;
+}
+.esc-close:hover{ opacity:.8; }
+
+.esc-panel{ border-top:1px solid rgba(0,0,0,.06); background:#fff; }
+.esc-table{ display:grid; gap:8px; padding:10px; }
+.esc-thead{ display:grid; grid-template-columns: 1fr repeat(3, 1fr); gap:8px; font-weight:900; color:#0f1221; }
+.esc-row{ display:grid; grid-template-columns: 1fr repeat(3, 1fr); gap:8px; }
+.esc-label{ font-weight:800; color:#334155; }
+.esc-cell{ background:#f7f8fb; border:1px solid rgba(0,0,0,.06); border-radius:10px; padding:8px; }
+
+@media (max-width: 840px){
+  .esc-thead, .esc-row{ grid-template-columns: 1fr repeat(2, 1fr); }
+  .esc-cell:last-child{ display:none; }
+}
+@media (max-width: 560px){
+  .esc-thead, .esc-row{ grid-template-columns: 1fr 1fr; }
+  .esc-cell:nth-child(3){ display:none; }
+}
