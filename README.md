@@ -1497,7 +1497,7 @@ EMAIL_USER=your_email_address
 EMAIL_PASS=your_email_password
 EMAIL_FROM=Platform GITS <noreply@gits-platform.com>
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://eventra.cloud
 Make sure the .env file is placed at the root of the backend folder.
 
 ✅ Testing Checklist (Pre-deployment)

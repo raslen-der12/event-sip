@@ -85,7 +85,7 @@ export default function RegisterLanding() {
           <img
             src={
               imageLink(headerEvent.cover) ||
-              "http://localhost:3500/uploads/images/admin/cover-ipdays.jpg"
+              "http://api.eventra.cloud/uploads/images/admin/cover-ipdays.jpg"
             }
             alt={headerEvent.title || "Event Cover"}
             className="w-full h-full object-cover"

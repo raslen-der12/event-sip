@@ -12,7 +12,7 @@ export const API_BASE =
   proc?.REACT_APP_API_BASE ||
   proc?.VITE_API_BASE ||
   proc?.APP_API_URL ||
-  "http://localhost:3500";
+  "http://api.eventra.cloud";
 
 const API_KEY =
   vite?.VITE_API_KEY ||

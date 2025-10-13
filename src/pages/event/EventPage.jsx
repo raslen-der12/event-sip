@@ -218,7 +218,7 @@ export default function EventPage() {
           <HeaderShell top={topbar} nav={nav} cta={cta} />
       <HeroEvent
         event={event?.event}
-        heroImage="http://localhost:3500/uploads/images/admin/ipdays.jpg"
+        heroImage="http://api.eventra.cloud/uploads/images/admin/ipdays.jpg"
       />
     <AboutIntro
       heading="À propos des IPDAYS X GITS 2025"
@@ -231,7 +231,7 @@ export default function EventPage() {
       ]}
       ctaLabel="Je m’inscris"
       ctaHref="/register"
-      imageSrc="http://localhost:3500/uploads/images/admin/logo-ipdays.png"
+      imageSrc="http://api.eventra.cloud/uploads/images/admin/logo-ipdays.png"
     />
 
 
@@ -248,28 +248,28 @@ export default function EventPage() {
       icon: <I.network />,
       title: "Pre-scheduled B2B meetings (onsite & virtual)",
       desc: "",
-      img: "http://localhost:3500/uploads/images/admin/cover-ipdays.png",
+      img: "http://api.eventra.cloud/uploads/images/admin/cover-ipdays.png",
     },
     {
       id: "profiles",
       icon: <I.idcard />,
       title: "Instant chat between SMEs, investors, and buyers",
       desc: "",
-      img: "http://localhost:3500/uploads/images/admin/ipdays-02.png",
+      img: "http://api.eventra.cloud/uploads/images/admin/ipdays-02.png",
     },
     {
       id: "services",
       icon: <I.briefcase />,
       title: "AI-powered intelligent matchmaking",
       desc: "",
-      img: "http://localhost:3500/uploads/images/admin/KH_03168.png",
+      img: "http://api.eventra.cloud/uploads/images/admin/KH_03168.png",
     },
     {
       id: "services",
       icon: <I.network />,
       title: "Multilingual support (FR / EN / AR)",
       desc: "",
-      img: "http://localhost:3500/uploads/images/admin/KH_02938.png",
+      img: "http://api.eventra.cloud/uploads/images/admin/KH_02938.png",
     },
   ]} /> */}
       
@@ -320,7 +320,7 @@ export default function EventPage() {
 
       <FeaturesShowcase features={data?.features} />
         <PartnershipBlock
-          imageSrc={imageLink("http://localhost:3500/uploads/images/admin/gits-ipdays.png")}
+          imageSrc={imageLink("http://api.eventra.cloud/uploads/images/admin/gits-ipdays.png")}
         />
 <EventOrganizers
   heading="Event Partners"

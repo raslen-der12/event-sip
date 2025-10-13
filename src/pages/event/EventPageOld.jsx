@@ -32,7 +32,7 @@ export default function EventPage() {
           <HeaderShell top={topbar} nav={nav} cta={cta} />
       <HeroEvent
         event={event?.event}
-        heroImage="http://localhost:3500/uploads/images/admin/DSC_2257.png"
+        heroImage="http://api.eventra.cloud/uploads/images/admin/DSC_2257.png"
       />
       <FeaturesShowcase />
 

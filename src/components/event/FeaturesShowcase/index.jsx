@@ -9,7 +9,7 @@ const FALLBACK = [
     subtitle: "Curated B2B sessions",
     desc: "Sit down with buyers, partners, and investors. Our concierge matches you based on sector and intent.",
     image:
-      "http://localhost:3500/uploads/images/admin/sans titre-50.png?q=80&w=1200",
+      "http://api.eventra.cloud/uploads/images/admin/sans titre-50.png?q=80&w=1200",
   },
   {
     _id: "fx2",
@@ -17,7 +17,7 @@ const FALLBACK = [
     subtitle: "Product in action",
     desc: "Touch, try, and stress-test new tech—from enterprise software to robotics—guided by the teams who built it.",
     image:
-      "http://localhost:3500/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop",
+      "http://api.eventra.cloud/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop",
   },
   {
     _id: "fx3",
@@ -25,7 +25,7 @@ const FALLBACK = [
     subtitle: "Real procurement paths",
     desc: "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready.",
     image:
-      "http://localhost:3500/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop",
+      "http://api.eventra.cloud/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop",
   },
 ];
 
