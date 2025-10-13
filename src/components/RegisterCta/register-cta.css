@@ -1,0 +1,76 @@
+/* Register CTA (landing)
+   tokens used: --surface, --surface-2, --ink-1, --muted, --line-1, --radius-lg, --brand-600, --brand-700
+*/
+
+.rc-sec{
+  padding: 36px 0;
+  background: var(--surface, #fff);
+}
+
+.rc-card{
+  width: min(1000px, 92%);
+  margin: 0 auto;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line-1, #e5e7eb);
+  border-radius: var(--radius-lg, 16px);
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.122);
+}
+
+/* layout: media + copy */
+.rc-grid{
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 280px 1fr;
+  align-items: center;
+}
+@media (max-width: 860px){
+  .rc-grid{ grid-template-columns: 1fr; }
+}
+
+/* square photo */
+.rc-media{
+  margin:0; background:#000; border-radius: var(--radius-lg, 14px);
+  overflow: hidden; border:1px solid var(--line-1, #e5e7eb);
+}
+.rc-media img{
+  display:block; width:100%; height:100%; object-fit: cover;
+  aspect-ratio: 1 / 1;        /* square */
+  filter: saturate(1.04) contrast(1.03);
+}
+
+/* copy */
+.rc-copy{ padding: 8px 10px; }
+.rc-title{
+  margin: 0 0 6px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: clamp(20px, 3.6vw, 28px);
+  color: var(--ink-1, #0f1221);
+}
+.rc-sub{
+  margin: 0 0 12px;
+  color: var(--muted, #64748b);
+  font-weight: 700;
+  max-width: 62ch;
+}
+
+/* button */
+.rc-btn{
+  display:inline-block;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 900;
+  text-decoration: none;
+  border: 1px solid transparent;
+  color:#fff;
+  background: var(--brand-2);
+  box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-2) 22%, transparent);
+  cursor:pointer;
+}
+.rc-btn:hover{ filter: brightness(1.03); }
+.rc-btn:focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--brand-600, #6f42c1) 35%, transparent);
+  outline-offset: 2px;
+  border-radius: 999px;
+}

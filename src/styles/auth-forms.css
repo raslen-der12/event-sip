@@ -1,0 +1,10 @@
+/* src/styles/auth-forms.css */
+.auth-wrap{min-height:calc(100dvh - 120px);display:flex;align-items:center}
+.auth-card{max-width:440px;width:100%;margin:30px auto;padding:2rem;background:#ffffff;border:1px solid #f5f5f5;border-radius:16px;box-shadow:0 10px 30px rgba(255, 255, 255, 0.35)}
+.auth-title{font-size:1.5rem;font-weight:700;margin-bottom:.75rem}
+.auth-sub{opacity:.8;margin-bottom:1.25rem}
+.auth-spacer{height:8px}
+.auth-muted{opacity:.85}
+.btn-wide{min-width:160px}
+input.form-control{background:#0c0c0c;border-color:#2a2a2a;color:#e8e8e8}
+input.form-control:focus{border-color:#6c5ce7;box-shadow:none}

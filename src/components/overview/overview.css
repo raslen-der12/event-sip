@@ -1,0 +1,120 @@
+/* -------------------------------------------------------
+  OVERVIEW — clean, white-first design
+  - White canvas (no tints)
+  - Subtle hairlines & spacing
+  - Quiet brand accents, not loud
+  - Crisp cards, gentle hover
+-------------------------------------------------------- */
+
+
+
+/* SECTION */
+.overview{
+  position: relative;
+  background: #fff;        /* stay white */
+  color: var(--ink);
+  padding: 64px 0 56px;
+  border-top: 1px solid var(--line);    /* faint top edge */
+  border-bottom: 1px solid var(--line); /* faint bottom edge */
+}
+
+.ov-bg{ display:none; } /* no background graphics for a clean look */
+
+/* HEADER */
+.ov-head{ text-align:center; margin-bottom: 24px; }
+.ov-title{
+  margin:0;
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: clamp(26px, 4.6vw, 36px);
+}
+.ov-title::after{
+  content:"";
+  display:block;
+  width:64px; height:3px; margin:10px auto 0;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand) 85%, white);
+}
+.ov-sub{
+  margin:10px auto 0;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+/* PILLS (glassiness removed; simple, quiet) */
+.pilltabs{ display:grid; place-items:center; margin: 20px 0 24px; }
+.pilltabs-row{
+  display:flex; flex-wrap:wrap; gap:8px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius: 999px;
+  padding:6px;
+}
+.pill{
+  appearance:none; background: var(--surface-pill); border:1px solid  var(--brand-200); cursor:pointer;
+  padding:10px 14px; border-radius:999px; color:#3A4556; font-weight:700;
+  display:flex; align-items:center; gap:8px;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+.pill:hover{ border-color:  var(--brand-400); background: var(--surface-pill-hover); }
+.pill.is-active{
+  border-color: color-mix(in oklab, var(--brand) 22%, white);
+  background:#fff;
+  box-shadow: 0 2px 0 0 color-mix(in oklab, var(--brand) 28%, transparent) inset;
+  color:#111827;
+}
+.pill-ic{ color: color-mix(in oklab, var(--brand) 78%, black); }
+.pill:focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--brand) 35%, white);
+  outline-offset: 2px; border-radius: 999px;
+}
+
+/* GRID */
+.features-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:20px;
+}
+@media (max-width: 992px){
+  .features-grid{ grid-template-columns: 1fr; }
+}
+
+/* CARD */
+.feature-card{
+  position:relative;
+  background:var(--surface-card);
+  border: 1px solid var(--line-1);
+  border-radius: 14px;
+  padding:16px 16px 14px;
+  transition: box-shadow 140ms ease, transform 140ms ease, border-color 140ms ease;
+}
+.feature-card::before{
+  /* quiet accent edge */
+  content:"";
+  position:absolute; left:-1px; top:12px; bottom:12px; width:3px; border-radius: 6px;
+  background: var(--brand-2);
+}
+.feature-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.06);
+}
+
+/* CARD CONTENT */
+.fc-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.fc-icon{
+  width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+  color: color-mix(in oklab, var(--brand) 86%, black);
+  background: #FAF7FF; /* very light brand tint */
+  border:1px solid #EEE8FF; /* super subtle */
+}
+.fc-title{ margin:0; font-size: 18px; font-weight: 800; letter-spacing:.2px; }
+.fc-desc{ margin: 6px 0 10px; color: var(--muted); }
+
+/* bullets: crisp default with brand markers */
+.fc-list{
+  margin:0; padding-left: 18px; color:#2F3748; list-style: disc;
+}
+.fc-list li{ margin:4px 0; }
+.fc-list li::marker{
+  color: color-mix(in oklab, var(--brand) 70%, black);
+}

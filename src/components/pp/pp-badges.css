@@ -1,0 +1,222 @@
+/* Section */
+.ppb {
+  background: #fff;
+  color: #0f1221;
+  padding: 26px;
+  margin: 30px 0;
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 16px;
+
+}
+
+.ppb-head {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.ppb-title {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: .2px;
+  color: var(--brand);
+  font-size: clamp(16px, 3.4vw, 18px);
+}
+
+.ppb-underline {
+  display: block;
+  width: 82px;
+  height: 3px;
+  margin: 8px 0;
+
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+}
+
+/* Grid */
+.ppb-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .ppb-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards – stronger, modern accent frame */
+.ppb-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 16px;
+  padding: 12px;
+
+  overflow: hidden;
+}
+
+.ppb-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  opacity: .12;
+}
+
+.ppb-card:hover::after {
+  opacity: .18;
+}
+
+/* Card header */
+.ppb-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ppb-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  flex: 0 0 auto;
+}
+
+.ppb-card-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 15px;
+  color: #0f1221;
+}
+
+/* Badges row */
+.ppb-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ppb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  background: #fff;
+  color: #0f1221;
+  max-width: 100%;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.ppb-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, .08);
+}
+
+.ppb-badge .ppb-badge-txt {
+  /* keep text inside pill */
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ppb-badge.-ok,
+.ppb-badge.-open {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 20px rgba(30, 11, 58, .18);
+}
+
+.ppb-badge.-closed {
+  background: #f6f7fb;
+  color: var(--brand);
+  border-color: rgba(0, 0, 0, .06);
+}
+
+.ppb-badge.-muted {
+  background: #fff;
+  color: #6b7280;
+  border-color: rgba(0, 0, 0, .08);
+}
+
+/* Tags grid */
+.ppb-tags {
+  list-style: none;
+  margin: 0;
+  padding: 2px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ppb-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, .08);
+  font-weight: 800;
+  font-size: 12px;
+  color: #0f1221;
+  max-width: 100%;
+}
+
+.ppb-tag svg {
+  color: var(--brand-2);
+  flex: 0 0 auto;
+}
+
+.ppb-tag-txt {
+  /* WRAP long tokens safely inside the pill */
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+/* Empty */
+.ppb-empty {
+  padding: 10px;
+  border: 1px dashed rgba(0, 0, 0, .12);
+  border-radius: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Skeleton */
+.is-skel {
+  height: 140px;
+  background: linear-gradient(90deg, #f1f2f6, #fafafd, #f1f2f6);
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 16px;
+  animation: ppb-skel 1.2s linear infinite;
+}
+
+@keyframes ppb-skel {
+  from {
+    background-position: -200% 0;
+  }
+
+  to {
+    background-position: 200% 0;
+  }
+}

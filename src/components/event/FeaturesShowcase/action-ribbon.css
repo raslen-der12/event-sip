@@ -1,0 +1,57 @@
+.ar-wrap{
+  background:#0f3b46;
+  color:#fff;
+  text-align:center;
+  padding:38px 0 42px;
+  margin: 40px 0;
+}
+
+.ar-title{
+  margin:0;
+  font-weight:900;
+  font-size:clamp(22px,4.2vw,30px);
+  letter-spacing:.2px;
+}
+.ar-sub{
+  margin:8px auto 0;
+  font-size:15px;
+  opacity:.9;
+  max-width:68ch;
+}
+
+.ar-btns{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:18px;
+}
+
+/* Buttons */
+.ar-btn{
+  display:inline-block;
+  padding:10px 18px;
+  border-radius:10px;
+  font-weight:900;
+  text-decoration:none;
+  color:#fff;
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.ar-btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+.ar-orange{
+  background:#F39A00;
+  color:#111;
+  box-shadow:0 2px 0 #c98000 inset;
+}
+.ar-teal{
+  background:#1f4c53;
+}
+.ar-blue{
+  background:#0075ff;
+}
+
+/* Responsive tweaks */
+@media (max-width:480px){
+  .ar-btn{ width:100%; text-align:center; }
+}

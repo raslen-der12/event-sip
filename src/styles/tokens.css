@@ -1,0 +1,54 @@
+:root{
+  /* Brand system (no pink) */
+  --brand: #243A66;            
+  --brand-2: #EB5434;          
+  --ink: #0f1221;              /* main text */
+  --ink-2: #273041;            /* secondary text */
+  --paper: #ffffff;            /* surfaces */
+  --glass: rgba(14, 18, 35, 0.65);
+  --glass-stroke: rgba(255,255,255,.08);
+   
+  /* Layout */
+  --container: 1200px;
+  --nav-h: 72px;
+  --radius: 16px;
+  --shadow-soft: 0 .8rem 2rem rgba(0,0,0,.12);
+
+  /* Type scale */
+  --fs-1: clamp(28px, 4vw, 40px);
+  --fs-2: clamp(18px, 2.2vw, 22px);
+  --fs-3: 16px;
+  --brand-900: #162441;
+  --brand-700: #2a4274;
+  --brand-600: #3a5590;
+  --brand-400: #6c86b8;
+  --brand-200: #d7e0f2;
+  --ink:#0F1221; --muted:#667085; --line:#ECEFF3;
+
+  --muted: #667085;
+  --line:  #ECEFF3;
+ --line-1 : #8c8d8f; /* lighter line for cards */
+  /* SURFACES used by Overview (visible, not “invisible” tints) */
+  --surface-pill:        #d7e0f2;  /* noticeable chip bg */
+  --surface-pill-hover:  #6c86b8;  /* stronger on hover  */
+  --surface-card:        #d7e0f2;  /* card panel bg      */
+  
+
+  /* surfaces (still white-forward) */
+
+
+  /* edge accents for cards */
+  /* ACCENT EDGE for feature cards */
+  --edge:        var(--brand-400);  /* lilac edge */
+  --edge-hover:  var(--brand-600);  /* primary edge on hover */
+  /* Transitions */
+  --t: 160ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* helpers */
+.btn-brand{ background: var(--brand); color:#fff; border:none; }
+.btn-brand:hover{ filter:brightness(.95); color:#fff; }
+.btn-ghost{ border:1px solid #fff; color:#fff; background:transparent; }
+.btn-ghost:hover{ background:#fff; color:#0c0f1c; }
+.text-brand{ color: var(--brand); }
+.text-brand-2{ color: var(--brand-2); }

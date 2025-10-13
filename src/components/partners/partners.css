@@ -1,0 +1,221 @@
+/* Section */
+.partners {
+  background: #fff;
+  color: var(--ink);
+  padding: 44px 0;
+  border-top: 1px solid var(--line);
+}
+
+.pt-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.pt-title {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: clamp(24px, 4.2vw, 34px);
+  color: var(--brand-900);
+}
+
+.pt-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 3px;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: var(--brand-600);
+}
+
+.pt-sub {
+  margin: 8px auto 0;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+/* Groups */
+.pt-groups {
+  display: grid;
+  gap: 18px;
+}
+
+/* Group header */
+.pt-group {
+  background: #fff;
+  border: 1px solid var(--brand-200);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.pt-group+.pt-group {
+  margin-top: 2px;
+}
+
+/* subtle rhythm */
+
+.pt-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.pt-chip {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--group-color, var(--brand-600));
+}
+
+.pt-group-title {
+  margin: 0;
+  font-weight: 800;
+  color: var(--brand-900);
+  letter-spacing: .2px;
+}
+
+/* Logo wall (simple, responsive) */
+.pt-wall {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width:1200px) {
+  .pt-wall {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width:768px) {
+  .pt-wall {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.pt-link {
+  text-decoration: none;
+}
+
+.pt-logo {
+  height: 70px;
+  border: 1px solid var(--brand-200);
+  border-radius: 12px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+}
+
+.pt-logo img {
+  max-height: 42px;
+  max-width: 100%;
+  display: block;
+  filter: grayscale(100%);
+  opacity: .9;
+  transition: filter .12s ease, opacity .12s ease;
+}
+
+.pt-logo-initials {
+  font-weight: 900;
+  color: var(--brand-900);
+}
+
+.pt-logo:hover {
+  border-color: var(--group-color, var(--brand-600));
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(30, 11, 58, .10);
+}
+
+.pt-logo:hover img {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+
+/* =======================
+   Modal overlay + dialog
+   ======================= */
+.pt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 28, .55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.pt-modal {
+  width: min(520px, 92%);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 16px;
+  border: 1px solid var(--brand-200);
+  padding: 16px;
+  position: relative;
+}
+
+.pt-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--brand-200);
+  background: #fff;
+  color: var(--brand-900);
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pt-modal-close:hover {
+  background: #f8fafc;
+}
+
+.pt-modal-body {
+  display: grid;
+  gap: 8px;
+}
+
+.pt-modal-logo {
+  display: grid;
+  place-items: center;
+  height: 90px;
+  border: 1px solid var(--brand-200);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pt-modal-logo img {
+  max-height: 56px;
+  max-width: 100%;
+  display: block;
+}
+
+.pt-modal-title {
+  margin: 4px 0 0;
+  font-weight: 900;
+  color: var(--brand-900);
+}
+
+.pt-modal-text {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* make logos feel clickable */
+.pt-logo[role="button"] {
+  cursor: pointer;
+}

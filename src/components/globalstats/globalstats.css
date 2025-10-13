@@ -1,0 +1,68 @@
+/* Section */
+.gstats{
+  background:#fff; color:var(--ink);
+  padding:46px 0; border-top:1px solid var(--line);
+}
+.gs-head{ text-align:center; margin-bottom:18px; }
+.gs-title{ margin:0; font-weight:800; letter-spacing:.2px; font-size:clamp(24px,4.2vw,34px); color:var(--brand-900); }
+.gs-title::after{ content:""; display:block; width:72px; height:3px; margin:10px auto 0; border-radius:999px; background: var(--brand-600); }
+.gs-sub{ margin:8px auto 0; color: var(--muted); max-width:62ch; }
+
+/* KPI grid */
+.gs-grid{ display:grid; gap:14px; grid-template-columns: repeat(4, 1fr); }
+@media (max-width:1200px){ .gs-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width:768px){  .gs-grid{ grid-template-columns: 1fr; } }
+
+.gs-tile{
+  position:relative; overflow:hidden; border-radius:16px;
+  border:1px solid var(--brand-200); background:#fff;
+  min-height:180px;
+}
+.gs-tile-media{ position:absolute; inset:0; }
+.gs-tile-media img{ width:100%; height:100%; object-fit:cover; filter: grayscale(20%) contrast(1.02) saturate(1.05); transform: scale(1.02); }
+.gs-tile-sheen{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.00) 0%, rgba(0,0,0,.35) 100%);
+  mix-blend-mode: multiply;
+}
+.gs-tile-edge{ position:absolute; left:-1px; top:12px; bottom:12px; width:4px; border-radius:6px; background: var(--tile-color, var(--brand-600)); }
+
+.gs-tile-body{
+  position:relative; z-index:1; color:#fff; padding:16px;
+  display:grid; gap:2px; align-content:end; min-height:180px;
+}
+.gs-tile-value{ font-weight:900; font-size:28px; line-height:1; }
+.gs-tile-label{ font-weight:800; letter-spacing:.2px; opacity:.95; }
+.gs-tile-hint{ font-weight:700; opacity:.85; }
+
+/* Mini cards row */
+.gs-minis{ display:grid; gap:12px; grid-template-columns: repeat(4, 1fr); margin-top:14px; }
+@media (max-width:1200px){ .gs-minis{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width:768px){  .gs-minis{ grid-template-columns: 1fr; } }
+
+.gs-mini{
+  display:grid; grid-template-columns: 88px 1fr; gap:12px; align-items:center;
+  border:1px solid var(--brand-200); border-radius:14px; background:#fff; padding:10px;
+}
+.gs-mini-media{ width:88px; height:66px; border-radius:10px; overflow:hidden; }
+.gs-mini-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+.gs-mini-value{ font-weight:900; color: var(--brand-900); font-size:20px; line-height:1; }
+.gs-mini-label{ color: var(--muted); font-weight:700; }
+
+/* Wide banner with overlayed badges */
+.gs-banner{ position:relative; margin-top:16px; }
+.gs-banner img{ width:100%; height:320px; object-fit:cover; display:block; border-top:1px solid var(--brand-200); border-bottom:1px solid var(--brand-200); }
+.gs-banner-overlay{ position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%); display:grid; align-items:end; }
+.gs-banner-inner{ display:flex; gap:12px; padding:14px 0; flex-wrap:wrap; }
+
+.gs-badge{
+  min-width:140px; padding:10px 12px; border-radius:12px;
+  background:#fff; border:1px solid var(--brand-200);
+  position:relative;
+}
+.gs-badge::before{
+  content:""; position:absolute; left:-1px; top:10px; bottom:10px; width:4px; border-radius:6px; background: var(--badge-color, var(--brand-600));
+}
+.gs-badge-value{ font-weight:900; color: var(--brand-900); font-size:18px; }
+.gs-badge-label{ color: var(--muted); font-weight:700; }

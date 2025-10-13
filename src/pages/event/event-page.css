@@ -1,0 +1,20 @@
+.event-page { background:#fff; color:#0f1221; }
+.ev-container { width:min(1100px, 92%); margin:0 auto; }
+
+/* generic alert for errors / empty */
+.ev-alert{
+  margin:16px auto; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+}
+.ev-alert.-error{
+  border-color: rgba(239,68,68,.25);
+  background: linear-gradient(135deg, rgba(239,68,68,.08), rgba(239,68,68,.04));
+  color:#7f1d1d; font-weight:700;
+}
+
+/* skeleton hero */
+.sk-hero{
+  height: 320px; border-radius: 18px; background: linear-gradient(90deg,#eee,#f6f6f6,#eee);
+  animation: sk 1.2s linear infinite;
+}
+@keyframes sk { 0%{transform:translateX(-10%)} 100%{transform:translateX(10%)} }

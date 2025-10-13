@@ -1,0 +1,280 @@
+/* ============ Meetings — clean, compact, responsive ============ */
+.mtg{
+  --ink:#0f1221;
+  --line:rgba(0,0,0,.10);
+  --muted:#5f6b85;
+  --r:14px;
+  --pad:14px;
+  --ok:#198754;           /* success green */
+  --ok-ink:#0f5132;       /* for focus ring */
+  --ok-bg:rgba(25,135,84,.08);
+  background:#fff;
+  color:var(--ink);
+  padding:18px 0 26px;
+}
+.container{width:min(1120px,92%);margin:0 auto}
+
+.mtg-head{
+  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:12px
+}
+.mtg-title{
+  margin:0;text-align:center;font-weight:800;letter-spacing:.2px;
+  font-size:clamp(20px,4vw,26px);color:var(--brand)
+}
+.mtg-back{
+  appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+  padding:8px 12px;border-radius:12px;font-weight:800;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  transition:transform .12s ease,background .12s ease
+}
+.mtg-back:hover{transform:translateY(-1px);background:#f6f7fb}
+.mtg-spacer{width:1px;height:1px}
+
+/* ====== Suggestions strip (compact, click card → profile) ====== */
+.sugg{ margin: 6px 0 16px;   border:var(--line) solid 1px ; border-radius: 12px; padding: 12px; background: #fff; }
+
+.sugg-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.sugg-title{ margin:0; font-size:15px; font-weight:800; letter-spacing:.02em; color:#0f1221; }
+.sugg-refresh{
+  appearance:none; border:1px solid var(--line); background:#fff; color:#0f1221;
+  padding:6px 10px; border-radius:10px; font-weight:800; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+}
+.sugg-refresh:hover{ background:#f6f7fb; transform:translateY(-1px); }
+.sugg-empty{ margin-bottom:8px; font-size:13px; color:#6b7280; }
+
+.sugg-list{
+  display:grid; grid-auto-flow:column; grid-auto-columns: minmax(210px, 1fr); gap:10px;
+  overflow-x:auto; overflow-y:hidden; padding:2px 6px 2px 2px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+@media (min-width: 860px){ .sugg-list{ grid-auto-columns: minmax(220px, 260px); } }
+.sugg-li{ scroll-snap-align:start; }
+
+.sugg-card{
+  width:100%; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:10px;
+  padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff; cursor:pointer; text-align:left;
+  transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease; position:relative; overflow:hidden;
+}
+.sugg-card:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
+.sugg-card:hover{ transform: translateY(-1px); background:#f9fafb; }
+
+.sugg-avatar{
+  width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  background-size:cover; background-position:center; display:grid; place-items:center; color:#fff; font-weight:900;
+  box-shadow:0 8px 18px rgba(30,11,58,.18);
+}
+.sugg-avatar .inits{ letter-spacing:.3px; }
+.sugg-meta{ min-width:0; display:grid; gap:4px; }
+.sugg-meta .nm{
+  font-size:14px; font-weight:800; color:#0f1221; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.sugg-meta .role{
+  display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#34415f;
+  padding:3px 8px; border-radius:999px; border:1px solid var(--line); background:#fff; width:max-content;
+}
+.sugg-meta .role.speaker{ border-color:#cdd7ff; color:#1f3db0; background:#f4f7ff; }
+.sugg-meta .role.exhibitor{ border-color:#cde9d6; color:#0f5132; background:#eef9f1; }
+.sugg-meta .role.attendee{ border-color:#e5e7eb; color:#374151; background:#fafafa; }
+.sugg-meta .tag{
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; letter-spacing:.02em;
+  color:#0f1221; padding:2px 6px; border-radius:999px; border:1px dashed rgba(0,0,0,.14); background:#fff; width:max-content;
+}
+
+/* ====== Meetings list (2 per row on desktop) ====== */
+.mtg-list{
+  display:grid; gap:12px;
+  grid-template-columns:1fr;
+}
+@media (min-width: 980px){
+  .mtg-list{ grid-template-columns:1fr 1fr; }
+}
+
+.mtg-empty{
+  padding:14px;border:1px dashed rgba(0,0,0,.12);border-radius:12px;color:#6b7280;text-align:center
+}
+
+/* ====== Meeting card ====== */
+.mtg-item{
+  position:relative;
+  display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:flex-start;
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:var(--pad);
+  box-shadow:0 10px 24px rgba(15,18,33,.06);
+  transition: box-shadow .12s ease, transform .12s ease;
+  outline:none;
+}
+.mtg-item:hover{ transform: translateY(-1px); box-shadow:0 16px 34px rgba(15,18,33,.10); }
+.mtg-item:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
+
+/* corner controls — hidden until hover/focus */
+.mtg-ctl{
+  position:absolute; right:10px; top:10px; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;
+  opacity:0; transform: translateY(-2px); transition: opacity .12s ease, transform .12s ease;
+}
+.mtg-item:hover .mtg-ctl,
+.mtg-item:focus-within .mtg-ctl{ opacity:1; transform: translateY(0); }
+
+.mtg-left{display:grid;place-items:center}
+.mtg-avatar{
+  width:58px;height:58px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:0 10px 22px rgba(30,11,58,.20)
+}
+.mtg-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.mtg-inits{letter-spacing:.3px}
+
+.mtg-mid{min-width:0;display:grid;gap:6px}
+.mtg-topline{display:flex;align-items:center;gap:8px}
+.mtg-name{
+  margin:0;font-weight:700;letter-spacing:.2px;font-size:16px;overflow-wrap:anywhere
+}
+.mtg-status{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-weight:700;font-size:12px;border:1px solid var(--line);background:#fff
+}
+/* success outline only */
+.mtg-status.-ok{ background:#fff; color:var(--ok); border-color:var(--ok); box-shadow:none; }
+
+/* other statuses */
+.mtg-status.-pending{background:#fff7e6;border-color:#ffd599;color:#8a6100}
+.mtg-status.-resched{background:#eef4ff;border-color:#cfdcff;color:#1939b7}
+.mtg-status.-bad{background:#fff0f0;border-color:#f3c0c0;color:#8a1f1f}
+.mtg-status.-muted{background:#f6f7fb;color:#5f6b85}
+
+.mtg-row{display:flex;flex-wrap:wrap;gap:8px}
+.mtg-chip{
+  display:inline-flex;align-items:center;gap:8px;padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:#fff;
+  font-weight:700; font-size:12px;
+}
+.mtg-chip.-muted{color:var(--muted)}
+
+/* Event title (trim to 10 words) + location on hover/focus */
+.mtg-evt{display:inline-flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:inherit}
+.mtg-evt .evt-title{border-bottom:1px dashed rgba(0,0,0,.18)}
+.mtg-evt-sub{
+  display:inline-flex;align-items:center;gap:6px;margin-left:8px;color:#6b7280;font-weight:600; opacity:0; transition:opacity .12s ease;
+}
+.mtg-item:hover .mtg-evt-sub,
+.mtg-item:focus-within .mtg-evt-sub{ opacity:1; }
+
+/* corner action buttons */
+.mtg-btn{
+  appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+  padding:7px 10px;border-radius:10px;font-weight:700;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease
+}
+.mtg-btn:hover{transform:translateY(-1px);background:#f6f7fb}
+.mtg-btn.-ghost{ background:#fff; border-style:solid; }
+.mtg-btn.-danger{border-color:#ffc8c8;background:#fff0f0;color:#8a1f1f}
+.mtg-btn.-warn{border-color:#ffe19c;background:#fff8e6;color:#8a5f00}
+/* Confirm → outline success */
+.mtg-btn.-confirm{ background:#fff; color:var(--ok); border-color:var(--ok); box-shadow:none; }
+.mtg-btn.-confirm:hover{ background:var(--ok-bg); }
+.mtg-btn.-confirm:focus-visible{ outline:2px solid var(--ok-ink); outline-offset:2px; }
+
+/* skeleton */
+.mtg-item.skel{height:108px;background:linear-gradient(90deg,#f1f2f6,#fafafd,#f1f2f6);animation:mtgSk 1.2s linear infinite}
+@keyframes mtgSk{from{background-position:-200% 0}to{background-position:200% 0}}
+
+/* responsive stacking */
+@media (max-width:780px){
+  .mtg-item{grid-template-columns:auto 1fr}
+}
+
+/* ===== optional status banner styles kept ===== */
+.mp-status{
+  margin-top:12px;border:1px solid rgba(0,0,0,.10);border-radius:16px;padding:12px;background:#fff;display:grid;
+  grid-template-columns:auto 1fr;gap:12px;align-items:flex-start;box-shadow:0 12px 28px rgba(15,18,33,.08);position:relative;overflow:hidden;
+}
+.mp-status.is-ok{
+  background:linear-gradient(0deg, rgba(25,135,84,.08) 0%, transparent 70%), #fff; border-color: color-mix(in oklab, var(--ok) 24%, rgba(0,0,0,.10));
+}
+.mp-status.is-warn{ background:linear-gradient(0deg, rgba(255,196,34,.10) 0%, transparent 70%), #fff; border-color:#ffdca8; }
+.mp-status.is-bad{  background:linear-gradient(0deg, rgba(239,68,68,.08) 0%, transparent 70%), #fff; border-color:#ffc8c8; }
+.mp-status::before{ content:""; position:absolute; inset:0 auto 0 0; width:6px; background: linear-gradient(180deg, var(--brand-2), var(--brand)); opacity:.9; }
+.mp-status-ico{ width:44px; height:44px; border-radius:12px; display:grid; place-items:center; color:#fff; background: linear-gradient(135deg, var(--brand), var(--brand-2)); box-shadow: 0 10px 22px rgba(30,11,58,.22); flex:0 0 44px; }
+.mp-status-body{ min-width:0; display:grid; gap:6px; }
+.mp-status-title{ margin:0; font-weight:800; letter-spacing:.2px; font-size: clamp(16px, 2.6vw, 18px); color:#0f1221; }
+.mp-status-desc{ margin:0; color:#334155; line-height:1.5; }
+.mp-status-kv{ margin:2px 0 0; padding:0; list-style:none; display:grid; gap:6px; }
+.mp-status-kv li{ display:grid; grid-template-columns: 110px 1fr; gap:10px; align-items:center; }
+.mp-status-kv .k{ font-size:12px; color:#6b7280; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.mp-status-kv .v{ font-weight:800; color:#0f1221; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width:520px){
+  .mp-status-kv li{ grid-template-columns: 1fr; gap:4px; }
+  .mp-status-kv .v{ white-space:normal; word-break:break-word; }
+}
+.mp-status-actions{ margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
+.mp-status .mp-btn{
+  appearance:none; border:1px solid rgba(0,0,0,.10); background:#fff; color:#0f1221;
+  padding:9px 12px; border-radius:10px; font-weight:800; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.mp-status .mp-btn:hover{ transform: translateY(-1px); background:#f6f7fb; }
+.mp-status .mp-btn.mp-primary{
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#fff; border-color: transparent;
+  box-shadow: 0 12px 24px rgba(30,11,58,.20);
+}
+/* AI gradient fallbacks */
+.mtg{
+  --ai1: color-mix(in oklab, var(--brand, #6d28d9) 70%, #22c55e 30%);
+  --ai2: color-mix(in oklab, var(--brand-2, #8b5cf6) 60%, #10b981 40%);
+}
+
+/* refresh button w/ AI sweep */
+.sugg-refresh{ position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:8px; }
+.sugg-refresh.is-ai::after{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:
+    linear-gradient(120deg,
+      transparent 0%,
+      color-mix(in oklab, var(--ai1) 18%, transparent) 35%,
+      transparent 70%);
+  background-size: 220% 220%;
+  animation: ai-sweep 1.6s linear infinite;
+  opacity:.35;
+}
+@keyframes ai-sweep{ 0%{ background-position:200% 0 } 100%{ background-position:-200% 0 } }
+.sugg-refresh .ico{ display:inline-grid; place-items:center; font-size:16px; }
+.sugg-refresh.is-ai .ico{ display:none; }
+.sugg-refresh .txt{ position:relative; z-index:1; }
+
+/* AI core loader */
+.ai-core{ width:22px; height:22px; display:inline-block; }
+.ai-core-svg{ width:22px; height:22px; display:block; }
+.ai-core-svg .ring{ transform-origin:24px 24px; opacity:.95; }
+.ai-core-svg .r1{ animation: ai-spin 5.5s linear infinite; }
+.ai-core-svg .r2{ animation: ai-spin-r 6.5s linear infinite; opacity:.85; }
+.ai-core-svg .r3{
+  stroke-dashoffset:60; opacity:.9;
+  animation: ai-dash 1.15s ease-in-out infinite;
+}
+.ai-core-svg .core{ filter: drop-shadow(0 0 6px color-mix(in oklab, var(--ai2) 60%, transparent)); animation: ai-pulse 1.6s ease-in-out infinite; }
+.ai-core-svg .orb{ transform-origin:24px 24px; }
+.ai-core-svg .orb1{ animation: ai-spin 2.2s linear infinite; }
+.ai-core-svg .orb2{ animation: ai-spin-r 1.6s linear infinite; }
+.ai-core-svg .dot{ filter: drop-shadow(0 0 6px color-mix(in oklab, var(--ai2) 60%, transparent)); }
+
+@keyframes ai-spin   { to { transform: rotate(360deg); } }
+@keyframes ai-spin-r { to { transform: rotate(-360deg); } }
+@keyframes ai-dash   { 0% { stroke-dashoffset:60; } 100% { stroke-dashoffset:0; } }
+@keyframes ai-pulse  { 0%,100% { transform: scale(.9); opacity:.85; } 50% { transform: scale(1.1); opacity:1; } }
+
+/* dim list while thinking */
+.sugg-list.is-dim{ opacity:.66; transition: opacity .2s ease; }
+
+/* skeletons kept working */
+.sugg-li.is-skel .sugg-card{ pointer-events:none; }
+.sugg-li.is-skel .sugg-avatar{
+  background: linear-gradient(90deg,#f3f4f6,#fafafa,#f3f4f6);
+  animation: sugg-sh 1.2s linear infinite;
+}
+.sugg-li.is-skel .sugg-meta .nm,
+.sugg-li.is-skel .sugg-meta .role,
+.sugg-li.is-skel .sugg-meta .tag,
+.sugg-li.is-skel .sugg-meta .skl-ln{
+  display:block; height:12px; border-radius:4px;
+  background: linear-gradient(90deg,#f3f4f6,#fafafa,#f3f4f6);
+  animation: sugg-sh 1.2s linear infinite;
+}
+.sugg-li.is-skel .sugg-meta .nm{ width:80%; height:13px; }
+.sugg-li.is-skel .sugg-meta .role{ width:55%; }
+.sugg-li.is-skel .sugg-meta .tag{ width:40%; height:11px; }
+@keyframes sugg-sh { from{ background-position:-200% 0 } to{ background-position:200% 0 } }

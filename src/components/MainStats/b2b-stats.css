@@ -1,0 +1,145 @@
+.b2bx{
+
+  --brand-light:#ECF1FA;
+  --ink:#0f1221;
+  --line:#e5e7eb;
+  --shadow:0 10px 24px rgba(15,18,33,.10);
+
+  --h-base: 210px;   /* base height */
+  --h-hover: 240px;  /* when the row is hovered, ALL cards grow a bit */
+  --h-open: 320px;   /* open card height */
+
+  width:min(1100px,92%);
+  margin:0 auto;
+  padding:10px 0;
+  background:#fff;
+}
+
+/* Flex row; width anim handled by flex (no layout thrash) */
+.b2bx-row{
+  display:flex; gap:12px;
+}
+
+/* Card base */
+.b2bx-card{
+  position:relative;
+  min-height: var(--h-base);
+  display:grid;
+  grid-template-rows: 1fr auto;
+  border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  background:#fff; box-shadow:var(--shadow);
+  transition:
+    flex .48s cubic-bezier(.2,.8,.2,1),
+    transform .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease;
+}
+.b2bx-card:hover{ transform: translateY(-1px); box-shadow: 0 16px 34px rgba(15,18,33,.16); }
+.b2bx-card:focus-visible{ outline:2px solid #f2b0a4; outline-offset:2px; }
+
+/* When hovering the row, EVERY card adds height a bit (smooth for all) */
+
+
+/* Open card gets even taller (also smooth) */
+.b2bx-card.is-open{
+  min-height: var(--h-open);
+}
+
+/* Background image layer for open state */
+.b2bx-bg{
+  position:absolute; inset:0;
+  /* keep both layers all the time; we only animate opacity/scale */
+  background-image:
+    linear-gradient(to top, rgba(36,58,102,.96) 0%, rgba(36,58,102,.60) 54%, rgba(36,58,102,0) 100%),
+    var(--bg);
+  background-size: 100% 100%, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+
+  /* start hidden + slightly zoomed so it eases in */
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity .35s ease-in-out,
+    transform .45s cubic-bezier(.2,.8,.2,1);
+  will-change: opacity, transform;
+  pointer-events: none; /* purely visual */
+  filter: saturate(1.02) contrast(1.04);
+}
+
+/* On open: fade in, settle scale */
+.b2bx-card.is-open .b2bx-bg{
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Optional: tiny linger so closing isn’t abrupt */
+.b2bx-card.is-closed .b2bx-bg{
+  transition-delay: 0s, 0s;
+}
+/* Subject badge */
+.b2bx-subject{
+  position:absolute; left:10px; top:10px; z-index:3;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:999px;
+  background:#fff; border:1px solid var(--line); color:var(--brand);
+  font-weight:900; font-size:12px; letter-spacing:.04em; text-transform:capitalize;
+}
+
+/* Right metric (closed: pill button; open: text) */
+.b2bx-metric-btn{
+  position:absolute; right:10px; top:10px; z-index:3;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:999px;
+  background:#fff; color:var(--brand-2); border:2px solid var(--brand-2);
+  font-weight:900; font-size:12px;
+}
+.b2bx-metric-btn .ico{ display:inline-grid; place-items:center; width:18px; height:18px; }
+.b2bx-metric-btn .num{ font-variant-numeric: tabular-nums; }
+
+.b2bx-metric-open{
+  position:absolute; right:12px; top:12px; z-index:3;
+  display:inline-flex; align-items:center; gap:8px;
+  color:#fff; font-weight:800; font-size:12px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+.b2bx-metric-open .ico{ width:16px; height:16px; display:inline-grid; place-items:center; opacity:.95; }
+.b2bx-metric-open .num{ font-variant-numeric: tabular-nums; }
+
+/* Bottom content (both states sit at the bottom) */
+.b2bx-body{
+  position:relative; z-index:2;
+  padding:12px;
+  display:grid;
+  gap:6px;
+  align-content:end;
+  background: var(--brand-light); /* visible in closed */
+}
+.b2bx-card.is-open .b2bx-body{ background: transparent; }
+
+/* Closed big number + small dark desc */
+.b2bx-num-closed{
+  font-weight:900; letter-spacing:.2px;
+  font-size: clamp(22px, 4.4vw, 30px);
+  color: var(--brand);
+}
+
+.b2bx-desc{
+  margin:0; color: var(--ink); font-weight:700; font-size:13px;
+  display:-webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Open: longer white description */
+.b2bx-card.is-open .b2bx-desc{
+  color:#fff;
+  font-size: clamp(18px, 2.9vw, 20px);
+  -webkit-line-clamp: 6;
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .b2bx{ --h-base: 190px; --h-hover: 220px; --h-open: 300px; }
+}
+@media (max-width: 640px){
+  .b2bx{ --h-base: 180px; --h-hover: 200px; --h-open: 280px; }
+}

@@ -1,0 +1,134 @@
+/* Root */
+.fsx-wrap{
+  --ink:#0f1221;
+  --line:rgba(0,0,0,.08);
+  --muted:#5f6b85;
+  /* expect --brand and --brand-2 to exist globally */
+  background:#fff; color:var(--ink);
+  padding:26px 0 28px;
+  border-top:1px solid var(--line);
+}
+
+/* Head */
+.fsx-head{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+  margin-bottom:12px;
+}
+.fsx-titles{ min-width:0; }
+.fsx-title{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size:clamp(22px,4.4vw,28px);
+  color:var(--brand);
+  display:flex; align-items:center; gap:10px;
+}
+.fsx-icon{
+  display:inline-grid; place-items:center;
+  width:28px; height:28px; border-radius:8px;
+  color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand-2));
+}
+.fsx-sub{
+  margin:6px 0 0; color:var(--muted); max-width:70ch;
+}
+
+.fsx-arrows{ display:flex; gap:8px; }
+.fsx-arrow{
+  appearance:none; border:none; cursor:pointer;
+  width:38px; height:38px; border-radius:10px;
+  display:inline-grid; place-items:center;
+  background:#fff; color:var(--brand);
+  border:1px solid var(--line);
+  transition:transform .12s ease, background .12s ease, color .12s ease, border-color .12s ease;
+}
+.fsx-arrow:hover{ transform:translateY(-1px); }
+.fsx-arrow:disabled{ opacity:.5; cursor:not-allowed; }
+
+/* Track (mobile-first: horizontal scroller with snap) */
+.fsx-track{
+  display:grid; grid-auto-flow:column; grid-auto-columns:min(86%,420px);
+  gap:14px; overflow-x:auto; padding:4px 2px 6px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:thin;
+  min-width:0;
+}
+.fsx-track::-webkit-scrollbar{ height:10px; }
+.fsx-track::-webkit-scrollbar-thumb{
+  background:linear-gradient(90deg,var(--brand),var(--brand-2));
+  border-radius:999px;
+}
+.fsx-track::-webkit-scrollbar-track{ background:#f5f7fb; border-radius:999px; }
+
+/* Card */
+.fsx-card{
+  scroll-snap-align:start;
+  background:#fff; border:1px solid var(--line); border-radius:16px;
+  overflow:hidden; display:flex; flex-direction:column;
+  min-height:340px;
+  transition:transform .14s ease, box-shadow .14s ease;
+}
+.fsx-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 32px rgba(0,0,0,.08);
+}
+
+/* Frame with gradient edge */
+.fsx-frame{
+  position:relative; border-bottom:1px solid var(--line);
+  aspect-ratio:16/9; overflow:hidden;
+}
+.fsx-media{
+  position:absolute; inset:0; background:center/cover no-repeat;
+  transform:scale(1.02); transition:transform .18s ease, filter .18s ease;
+  filter:contrast(1.02) saturate(1.05);
+}
+.fsx-card:hover .fsx-media{ transform:scale(1.06); }
+.fsx-grad{
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 100%),
+    conic-gradient(from 130deg,
+      color-mix(in oklab,var(--brand) 65%,#fff 0%) 0 25%,
+      color-mix(in oklab,var(--brand-2) 65%,#fff 0%) 25% 50%,
+      transparent 50% 100%);
+  mix-blend-mode:overlay; opacity:.45;
+}
+
+/* Body */
+.fsx-body{ padding:12px; display:grid; gap:6px; }
+.fsx-item-title{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size:clamp(16px,3.4vw,18px); color:var(--ink);
+}
+.fsx-item-sub{
+  font-size:13px; color:var(--brand-2); font-weight:800;
+}
+.fsx-item-desc{
+  margin:4px 0 0; color:#344; line-height:1.4;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* Desktop: switch to true grid (4-up) */
+@media (min-width: 992px){
+  /* Hide arrows on desktop */
+  .fsx-arrows{ display:none; }
+
+  .fsx-track{
+    /* turn off horizontal scroller behavior */
+    overflow:visible;
+    scroll-snap-type:none;
+    grid-auto-flow:row;        /* rows, not columns */
+    grid-auto-columns:initial;
+    /* 12-col grid → each card spans 3 = 4 per row */
+    grid-template-columns:repeat(12, minmax(0, 1fr));
+    gap:16px;
+    padding:0;
+  }
+
+  .fsx-card{
+    grid-column:span 3;        /* <<< 4 cards per row */
+    height:100%;
+    min-height:100%;
+  }
+
+  /* ensure no legacy nth-child rules interfere */
+  .fsx-card:nth-child(n){ grid-column:span 3; }
+}

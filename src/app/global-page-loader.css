@@ -1,0 +1,7 @@
+.gpl{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(255,255,255,.72);backdrop-filter:saturate(1.2) blur(4px)}
+.gpl-box{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.10);
+  padding:22px 26px;text-align:center;color:#0f1221;min-width:260px}
+.gpl-spinner{width:44px;height:44px;border-radius:50%;border:3px solid #e5e7eb;border-top-color:#0f1221;animation:gpl-spin 1s linear infinite;margin:2px auto 10px}
+.gpl-text{margin:0;color:#5f6b85;font-weight:800;letter-spacing:.2px}
+@keyframes gpl-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.gpl-spinner{animation:none}}

@@ -1,0 +1,19 @@
+.eai-rail{
+  position:sticky; top:90px; align-self:start;
+  display:flex; flex-direction:column; gap:4px;
+  padding:8px; background:#fff; border:1px solid rgba(0,0,0,.08);
+  border-radius:12px;
+  height:max-content;
+}
+.eai-letter{
+  appearance:none; border:none; cursor:pointer;
+  width:28px; height:28px; border-radius:8px;
+  display:inline-grid; place-items:center; font-weight:800; font-size:12px;
+  color:#0f1221; background:#f6f7fb; border:1px solid rgba(0,0,0,.06);
+  transition: background .12s ease, color .12s ease, transform .12s ease;
+}
+.eai-letter.on:hover{ background:#eef1f7; transform:translateY(-1px); }
+.eai-letter.off{ opacity:.35; cursor:not-allowed; background:#fafbfe; }
+@media (max-width: 980px){
+  .eai-rail{ display:none; }
+}

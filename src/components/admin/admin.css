@@ -1,0 +1,246 @@
+/* ======================================================
+   admin.css — LIGHT THEME (full replacement, list fixes)
+   - stronger lines
+   - collapsed sidebar hides brand entirely
+   - active item background clipped inside; icon/text white
+   - groups (dropdowns) supported
+   - FIX: remove bullets/dots and weird word splitting
+   ====================================================== */
+
+/* ---- Tokens ---- */
+:root{
+  --adm-bg:#f7f9fc;                 /* page background */
+  --adm-panel:#ffffff;              /* cards / bars / sidebar */
+  --adm-line:#d1d5db;               /* border */
+  --adm-line-2:#cbd5e1;             /* emphasized border */
+  --adm-ink:#0f172a;                /* primary text */
+  --adm-muted:#475569;              /* secondary text */
+  --adm-brand: var(--brand-600, #6f42c1);    /* accent 1 */
+  --adm-brand-900: var(--brand-900, #3b2a7a);/* accent 2 */
+}
+
+/* ---- App grid ---- */
+.admin{
+  --side-w: 264px;
+  display:grid;
+  grid-template-columns: var(--side-w) 1fr;
+  min-height:100vh;
+  background: var(--adm-bg);
+  color: var(--adm-ink);
+  overflow-x:hidden;
+}
+.admin.is-collapsed{ --side-w: 84px; }
+
+.skip-link{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+.skip-link:focus{
+  left:8px; top:8px; width:auto; height:auto; padding:6px 8px;
+  background:#000; color:#fff; border-radius:6px; z-index:2000;
+}
+
+/* ---- Sidebar ---- */
+.adm-side{
+  position:sticky; top:0; height:100dvh; z-index:1200;
+  width:var(--side-w);
+  background: var(--adm-panel);
+  border-right:1px solid var(--adm-line);
+  transition: width 160ms cubic-bezier(.2,.8,.2,1);
+  overflow:hidden; /* ensures active backgrounds never bleed */
+}
+
+/* RESET: nuke any list markers inside the sidebar (ul/ol from global CSS) */
+.adm-side ul, .adm-side ol{ list-style:none; margin:0; padding:0; }
+.adm-side *::marker{ content:""; }            /* remove bullets in all browsers */
+.adm-side li{ list-style:none; }              /* belt + suspenders */
+
+/* Sidebar header */
+.side-head{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:10px 10px; border-bottom:1px solid var(--adm-line-2);
+  min-height:54px;
+}
+.side-brand{
+  display:flex; align-items:center; gap:10px; text-decoration:none;
+  color:var(--adm-ink); font-weight:900; letter-spacing:.2px; min-width:0;
+}
+.side-logo{
+  width:28px; height:28px; border-radius:8px; background: var(--adm-brand);
+  color:#fff; font-weight:900; display:grid; place-items:center;
+}
+.side-word{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.side-word .accent{ color:var(--adm-brand); }
+
+/* COLLAPSED: remove brand entirely; toggle uses the space */
+.admin.is-collapsed .side-brand{ display:none; }
+.admin.is-collapsed .side-head{ justify-content:flex-start; }
+.admin.is-collapsed .side-toggle{ margin-left:6px; }
+
+.side-toggle{
+  width:34px; height:34px; border-radius:10px; border:1px solid var(--adm-line);
+  background: var(--adm-panel); cursor:pointer; position:relative; flex:0 0 auto;
+}
+.side-toggle::before, .side-toggle::after{
+  content:""; position:absolute; left:10px; right:10px; height:2px; background: var(--adm-ink);
+}
+.side-toggle::before{ top:12px; } .side-toggle::after{ bottom:12px; }
+.side-toggle:hover{ border-color: var(--adm-line-2); }
+
+/* ---- Nav ---- */
+.side-nav{ display:grid; gap:6px; padding:10px; }
+
+/* Base link tile */
+.side-link{
+  position:relative;
+  display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:10px;
+  color:#111827; text-decoration:none; padding:10px; border-radius:10px;
+  font-weight:700; outline-offset:2px; overflow:hidden; /* clip active bg inside */
+  border:1px solid transparent; background: transparent;
+
+  /* FIX: normalize word handling so spaces behave and no weird breaks */
+  letter-spacing: normal;
+  word-spacing: normal;
+  word-break: normal;
+}
+.side-link .ic{ display:grid; place-items:center; color:#475569; }
+.side-link .tx{
+  display:block;
+  white-space:nowrap;                  /* one-line label */
+  overflow:hidden; text-overflow:ellipsis;
+}
+.side-link .pill{
+  position:absolute; left:6px; top:8px; bottom:8px; width:3px; border-radius:6px; background: var(--adm-brand);
+}
+.side-link:hover{ background:#f3f4f6; }
+
+/* ACTIVE: solid brand fill; icon & text white; no bleed */
+.side-link.active{
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color:#fff;
+}
+.side-link.active .ic{ color:#fff; }
+.side-link.active .pill{ background:#fff; opacity:.95; }
+
+/* Collapsed tiles: center icons, hide text; still fully clipped */
+.admin.is-collapsed .side-link{
+  grid-template-columns:22px 0 0; justify-content:center; padding:10px;
+}
+.admin.is-collapsed .side-link .tx{ display:none; }
+
+/* Collapsed + ACTIVE: keep brand bg inside tile, use small dot accent on right */
+.admin.is-collapsed .side-link.active{
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color:#fff;
+}
+.admin.is-collapsed .side-link .pill{
+  left:auto; right:6px; width:6px; border-radius:999px; background:#fff;
+}
+
+/* ---- Groups (dropdown sections) ---- */
+.side-group{ border:1px solid transparent; border-radius:10px; background: transparent; }
+.sg-head{ width:100%; text-align:left; background:none; }
+.sg-head .chev{ color:#64748b; }
+
+.side-group.open{ background:#fafafa; border-color: var(--adm-line); }
+
+/* Children list */
+.sg-children{ display:grid; gap:4px; padding:6px 0 8px 30px; }
+
+/* FIX: remove our decorative dot and normalize text spacing */
+.side-sublink{
+  display:grid; grid-template-columns:1fr; align-items:center; gap:10px;
+  color:#1f2937; text-decoration:none; padding:8px 10px; border-radius:8px; font-weight:700;
+
+  letter-spacing: normal;
+  word-spacing: normal;
+  word-break: normal;
+}
+.side-sublink .dot{ display:none; }  /* <-- remove small dot entirely */
+.side-sublink .tx{
+  display:block;
+  white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.side-sublink:hover{ background:#f3f4f6; }
+.side-sublink.active{
+  background: linear-gradient(0deg,
+    color-mix(in oklab, var(--adm-brand) 18%, white),
+    color-mix(in oklab, var(--adm-brand) 18%, white));
+  color:#0f172a;
+}
+
+/* Collapsed: hide children for simplicity */
+.admin.is-collapsed .sg-children{ display:none; }
+
+/* ---- Main column ---- */
+.adm-main{ display:grid; grid-template-rows: auto 1fr auto; min-width:0; }
+
+/* Topbar */
+.adm-top{
+  position:sticky; top:0; z-index:1100;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background: var(--adm-panel);
+  border-bottom:1px solid var(--adm-line-2);
+  padding:10px;
+}
+.adm-burger{
+  display:none; width:38px; height:38px; border-radius:10px;
+  border:1px solid var(--adm-line); background: var(--adm-panel);
+}
+.adm-burger span{
+  display:block; width:18px; height:2px; background:var(--adm-ink);
+  margin:0 auto; position:relative; top:0;
+}
+.adm-burger span::before,
+.adm-burger span::after{
+  content:""; position:absolute; left:0; width:18px; height:2px; background:var(--adm-ink);
+}
+.adm-burger span::before{ top:-6px; } .adm-burger span::after{ top:6px; }
+
+.adm-search{ flex:1 1 420px; max-width:560px; }
+.adm-search input{
+  width:100%; border:1px solid var(--adm-line-2); background:#fff; color:var(--adm-ink);
+  border-radius:10px; padding:10px 12px; outline:none;
+}
+.adm-search input:focus{ border-color:#94a3b8; box-shadow:0 0 0 3px rgba(111,66,193,.12); }
+
+.adm-quick{ display:flex; align-items:center; gap:8px; }
+.qbtn{
+  width:38px; height:38px; border:1px solid var(--adm-line-2); background:#fff; color:var(--adm-ink); border-radius:10px;
+}
+.qbtn:hover{ border-color:#94a3b8; }
+.adm-user{ display:flex; align-items:center; gap:8px; }
+.adm-user img, .adm-user .ph{
+  width:32px; height:32px; border-radius:8px; background:#f3f4f6; border:1px solid var(--adm-line-2); object-fit:cover;
+}
+.u-meta{ display:grid; line-height:1.1; }
+.u-name{ font-weight:900; }
+.u-role{ color:var(--adm-muted); font-weight:700; font-size:12px; }
+
+/* Content + footer */
+.adm-content{ padding:16px; }
+.adm-foot{
+  border-top:1px solid var(--adm-line-2);
+  color:var(--adm-muted); font-weight:700; padding:10px 16px; background:var(--adm-panel);
+}
+
+/* ---- Mobile drawer ---- */
+@media (max-width: 992px){
+  .admin{ grid-template-columns: 1fr; }
+  .adm-side{
+    position:fixed; left:0; top:0; bottom:0; height:100dvh;
+    transform: translateX(-100%);
+    transition: transform 160ms cubic-bezier(.2,.8,.2,1);
+    box-shadow: 1rem 0 2.2rem rgba(0,0,0,.15);
+  }
+  .admin.sidebar-open .adm-side{ transform: translateX(0); }
+
+  .adm-burger{ display:inline-grid; place-items:center; }
+  .adm-backdrop{ position:fixed; inset:0; background: rgba(0,0,0,.35); border:0; z-index:1105; }
+}
+
+/* ---- Safety ---- */
+.admin{ overflow-x:hidden; }
+
+.panel.ph{ border:1px solid var(--adm-line); border-radius:12px; padding:16px; background:#fff; }
+.panel.ph .h{ margin:0; font-weight:900; }

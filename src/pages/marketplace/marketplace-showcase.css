@@ -1,0 +1,66 @@
+/* Landing showcase for marketplace — uses global vars: --brand, --brand-2, --line-1 */
+
+.mks { background:#fff; color:#0f1221; }
+.mks .container { padding: 0 12px; }
+
+/* header */
+.mks-hero{ padding: 16px 0 4px; }
+.mks-title{ letter-spacing:.2px;
+  font-size:clamp(20px); margin:0;
+}
+.mks-sub{ color:#6b7280; margin:6px 0 0; }
+
+.mks-body{ display:grid; gap:16px; padding:12px 0 8px; }
+
+/* row */
+.mks-row{ display:grid; gap:10px; }
+.mks-row-head{
+  display:flex; align-items:center; justify-content:space-between;
+}
+.mks-row-title{ margin:0; font-weight:900; letter-spacing:.2px; }
+.mks-row-ctrls{ display:flex; gap:8px; }
+.mks-nav{
+  appearance:none; border:1px solid var(--line-1); background:#fff; color:#0f1221;
+  width:34px; height:34px; border-radius:10px; display:grid; place-items:center; cursor:pointer;
+}
+.mks-nav:hover{ background:#f6f7fb; }
+
+/* horizontal track */
+.mks-track{
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(220px, 260px);
+  overflow-x:auto; gap:12px; padding-bottom:6px; scroll-snap-type:x mandatory;
+}
+.mks-track::-webkit-scrollbar{ height:8px; }
+.mks-track::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.16); border-radius:999px; }
+
+/* card */
+.mks-card{
+  position:relative; scroll-snap-align:start;
+  border:1px solid var(--line-1); border-radius:14px; overflow:hidden; background:#fff;
+  display:grid; grid-template-rows:150px auto;
+  box-shadow:0 8px 16px rgba(0,0,0,.04);
+}
+.mks-hit{ position:absolute; inset:0; border:0; background:transparent; cursor:pointer; }
+.mks-thumb{ background:#f5f7fc center/cover no-repeat; min-height:150px; }
+.mks-body{ padding:10px; display:grid; gap:6px; }
+.mks-title{ font-weight:900; color:#0f1221; line-height:1.2; }
+.mks-meta{ display:flex; gap:8px; flex-wrap:wrap; }
+
+/* chips */
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px; border-radius:999px; background:#fff;
+  border:1px solid var(--line-1); font-size:12px; color:#34415f; font-weight:800;
+}
+
+/* footer CTA (bottom) */
+.mks-cta{
+  display:grid; place-items:center; padding:10px 0 18px;
+}
+.mks-btn{
+  text-decoration:none; font-weight:900;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  color:#fff; padding:10px 14px; border-radius:12px;
+  box-shadow:0 10px 18px rgba(0,0,0,.08);
+}
+.mks-btn:hover{ filter:brightness(1.03); }

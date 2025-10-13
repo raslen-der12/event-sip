@@ -1,0 +1,145 @@
+/* Target Audience (landing) — uses tokens.css */
+/* tokens expected:
+   --surface, --surface-2, --ink-1, --ink-2, --line-1, --brand-600, --brand-700, --radius-lg
+*/
+
+.ta-sec{
+  padding: 48px 0;
+  background: var(--surface, #fff);
+}
+.ta-wrap{
+  width:min(1140px, 92%);
+  margin:0 auto;
+  display:grid; gap:12px;
+}
+
+/* head */
+.ta-head{ display:grid; gap:10px; }
+.ta-title{
+  margin:0;
+  font-weight:900;
+  font-size: clamp(22px, 3.2vw, 30px);
+  color: var(--ink-1, #0f1221);
+}
+.ta-tags{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+}
+.ta-tag{
+  appearance:none; cursor:pointer;
+  background: var(--surface-2, #fff);
+  border: 1px solid var(--line-1, #e5e7eb);
+  color: var(--ink-1, #0f1221);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 800;
+}
+.ta-tag:hover{
+  border-color: color-mix(in oklab, var(--brand-2) 35%, white);
+}
+.ta-tag.is-active{
+  color:#fff;
+  background: linear-gradient(90deg, var(--brand-2), var(--brand));
+  border-color: transparent;
+  box-shadow: 0 8px 16px color-mix(in oklab, var(--brand-2) 25%, transparent);
+}
+
+/* =========================================================
+   LAYOUT — column direction (hero on top, minis below)
+   ========================================================= */
+.ta-grid{
+  display:grid;
+  gap: 12px;
+  grid-template-columns: 1fr;       /* <- column layout */
+}
+
+/* hero */
+.ta-hero{
+  margin:0; position:relative; overflow:hidden;
+  border-radius: var(--radius-lg, 16px);
+  border:1px solid var(--line-1, #e5e7eb);
+  background:#000;
+}
+.ta-hero img{
+  width:100%; height:100%; display:block; object-fit:cover;
+  aspect-ratio: 16/10;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+/* overlay: title with NO background, text UNDER it with darker bg */
+.ta-hero-cap{
+  position:absolute; inset:auto 14px 14px 14px;
+  display:flex; flex-direction:column; align-items:flex-start; gap:6px;
+}
+
+/* "title" – plain text only (no background), keep it readable */
+.ta-pill{
+  padding: 0;
+  font-size: 2rem;
+  color: var(--brand-2);                      /* strong contrast */
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0,0,0,.45); /* readability over bright areas */
+}
+
+/* description under title — darker background for legibility */
+.ta-hero-text{
+  font-size: 1.2rem;
+  color: var(--ink-1, #fff);
+  font-weight:800;
+  padding: 8px 10px; border-radius: 10px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.85), rgba(0,0,0,.85)); /* darker */
+  border: 1px solid rgba(255,255,255,.16);
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+/* =========================================================
+   MINIS — equal card heights, image flexes with caption size
+   ========================================================= */
+.ta-minis{
+  display:grid; gap:10px;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  align-items: stretch;             /* make all items same row height (tallest wins) */
+}
+@media (max-width: 560px){
+  .ta-minis{ grid-template-columns: 1fr 1fr 1fr; }
+}
+
+/* card becomes a flex column that fills the row height */
+.ta-mini{
+  margin:0;
+  display:flex; flex-direction:column;
+  height:100%;                      /* stretch to the row height */
+  overflow:hidden;
+  border-radius: var(--radius-lg, 14px);
+  border:1px solid var(--line-1, #e5e7eb);
+  background: var(--surface, #fff);
+}
+
+/* image flexes to occupy leftover space after caption */
+.ta-mini img{
+  width:100%;
+  flex: 1 1 auto;                   /* grow/shrink to fit */
+  min-height: 0;                    /* allow shrinking in flex context */
+  object-fit: cover;
+  /* no fixed aspect-ratio: height adjusts based on caption length */
+}
+
+/* caption may be 1–3 lines (or more); total card remains equal height */
+.ta-mini-cap{
+  padding: 8px 10px;
+  border-top:1px solid var(--line-1, #e5e7eb);
+  color: var(--ink-1, #0f1221);
+  font-weight: 900;
+  letter-spacing:.01em;
+  line-height: 1.25;
+  /* optional: clamp to prevent super-long blocks; uncomment if needed */
+  /* display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden; */
+}
+
+/* empty state (unchanged) */
+.ta-empty{
+  padding:16px; border:1px dashed var(--line-1, #e5e7eb); border-radius: var(--radius-lg, 12px);
+  color: var(--ink-2, #475569); font-weight:800;
+}

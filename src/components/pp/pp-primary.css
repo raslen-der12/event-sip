@@ -1,0 +1,50 @@
+/* Public Profile – Overview quick facts (read-only) */
+
+.ppo-card{
+  margin-bottom: 30px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:14px;
+  border: 1px solid rgba(0, 0, 0, 0.122);
+}
+
+.ppo-head{ margin-bottom:10px; }
+.ppo-title{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size: clamp(16px, 3.4vw, 18px); color:#0f1221;
+}
+.ppo-title::after{
+  content:""; display:block; width:72px; height:3px; margin:8px 0 0;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+}
+
+/* grid of facts */
+.ppo-grid{
+  display:grid;
+  gap:10px;
+  grid-template-columns: repeat(1, minmax(0,1fr));
+}
+
+@media (min-width: 720px){
+  .ppo-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (min-width: 1080px){
+  .ppo-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+/* fact cell */
+.ppo-cell{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px; border:1px solid rgba(0,0,0,.06); border-radius:12px; background:#fff;
+  border: 1px solid rgba(0, 0, 0, 0.122);
+}
+.ppo-ico{
+  width:28px; height:28px; border-radius:8px; color:#fff;
+  display:inline-grid; place-items:center; flex:0 0 28px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+.ppo-meta{ min-width:0; }
+.ppo-k{ font-size:12px; font-weight:800; color:#5f6b85; }
+.ppo-v{ font-weight:800; color:#0f1221; word-break:break-word; }

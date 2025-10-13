@@ -1,0 +1,91 @@
+:root{
+  --brand:#243A66;   /* primary */
+  --ink:#0f1221;
+}
+
+.container{ width:min(1180px,92%); margin:0 auto; }
+
+.pp2{ padding: 14px 0 10px; background:#fff; color:var(--ink); }
+.pp2-grid{
+  display:grid; gap:14px;
+  grid-template-columns: 1.1fr .9fr;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .pp2-grid{ grid-template-columns: 1fr; }
+}
+
+/* LEFT */
+.pp2-left{
+  display:grid; gap:10px;
+}
+.pp2-item{
+  display:grid; grid-template-columns: 40px 1fr; gap:12px; align-items:start;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:14px;
+  padding:12px;
+  background: #f7f8fd;
+  text-align:left;
+  cursor:pointer;
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.pp2-item:hover, .pp2-item:focus-visible{
+  background:#eef1fb;
+  border-color: rgba(0,0,0,.12);
+  box-shadow: 0 12px 24px rgba(15,18,33,.08);
+  transform: translateY(-1px);
+}
+.pp2-item.is-active{
+  background: #e8edfb;
+  border-color: rgba(0,0,0,.14);
+}
+
+.pp2-ico{
+  width:40px; height:40px; border-radius:12px;
+  display:grid; place-items:center;
+  color:#fff;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--brand) 96%, #000 0%), color-mix(in oklab, var(--brand) 72%, #000 6%));
+  box-shadow: 0 8px 18px rgba(36,58,102,.26);
+}
+
+.pp2-h{
+  margin:2px 0 2px; font-weight:900; font-size:16px; color:var(--ink);
+}
+.pp2-p{
+  margin:0; color:#4b5675; line-height:1.55; font-weight:700;
+}
+
+/* RIGHT (desktop only) */
+.pp2-right{ position:relative; }
+@media (max-width: 900px){ .pp2-right{ display:none; } }
+
+.pp2-stage{
+  position:relative; height: 420px; border-radius:20px; overflow:hidden;
+  
+  isolation:isolate;
+}
+
+/* photo “card” with cut-corner mask + soft border glow; only fades/transforms on change */
+.pp2-shot{
+  position:absolute; inset:0; opacity:0; transform: scale(.985);
+  background-size: cover; background-position: center;
+  transition: opacity .35s ease, transform .35s ease, filter .35s ease;
+  /* cut-corner mask */
+  -webkit-clip-path: polygon(0 0, 92% 0, 100% 10%, 100% 100%, 0 100%);
+          clip-path: polygon(0 0, 92% 0, 100% 10%, 100% 100%, 0 100%);
+}
+.pp2-shot::after{
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(0deg, rgba(36,58,102,.45) 0%, rgba(36,58,102,.12) 35%, rgba(36,58,102,0) 70%);
+}
+.pp2-shot.is-on{
+  opacity:1; transform: scale(1);
+}
+
+/* subtle gradient frame (static) */
+.pp2-frame{
+  position:absolute; inset:-1px; border-radius:20px; pointer-events:none;
+  background:
+    conic-gradient(from 110deg, rgba(36,58,102,.4), rgba(36,58,102,.05), rgba(36,58,102,.3), rgba(36,58,102,.05), rgba(36,58,102,.4));
+  filter: blur(14px); opacity:.18;
+}

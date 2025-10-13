@@ -1,0 +1,492 @@
+/* ROOT — keep it neutral, use only --brand / --brand-2 for accents */
+.ps-shell {
+  background:#fff;
+  color:#0f1221;
+  overflow-x: hidden;
+}
+
+/* ============== HEADER ============== */
+.ps-header {
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  padding:16px 16px 10px;
+}
+.-succ{
+  color: green;
+}
+.ps-hgrid {
+  display:grid;
+  grid-template-columns: minmax(0,1fr);
+  gap:14px;
+}
+
+/* ID BLOCK (avatar + meta) */
+.ps-idblock {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
+}
+
+.ps-avatar {
+  width:72px;
+  height:72px;
+  border-radius:16px;
+  overflow:hidden;
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:22px;
+  flex:0 0 72px;
+  box-shadow:0 8px 14px rgba(0,0,0,.08);
+}
+.ps-avatar img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.ps-avatar.is-skeleton {
+  background: linear-gradient(90deg,#ececec,#f6f6f6,#ececec);
+}
+
+.ps-meta { min-width:0; }
+.ps-name {
+  margin:0 0 4px;
+  font-weight:900;
+  font-size: clamp(18px, 2.8vw, 24px);
+  letter-spacing:.2px;
+  color:#0f1221;
+  line-height:1.15;
+  word-break: break-word;
+}
+
+.ps-meta-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+
+.ps-rolechip,
+.ps-org,
+.ps-email,
+.ps-joined {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.10);
+}
+.ps-rolechip { border-color: var(--brand); color: var(--brand); }
+.ps-org      { color:#0f1221; }
+.ps-email    { color:#34415f; }
+.ps-joined   { color:#58627b; }
+
+/* SUMMARY STRIP (Event / Status / Role) */
+.ps-sumstrip {
+  display:grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap:12px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 10px 20px rgba(0,0,0,.04);
+}
+@media (max-width: 900px) {
+  .ps-sumstrip { grid-template-columns: 1fr; }
+}
+
+.ps-sumitem { min-width:0; }
+.ps-sumlabel {
+  margin:0 0 4px;
+  color:#687086;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.ps-sumvalue {
+  min-height:26px;
+}
+.ps-subnote {
+  margin-top:4px;
+  color:#6b7280;
+  font-size:12px;
+}
+
+.ps-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.02em;
+  background:#f6f7fb;
+  border:1px solid rgba(0,0,0,.08);
+  color:#0f1221;
+}
+.ps-badge.-ok {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+  border-color: transparent;
+  box-shadow:0 6px 14px rgba(0,0,0,.08);
+}
+.ps-badge.-warn {
+  border-color:#e5b6b6;
+  background:#fff6f6;
+  color:#8a1f1f;
+}
+.ps-badge.-outline {
+  background:#fff;
+  border-color: rgba(0,0,0,.14);
+}
+
+/* LOAD ERROR */
+.ps-loaderr{
+  margin-top:10px;
+  background:#fff7f7;
+  color:#8a1f1f;
+  border:1px solid #ffd8d8;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:13px;
+}
+
+/* ============== TABS ============== */
+.ps-tabs {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 12px;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,.04);
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.ps-tab {
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.2px;
+  color:#0f1221;
+  background:#f5f7fc;
+  border:1px solid rgba(0,0,0,.08);
+  transition: transform .12s ease, background .12s ease, color .12s ease, border-color .12s ease;
+}
+.ps-tab:hover {
+  background:#eef2fb;
+  transform: translateY(-1px);
+}
+.ps-tab.is-active {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+  border-color: transparent;
+  box-shadow:0 10px 18px rgba(0,0,0,.08);
+}
+
+@media (max-width: 480px) {
+  .ps-tabs { padding:8px 3px; gap : 0;  }
+  .ps-tab { padding:8px 3px; font-size:13px;  gap : 0; font-size:12px !important; }
+  
+}
+@media (max-width: 565px) {
+  .ps-tabs { padding:8px 3px; gap : 0;  }
+  .ps-tab { padding:8px 10px; }
+  
+}
+@media (max-width: 390px) {
+  .ps-tabs { padding:8px 3px; gap : 0;  }
+  .ps-tab { padding:8px 3px; font-size:13px;  gap : 0; font-size:9px !important; }
+  
+}
+
+.ps-tabicon { display:inline-grid; place-items:center; }
+.ps-tabtxt  { line-height:1; }
+
+/* ============== BODY ============== */
+.ps-body {
+  padding:16px;
+  background:#fff;
+}
+
+/* CARD BASE (for panels content that sits under this shell) */
+.ps-card {
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:14px;
+  padding:14px;
+  border : 1px solid var(--line-1)
+}
+
+/* SKELETONS — unobtrusive */
+.is-skeleton { position:relative; overflow:hidden; color:transparent; }
+.is-skeleton::after {
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(90deg, rgba(0,0,0,.04), rgba(0,0,0,.06), rgba(0,0,0,.04));
+  animation: sk 1.2s linear infinite;
+  border-radius:inherit;
+}
+@keyframes sk {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* UTILS */
+.ps-muted { color:#6b7280; }
+
+/* A11Y focus */
+.ps-tab:focus-visible,
+.ps-rolechip:focus-visible,
+.ps-badge:focus-visible {
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+  border-radius:12px;
+}
+
+/* Prevent x-scroll anywhere in the shell */
+.ps-shell * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Stronger separators when content is dense */
+.ps-header,
+.ps-tabs,
+.ps-body {
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Widened layout helpers for wide screens */
+@media (min-width: 1024px) {
+  .ps-header { padding: 18px 20px 12px; }
+  .ps-tabs   { padding: 12px 20px; }
+  .ps-body   { padding: 18px 20px; }
+
+  .ps-hgrid {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
+
+/* Compact tweaks for small screens */
+@media (max-width: 480px) {
+  .ps-avatar { width:64px; height:64px; border-radius:14px; font-size:20px; }
+  .ps-tab { padding:8px 12px; font-size:13px; border-radius:10px; }
+  .ps-sumstrip { padding:10px; gap:10px; }
+}
+
+/* Dense mode utility (optional; add .ps-shell.-dense on container if needed) */
+.ps-shell.-dense .ps-tabs { gap:6px; }
+.ps-shell.-dense .ps-tab  { padding:8px 12px; }
+.ps-shell.-dense .ps-body { padding:12px; }
+
+/* Dark-on-brand badges variant when needed */
+.ps-badge.-brand {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  border-color: transparent;
+  color:#fff;
+}
+
+/* Fine borders tuning to avoid “too white” feel */
+.ps-header,
+.ps-tabs,
+.ps-body,
+.ps-card,
+.ps-sumstrip {
+  --line: rgba(0,0,0,.08);
+}
+
+/* Make sure long emails/orgs wrap nicely without breaking layout */
+.ps-email, .ps-org {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 680px){
+  .ps-email, .ps-org { white-space: normal; word-break: break-word; }
+}
+/* ===== Avatar: bigger + change overlay (APPEND) ===== */
+.ps-avatar.-xl{width:128px;height:128px;border-radius:18px;font-size:32px;flex:0 0 128px}
+@media (max-width:520px){.ps-avatar.-xl{width:100px;height:100px;font-size:26px;border-radius:16px}}
+
+.ps-avatar.has-change{position:relative;cursor:pointer}
+.ps-file-input{position:absolute;inset:auto;width:0;height:0;opacity:0;pointer-events:none}
+
+/* camera badge (bottom-right) */
+.ps-change{
+  position:absolute;right:-6px;bottom:-6px;
+  width:36px;height:36px;border-radius:12px;
+  display:inline-grid;place-items:center;
+  color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  box-shadow:0 10px 22px rgba(30,11,58,.22),0 0 0 3px #fff; /* white ring to sit over image */
+  transition:transform .12s ease, filter .12s ease;
+}
+.ps-avatar.has-change:hover .ps-change{transform:translateY(-1px);filter:brightness(1.03)}
+.ps-avatar.has-change:focus-visible .ps-change{outline:2px solid var(--brand);outline-offset:2px}
+
+/* uploading veil */
+.ps-uploading-veil{
+  position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.45);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.04);
+  animation: psPulse .9s ease-in-out infinite alternate;
+}
+@keyframes psPulse{from{backdrop-filter:saturate(110%) blur(0px)}to{backdrop-filter:saturate(130%) blur(1px)}}
+
+/* tiny error line under meta (keep subtle) */
+.ps-pp-err{
+  margin-top:6px;color:#8a1f1f;background:#fff7f7;border:1px solid #ffd8d8;
+  border-radius:8px;padding:6px 8px;font-size:12px;font-weight:700;display:inline-block
+}
+/* ===== ProfileShell: public link + QR (APPEND) ===== */
+
+/* Actions bar aligned to the right of id block */
+.ps-actions{
+  margin-left:auto;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-self:flex-start;
+}
+
+/* Buttons */
+.ps-btn{
+  appearance:none;
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  color:#0f1221;
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  text-decoration:none;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
+}
+.ps-btn:hover{ transform:translateY(-1px); background:#f6f7fb; }
+.ps-btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+.ps-btn.ps-primary{
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 10px 18px rgba(0,0,0,.08);
+}
+.ps-btn.ps-primary:hover{ filter:brightness(1.03); }
+.ps-btn.ps-ghost{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.12);
+  color:#0f1221;
+}
+
+/* QR modal */
+.ps-qr-backdrop{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,.45);
+  display:grid; place-items:center;
+  padding:18px;
+}
+.ps-qr{
+  position:relative;
+  width:min(520px,94vw);
+  background:#fff;
+  color:#0f1221;
+  border:1px solid rgba(0,0,0,.16);
+  border-radius:16px;
+  padding:16px;
+  display:grid;
+  gap:12px;
+  box-shadow:0 18px 48px rgba(0,0,0,.25);
+}
+.ps-qr-title{
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:.2px;
+}
+.ps-qr-img{
+  display:grid; place-items:center;
+  padding:8px;
+  border:1px dashed rgba(0,0,0,.12);
+  border-radius:12px;
+  background:#fafbff;
+}
+.ps-qr-img img{
+  width:320px; height:320px; object-fit:contain; display:block;
+  max-width:80vw; max-height:80vw;
+}
+.ps-qr-url{
+  display:inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size:12px;
+  color:#384152;
+  padding:8px 10px;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:8px;
+  background:#fff;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ps-qr-close{
+  position:absolute; top:10px; right:10px;
+  width:34px; height:34px;
+  border-radius:10px;
+  appearance:none; cursor:pointer;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff; color:#0f1221;
+  display:grid; place-items:center;
+}
+.ps-qr-close:hover{ background:#f6f7fb; }
+
+@media (max-width: 680px){
+  .ps-actions{ margin-left:0; }
+}
+/* stack meta + actions in a column */
+.ps-idmeta{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+  width:100%;
+}
+
+/* actions row – now sits under the name/meta */
+.ps-actions{
+  margin-left:0;              /* was auto; now under meta so no push */
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-self:stretch;
+}
+
+/* black button for Business Profile */
+.ps-btn.ps-dark{
+  background:#0f1221;
+  color:#fff;
+  border-color:#0f1221;
+}
+.ps-btn.ps-dark:hover{ filter:brightness(1.03); }
+
+/* make meta chips wrap nicely */
+.ps-meta-row{ row-gap:8px; }
+
+/* small screens: buttons full width if needed */
+@media (max-width: 520px){
+  .ps-actions{ gap:6px; }
+  .ps-actions .ps-btn{ flex:1 1 auto; justify-content:center; }
+}

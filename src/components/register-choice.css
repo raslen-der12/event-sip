@@ -1,0 +1,10 @@
+.reg-event-head{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:center;margin:10px 0 18px}
+.reg-event-cover{border-radius:16px;overflow:hidden;border:1px solid var(--line-1,#e5e7eb);background:#fff}
+.reg-event-cover img{width:100%;height:180px;object-fit:cover;display:block}
+.reg-event-meta{display:flex;flex-direction:column;gap:6px}
+.reg-event-title{font-size:22px;font-weight:900;line-height:1.15}
+.reg-event-sub{display:flex;gap:8px;color:#64748b;font-weight:700}
+.reg-event-dates{color:#0f172a;font-weight:800}
+.reg-event-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.reg-badge{background:#eef2ff;border:1px solid #e5e7eb;border-radius:999px;padding:4px 8px;font-weight:800;font-size:12px}
+@media (max-width:820px){.reg-event-head{grid-template-columns:1fr}.reg-event-cover img{height:160px}}

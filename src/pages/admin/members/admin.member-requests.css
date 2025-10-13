@@ -1,0 +1,206 @@
+/* ====== Member Requests Page ====== */
+.req-page { display: grid; gap: 12px; }
+
+/* Top bar */
+.req-topbar { display: grid; gap: 8px; }
+.req-filters {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.segment { display: inline-flex; gap: 6px; background: #f3f4f6; border-radius: 10px; padding: 4px; }
+.segment > button {
+  height: 32px; padding: 0 10px; border-radius: 8px; font-weight: 800; background: transparent; border: none; cursor: pointer;
+}
+.segment > button.is-active { background: #fff; box-shadow: 0 1px 0 rgba(0,0,0,.05); }
+.req-ctrl { display: grid; gap: 4px; }
+.req-lbl { font-size: 12px; font-weight: 800; opacity: .8; }
+.req-hint { font-size: 12px; }
+
+/* Body layout */
+.req-body {
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr; /* three lists + detail */
+  align-items: start;
+}
+@media (max-width: 1200px) {
+  .req-body { grid-template-columns: 1fr 1fr; }
+  .req-detail { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .req-body { grid-template-columns: 1fr; }
+}
+
+/* Columns */
+.req-col { display: grid; gap: 10px; }
+.req-col-head { display: flex; align-items: center; justify-content: space-between; }
+.req-col-title { font-weight: 900; }
+.req-count {
+  font-weight: 900; font-size: 12px; padding: 3px 8px; border-radius: 999px; background: #e5e7eb;
+}
+.req-count.yes { background: #dcfce7; color: #065f46; }
+.req-count.no { background: #fee2e2; color: #991b1b; }
+.req-list { display: grid; gap: 8px; }
+
+/* Cards */
+.req-card {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 8px;
+  align-items: center; text-align: left; padding: 8px;
+  border: 1px solid rgba(0,0,0,.08); border-radius: 12px; background: #fff; cursor: default;
+}
+.req-card.is-active { outline: 2px solid #c7d2fe; }
+.req-card button { cursor: pointer; }
+.req-card.sk { grid-template-columns: 44px 1fr; }
+.sk-avatar { width: 44px; height: 44px; border-radius: 10px; background: #eef1f5; }
+.sk-lines { display: grid; gap: 6px; }
+.sk-line { height: 12px; background: #eef1f5; border-radius: 6px; }
+.sk-line.short { width: 60%; }
+
+.req-avatar {
+  width: 44px; height: 44px; border-radius: 10px; background: #eef2f7 center/cover no-repeat;
+  display: grid; place-items: center; color: #6b7280; font-weight: 900;
+}
+.req-avatar-fallback { font-size: 14px; }
+
+.req-meta { display: grid; gap: 2px; min-width: 0; }
+.req-name { font-weight: 900; }
+.req-sub { font-size: 12px; opacity: .85; }
+.req-sub.tiny { font-size: 11px; opacity: .7; }
+
+.req-tags { display: grid; gap: 6px; justify-items: end; }
+.pill-type, .pill-verify {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  border-radius: 999px; font-size: 11px; font-weight: 800;
+}
+.pill-type.attendee { background: #e0f2fe; color: #075985; }
+.pill-type.exhibitor { background: #ede9fe; color: #5b21b6; }
+.pill-verify.ok { background: #dcfce7; color: #065f46; }
+.pill-verify.no { background: #e5e7eb; color: #525252; }
+.pill-type.big, .pill-verify.big { height: 26px; font-size: 12px; }
+
+/* Detail */
+.req-detail { display: grid; gap: 12px; }
+.req-detail-title { font-weight: 900; }
+.req-head { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+.req-head-avatar {
+  width: 64px; height: 64px; border-radius: 16px; background: #eef2f7 center/cover no-repeat; display: grid; place-items: center;
+}
+.req-head-meta { display: grid; gap: 4px; }
+.req-head-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.req-head-name { font-weight: 900; }
+.req-head-sub { font-size: 12px; opacity: .9; display: flex; align-items: center; gap: 6px; }
+.dot { opacity: .5; }
+
+.req-sections { display: grid; gap: 12px; }
+.req-sec { display: grid; gap: 8px; }
+.req-sec-title { font-weight: 900; }
+.req-sec-grid {
+  display: grid; gap: 6px;
+  grid-template-columns: 1fr 1fr; /* two columns of KV on wide screens */
+}
+@media (max-width: 960px) { .req-sec-grid { grid-template-columns: 1fr; } }
+
+.req-kv { display: grid; grid-template-columns: 160px 1fr; gap: 8px; align-items: baseline; }
+.req-k { font-size: 12px; font-weight: 800; opacity: .8; }
+.req-v { min-height: 18px; }
+
+.req-actions { display: flex; gap: 8px; }
+.btn.danger { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; }
+.btn.brand { background: #e0e7ff; border: 1px solid #c7d2fe; color: #3730a3; }
+
+.muted { color: #6b7280; }
+.line-1 { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+
+/* ---------- Tabs + Controls (simpler UX) ---------- */
+.req-topbar { display: grid; gap: 10px; }
+.req-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.req-tab {
+  height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid #e5e7eb;
+  background: #fff; font-weight: 800; cursor: pointer;
+}
+.req-tab.is-active { background: #eef2ff; border-color: #c7d2fe; }
+
+.req-controls { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.req-ctrl { display: grid; gap: 4px; }
+.req-lbl { font-size: 12px; font-weight: 800; opacity: .85; }
+
+/* ---------- Lists ---------- */
+.req-card { cursor: pointer; }        /* card selects details */
+.req-avatar-btn, .req-meta { cursor: pointer; } /* these two navigate */
+.req-tags { cursor: default; }        /* tags do not navigate */
+
+/* ---------- Show more row ---------- */
+.req-more { margin-top: 8px; display: flex; justify-content: center; }
+.btn.tiny { height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+
+/* ---------- Details card: NO CLIPPING ---------- */
+.req-detail { display: grid; gap: 12px; overflow: visible; }
+.req-head { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: center; overflow: visible; }
+.req-head-meta { min-width: 0; overflow: visible; }
+.req-head-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; overflow: visible; }
+.req-badges { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.req-head-name { font-weight: 900; padding: 0; background: none; border: 0; cursor: pointer; }
+.req-head-sub { display: flex; gap: 6px; flex-wrap: wrap; overflow-wrap: anywhere; }
+
+.req-head-avatar { width: 80px; height: 80px; border-radius: 16px; background: #eef2f7; border: 0; padding: 0; }
+.req-head-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+
+/* Keep long text inside the card */
+.req-name, .req-sub, .req-v, .req-head-name { overflow-wrap: anywhere; min-width: 0; }
+.pill-type.big, .pill-verify.big { flex: 0 0 auto; max-width: 100%; }
+
+/* Cards: image buttons and images */
+.req-avatar-btn {
+  width: 44px; height: 44px; border-radius: 12px; background: #eef2f7; border: 0; padding: 0; display: grid; place-items: center;
+}
+.req-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+
+/* Make the middle meta look like text but it's clickable */
+.req-meta { display: grid; gap: 2px; min-width: 0; border: 0; background: none; text-align: left; padding: 0; }
+
+/* Safety: never hide overflow on containers that hold badges/text */
+.req-detail *, .req-head *, .req-col * { max-width: 100%; }
+
+
+/* Body now stacks lists (top) and details (bottom) */
+.req-body { display: grid; gap: 12px; }
+.req-lists {
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: start;
+}
+@media (max-width: 1200px) { .req-lists { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 720px)  { .req-lists { grid-template-columns: 1fr; } }
+
+/* Cards select ONLY (no navigation) */
+.req-card { cursor: pointer; }
+.req-avatar, .req-meta, .req-tags { pointer-events: none; } /* child clicks still select card */
+.req-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+
+/* Avatar box in list */
+.req-avatar {
+  width: 44px; height: 44px; border-radius: 12px; background: #eef2f7;
+  display: grid; place-items: center; overflow: hidden;
+}
+
+/* Details card full-width, no clipping ever */
+.req-detail { display: grid; gap: 12px; overflow: visible; }
+.req-head { display: grid; grid-template-columns: 88px 1fr; gap: 12px; align-items: center; overflow: visible; }
+.req-head-avatar {
+  width: 88px; height: 88px; border-radius: 18px; background: #eef2f7;
+  border: 0; padding: 0; display: grid; place-items: center; overflow: hidden; cursor: pointer;
+}
+.req-head-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+
+.req-head-meta { min-width: 0; }
+.req-head-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.req-badges { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.req-head-name { font-weight: 900; padding: 0; background: none; border: 0; cursor: pointer; text-align: left; }
+.req-head-sub { display: flex; gap: 6px; flex-wrap: wrap; overflow-wrap: anywhere; }
+
+.req-name, .req-sub, .req-v, .req-head-name { overflow-wrap: anywhere; min-width: 0; }
+
+/* Show more row */
+.req-more { margin-top: 8px; display: flex; justify-content: center; }
+.btn.tiny { height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+
+/* Keep your existing styles for tabs, counts, pills, etc. */

@@ -1,0 +1,120 @@
+/* Public Profile – Talk (read-only)
+   Strong shadow, clean borders, brand-only accents, long-text safe.
+*/
+
+.ppt-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:14px;
+
+}
+
+/* Header */
+.ppt-head{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-bottom:10px;
+}
+.ppt-title{ display:flex; align-items:center; gap:10px; min-width:0; }
+.ppt-title h3{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size: clamp(16px, 3.4vw, 18px); color:#0f1221;
+}
+.ppt-ico{
+  width:28px; height:28px; border-radius:8px; color:#fff;
+  display:inline-grid; place-items:center; flex:0 0 28px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  border: 1px solid rgba(0, 0, 0, 0.122);
+}
+.ppt-ico.small{ width:22px; height:22px; border-radius:6px; flex:0 0 22px; }
+.ppt-aside{ display:flex; align-items:center; gap:8px; }
+
+/* Body */
+.ppt-body{ display:grid; gap:10px; }
+
+/* Key-value (title row) */
+.ppt-row{ display:flex; align-items:flex-start; gap:8px; }
+.ppt-row.-tight .ppt-k{ margin-top:2px; }
+.ppt-k{
+  display:inline-flex; align-items:center; gap:8px;
+  flex: 0 0 120px; color:#5f6b85; font-weight:800; font-size:13px;
+}
+.ppt-v{
+  flex: 1 1 auto; color:#0f1221; font-weight:800;
+  overflow-wrap:anywhere; word-break:break-word; white-space:normal;
+}
+
+/* Chips */
+.ppt-chipset{ display:flex; flex-wrap:wrap; gap:8px; }
+.ppt-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:6px 10px;
+  border-radius:999px; font-weight:800; font-size:12px;
+  background:#fff; color:#0f1221; border:1px solid rgba(0,0,0,.08);
+}
+
+/* Abstract (collapsible, no clipping) */
+.ppt-abstract{ display:grid; gap:6px; position:relative; }
+.ppt-abstract-label{ font-weight:800; color:#5f6b85; font-size:13px; }
+.ppt-abstract-text{
+  margin:0; line-height:1.6; color:#0f1221;
+  overflow-wrap:anywhere; word-break:break-word; white-space:normal;
+}
+.ppt-abstract.is-closed .ppt-abstract-text{
+  display:-webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow:hidden;
+  max-height: calc(1.6em * 6);
+}
+.ppt-abstract-fade{
+  position:absolute; inset:auto 0 26px 0; height:44px; pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,0), #fff 70%);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+.ppt-abstract-toggle{
+  justify-self:start;
+  appearance:none; border:none; cursor:pointer; background:none;
+  color:var(--brand); font-weight:900; font-size:13px; letter-spacing:.02em;
+  padding:4px 0;
+}
+.ppt-abstract-toggle:hover{ text-decoration:underline; }
+
+/* Links */
+.ppt-links{ display:flex; flex-wrap:wrap; gap:10px; }
+.ppt-link{
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+  padding:10px; border-radius:12px; background:#fff; color:#0f1221;
+  border:1px solid rgba(0,0,0,.06); font-weight:900;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.ppt-link:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0,0,0,.08);
+  background:#f8f9fc;
+}
+.ppt-link-txt{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Badges (status) */
+.ppt-badge{
+  display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+  font-weight:900; font-size:12px; letter-spacing:.02em;
+  border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
+}
+.ppt-badge.-on{
+  color:#fff; background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  border-color: transparent; box-shadow: 0 12px 24px rgba(30,11,58,.20);
+}
+.ppt-badge.-off{
+  background:#f6f7fb; color:#0f1221;
+}
+
+/* Empty */
+.ppt-empty{
+  padding:10px; border:1px dashed rgba(0,0,0,.12); border-radius:12px; color:#6b7280; text-align:center;
+}
+
+/* Responsive */
+@media (max-width: 720px){
+  .ppt-k{ flex-basis: 100px; }
+}

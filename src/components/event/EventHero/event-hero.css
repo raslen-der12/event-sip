@@ -1,0 +1,87 @@
+.ev-hero{
+  position:relative; overflow:hidden; color:#fff;
+  padding: 46px 0 28px;
+  background:
+    radial-gradient(1200px 520px at 10% 10%, #1e1b4b, transparent 60%),
+    linear-gradient(135deg, #0f1221 0%, #171a36 45%, #0f1221 100%);
+}
+
+/* animated soft color wash (brand-only accent) */
+.ev-hero-bg{
+  position:absolute; inset:-20% -10% -10% -10%;
+  background:
+    radial-gradient(600px 260px at 85% 15%, rgba(59,130,246,.28), transparent 60%),
+    radial-gradient(700px 280px at 15% 35%, rgba(111,66,193,.32), transparent 60%);
+  animation: evBgPulse 10s ease-in-out infinite alternate;
+  filter: saturate(1.05);
+}
+@keyframes evBgPulse {
+  0% { transform: translateY(0); opacity:.8; }
+  100% { transform: translateY(-10px); opacity:.92; }
+}
+
+/* grain */
+.ev-hero-grain{
+  position:absolute; inset:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.04'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.ev-head{ position:relative; z-index:1; }
+
+.ev-eyebrow{
+  text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:#c6cbe3; margin:0 0 8px;
+}
+.ev-title{
+  margin:0 0 8px; font-weight:900; font-size: clamp(28px, 5.6vw, 46px); letter-spacing:.2px;
+}
+.ev-sub{ margin:6px 0 12px; color:#e7eaf6; max-width: 70ch; }
+
+/* meta chips */
+.ev-meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 6px; }
+.ev-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+  background: rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18);
+  color:#f2f3fb; font-weight:600; font-size:14px;
+}
+.ev-chip.-brand2{ border-color: var(--brand-2); color:#fff; background:rgba(255,255,255,.12); }
+.ev-chip.-warn{ border-color: rgba(255,200,200,.5); color:#ffe5e5; }
+
+/* ctas */
+.ev-cta-row{ display:flex; gap:10px; margin-top: 14px; flex-wrap:wrap; }
+.ev-btn{
+  appearance:none; border:none; cursor:pointer; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:10px 16px; border-radius:12px; font-weight:900;
+  color:#fff; background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+.ev-btn.-outline{
+  background:transparent; border:1px solid rgba(255,255,255,.25);
+  color:#fff; box-shadow:none;
+}
+.ev-btn.is-disabled{
+  opacity:.55; pointer-events:none; background:linear-gradient(135deg, #777, #999);
+}
+
+/* deadline note */
+.ev-deadline{ margin-top:8px; color:#d6daf1; }
+
+/* capacity bar */
+.ev-cap{
+  position:relative; z-index:1;
+  margin-top:16px; background:#fff; color:#0f1221; border-radius:14px;
+  border:1px solid rgba(0,0,0,.06); padding:12px 14px;
+}
+.ev-cap-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ev-cap-numbers{ font-weight:900; color: var(--brand-2); }
+.ev-cap-bar{
+  margin-top:10px; height:12px; background:#f1f3f8; border-radius:999px; overflow:hidden;
+  border:1px solid rgba(0,0,0,.06);
+}
+.ev-cap-bar > span{
+  display:block; height:100%; background: linear-gradient(90deg, var(--brand), var(--brand-2));
+}
+
+/* responsive */
+@media (max-width: 768px){
+  .ev-sub{ max-width:unset; }
+}
