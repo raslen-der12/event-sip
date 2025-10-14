@@ -20,7 +20,7 @@ function fmtRange(a, b) {
 function resolveUrl(u) {
   if (!u) return "";
   if (/^https?:\/\//i.test(u)) return u;
-  const base = process.env.REACT_APP_API_ORIGIN || process.env.REACT_APP_API_URL;
+  const base = process.env.REACT_APP_API_ORIGIN || process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
   return `${base}${u.startsWith("/") ? "" : "/"}${u}`;
 }
 

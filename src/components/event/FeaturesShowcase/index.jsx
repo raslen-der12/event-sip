@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FiChevronLeft, FiChevronRight, FiZap } from "react-icons/fi";
-    const base = process.env.REACT_APP_API_URL
+    const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
 
 const FALLBACK = [
   {

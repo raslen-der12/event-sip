@@ -86,7 +86,7 @@ export default function Main() {
       />)
 
   }
-    const base = process.env.REACT_APP_API_URL
+    const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
   return (
     <>
       {popup}

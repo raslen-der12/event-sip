@@ -72,12 +72,12 @@ export default function HeroEvent({
   const marquee = highlights?.length
     ? highlights
     : ["Formation", "MasterClass", "EXPO", "Networking & B2B"];
-
+  const baseAPI  =process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
   return (
     <section
       className="relative text-white backdropFilter"
       style={{
-        backgroundImage: `url(process.env.REACT_APP_API_URL/uploads/images/admin/ipdayscover.png)`,
+        backgroundImage: `url(${baseAPI}/uploads/images/admin/ipdayscover.png)`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
