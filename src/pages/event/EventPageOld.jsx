@@ -26,7 +26,7 @@ export default function EventPage() {
   { label: "Schedule", href: `/event/${eventId}/schedule` },
   { label: "Tickets", href: `/event/${eventId}/tickets` },
 ];
-  const base = process.env.APP_API_URL
+  const base = process.env.REACT_APP_API_URL
   return (
     <>
           <HeaderShell top={topbar} nav={nav} cta={cta} />

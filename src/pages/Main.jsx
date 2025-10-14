@@ -86,7 +86,7 @@ export default function Main() {
       />)
 
   }
-    const base = process.env.APP_API_URL
+    const base = process.env.REACT_APP_API_URL
   return (
     <>
       {popup}

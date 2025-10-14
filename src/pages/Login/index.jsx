@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   const from = new URLSearchParams(search).get("from") || "/";
 
-  const API_URL = process.env.APP_FRONTEND_URL || process.env.APP_API_URL;
+  const API_URL = process.env.REACT_APP_FRONTEND_URL || process.env.REACT_APP_API_URL;
 
   const onGoogleLogin = () => {
     const redirect_uri = `${window.location.origin}/oauth/callback`;

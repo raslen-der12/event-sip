@@ -27,7 +27,7 @@ import {
  *  - Click opens lightbox overlay (keyboard arrows + ESC)
  *  - If props missing, shows safe fallback demos
  */
-    const base = process.env.APP_API_URL
+    const base = process.env.REACT_APP_API_URL
 
 const FALLBACK = [
   {

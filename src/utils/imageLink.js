@@ -3,10 +3,10 @@
 import React from 'react'
 
 function imageLink(path) {
-    const base = process.env.APP_API_URL
-    const imgUrl = process.env.APP_BACKEND_IMAGE_URL || `${base}/uploads/`;
+    const base = process.env.REACT_APP_API_URL
+    const imgUrl = process.env.REACT_APP_BACKEND_IMAGE_URL || `${base}/uploads/`;
     if (path?.startsWith("/uploads")) {
-        return process.env.APP_API_URL + path;
+        return process.env.REACT_APP_API_URL + path;
     }else if(path?.startsWith("http")) {
         return path;
     }

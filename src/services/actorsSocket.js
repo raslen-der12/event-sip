@@ -1,7 +1,7 @@
 // src/services/actorsSocket.js
 import { io } from "socket.io-client";
 
-const API_URL = process.env.REACT_APP_API_URL || process.env.APP_API_URL;
+const API_URL = process.env.REACT_REACT_APP_API_URL || process.env.REACT_APP_API_URL;
 const SOCKET_PATH = process.env.REACT_APP_SOCKET_PATH || "/socket.io";
 
 class ActorsSocket {
