@@ -18,7 +18,7 @@
 /* header */
 .ag__head{ display:grid; grid-template-columns:1fr auto; gap:14px 20px; align-items:end; margin-bottom:18px;}
 .ag__titles{ display:grid; gap:6px; }
-.ag__title{ margin:0; font-size:clamp(22px,2.2vw,28px); font-weight:700; }
+.ag__title{ margin:0; font-size:clamp(22px,2.2vw,28px); font-weight:500; }
 .ag__sub{ margin:0; color:var(--ag-muted); font-size:14px; }
 
 /* day pills */
@@ -48,10 +48,10 @@
 
 /* main */
 .ag__main{ display:grid; gap:6px; }
-.ag__name{ margin:0; font-size:15px; font-weight:700; }
+.ag__name{ margin:0; font-size:15px; font-weight:500; }
 .ag__meta{ display:flex; flex-wrap:wrap; gap:10px 16px; color:var(--ag-muted); font-size:13px; }
 .ag__metaRow{ display:flex; align-items:center; gap:6px; }
-.ag__speaker{ color:var(--ag-ink); font-weight:600; }
+.ag__speaker{ color:var(--ag-ink); font-weight:500; }
 .ag__org{ opacity:.9; }
 
 .ag__tags{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -91,4 +91,104 @@
 @media (max-width:768px){
   .ag__head{ grid-template-columns:1fr; align-items:start; }
   .ag__card{ grid-template-columns:1fr; }
+}
+
+
+.ag__filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 8px 0;
+}
+
+.ag__filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ag__filter-tag:hover,
+.ag__filter-tag.is-active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.ag__filter-clear {
+  background: none;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ag__chipline {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ag__type-tag {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ag__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start; /* Changed to start for tags */
+  gap: 12px;
+  padding: 16px;
+  padding-right: 40px; /* Space for info btn */
+}
+
+.ag__main {
+  flex: 1;
+}
+
+.ag__info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 12px;
+  top: 16px;
+  padding: 4px;
+}
+
+.ag__info-btn:hover svg {
+  color: #3b82f6;
+}
+
+/* Hide empty sections if no matching sessions */
+.ag__section:has(.ag__list:empty) {
+  display: none;
+}
+
+/* Optional: Ensure base styles if needed */
+.ag__sectionTitle {
+  font-weight: 800; /* Bold for sections */
+}
+
+.ag__name {
+  font-weight: 400; /* Regular for sessions */
 }
