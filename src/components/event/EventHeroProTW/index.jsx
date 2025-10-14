@@ -77,7 +77,7 @@ export default function HeroEvent({
     <section
       className="relative text-white backdropFilter"
       style={{
-        backgroundImage: `url(https://api.eventra.cloud/uploads/images/admin/ipdayscover.png)`,
+        backgroundImage: `url(process.env.APP_API_URL/uploads/images/admin/ipdayscover.png)`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

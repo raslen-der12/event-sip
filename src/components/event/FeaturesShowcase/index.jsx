@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FiChevronLeft, FiChevronRight, FiZap } from "react-icons/fi";
+    const base = process.env.APP_API_URL
 
 const FALLBACK = [
   {
@@ -9,7 +10,7 @@ const FALLBACK = [
     subtitle: "Curated B2B sessions",
     desc: "Sit down with buyers, partners, and investors. Our concierge matches you based on sector and intent.",
     image:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-50.png?q=80&w=1200",
+      `${base}/uploads/images/admin/sans titre-50.png?q=80&w=1200`,
   },
   {
     _id: "fx2",
@@ -17,7 +18,7 @@ const FALLBACK = [
     subtitle: "Product in action",
     desc: "Touch, try, and stress-test new tech—from enterprise software to robotics—guided by the teams who built it.",
     image:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop",
+      `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
   },
   {
     _id: "fx3",
@@ -25,7 +26,7 @@ const FALLBACK = [
     subtitle: "Real procurement paths",
     desc: "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready.",
     image:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop",
+      `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
   },
 ];
 

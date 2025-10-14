@@ -74,7 +74,7 @@ export default function RegisterLanding() {
   const Loader = (
     <div className="animate-pulse text-center py-10 text-gray-400">Loading...</div>
   );
-
+  const base = process.env.APP_API_URL
   // 🧩 ROLE SELECTION SECTION
   const RoleChooser = (
     <div className="w-full bg-gray-50">
@@ -85,7 +85,7 @@ export default function RegisterLanding() {
           <img
             src={
               imageLink(headerEvent.cover) ||
-              "https://api.eventra.cloud/uploads/images/admin/cover-ipdays.jpg"
+              `${base}/uploads/images/admin/cover-ipdays.jpg`
             }
             alt={headerEvent.title || "Event Cover"}
             className="w-full h-full object-cover"

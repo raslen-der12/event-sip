@@ -212,13 +212,13 @@ export default function EventPage() {
   { label: "Schedule", href: `/event/${eventId}/schedule` },
   { label: "Tickets", href: `/event/${eventId}/tickets` },
 ];
-  console.log("event",event);
+  const base = process.env.APP_API_URL
   return (
     <>
           <HeaderShell top={topbar} nav={nav} cta={cta} />
       <HeroEvent
         event={event?.event}
-        heroImage="https://api.eventra.cloud/uploads/images/admin/ipdays.jpg"
+        heroImage={`${base}/uploads/images/admin/ipdays.jpg`}
       />
     <AboutIntro
       heading="À propos des IPDAYS X GITS 2025"
@@ -231,7 +231,7 @@ export default function EventPage() {
       ]}
       ctaLabel="Je m’inscris"
       ctaHref="/register"
-      imageSrc="https://api.eventra.cloud/uploads/images/admin/logo-ipdays.png"
+      imageSrc={`${base}/uploads/images/admin/logo-ipdays.png`}
     />
 
 
@@ -248,28 +248,28 @@ export default function EventPage() {
       icon: <I.network />,
       title: "Pre-scheduled B2B meetings (onsite & virtual)",
       desc: "",
-      img: "https://api.eventra.cloud/uploads/images/admin/cover-ipdays.png",
+      img: {`${base}/uploads/images/admin/cover-ipdays.png",
     },
     {
       id: "profiles",
       icon: <I.idcard />,
       title: "Instant chat between SMEs, investors, and buyers",
       desc: "",
-      img: "https://api.eventra.cloud/uploads/images/admin/ipdays-02.png",
+      img: {`${base}/uploads/images/admin/ipdays-02.png",
     },
     {
       id: "services",
       icon: <I.briefcase />,
       title: "AI-powered intelligent matchmaking",
       desc: "",
-      img: "https://api.eventra.cloud/uploads/images/admin/KH_03168.png",
+      img: {`${base}/uploads/images/admin/KH_03168.png",
     },
     {
       id: "services",
       icon: <I.network />,
       title: "Multilingual support (FR / EN / AR)",
       desc: "",
-      img: "https://api.eventra.cloud/uploads/images/admin/KH_02938.png",
+      img: {`${base}/uploads/images/admin/KH_02938.png",
     },
   ]} /> */}
       
@@ -317,10 +317,10 @@ export default function EventPage() {
 
 
 
-
+      const base = process.env.APP_API_URL
       <FeaturesShowcase features={data?.features} />
         <PartnershipBlock
-          imageSrc={imageLink("https://api.eventra.cloud/uploads/images/admin/gits-ipdays.png")}
+          imageSrc={imageLink(`${base}/uploads/images/admin/gits-ipdays.png`)}
         />
 <EventOrganizers
   heading="Event Partners"

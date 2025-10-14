@@ -86,7 +86,7 @@ export default function Main() {
       />)
 
   }
-
+    const base = process.env.APP_API_URL
   return (
     <>
       {popup}
@@ -112,9 +112,10 @@ export default function Main() {
         subheading={sdgCarousel.subheading}
         goals={sdgCarousel.goals}
       />
+        
 
     <ContactUs
-        image="https://api.eventra.cloud/uploads/images/admin/contactFrame.png"
+        image= {`${base}/uploads/images/admin/contactFrame.png`}
         title="Feature Your Brand at GITS 2025"
         text="Maximize your visibility with our premium ad space. Perfect for industry leaders looking to make a bold impact."
         ctaText="Contact Us"

@@ -27,54 +27,55 @@ import {
  *  - Click opens lightbox overlay (keyboard arrows + ESC)
  *  - If props missing, shows safe fallback demos
  */
+    const base = process.env.APP_API_URL
 
 const FALLBACK = [
   {
     _id: "g1",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop",
+      `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
     title: "Keynote crowd",
     type: "image",
   },
   {
     _id: "g2",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop",
+      `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
     title: "Live demo",
     type: "image",
   },
   {
     _id: "g3",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-50.png?q=80&w=1600&auto=format&fit=crop",
+      `${base}/uploads/images/admin/sans titre-50.png?q=80&w=1600&auto=format&fit=crop`,
     title: "Panel talk",
     type: "image",
   },
   {
     _id: "g4",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/KH_03168.png",
+      `${base}/uploads/images/admin/KH_03168.png`,
     title: "Expo floor",
     type: "image",
   },
     {
     _id: "g7",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/KH_03168.png",
+      `${base}/uploads/images/admin/KH_03168.png`,
     title: "Expo floor",
     type: "image",
   },
     {
     _id: "g8",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/sans titre-136.png",
+      `${base}/uploads/images/admin/sans titre-136.png`,
     title: "Expo floor",
     type: "image",
   },
   {
     _id: "g5",
     file:
-      "https://api.eventra.cloud/uploads/images/admin/teaserIPDAYS.mp4",
+      `${base}/uploads/images/admin/teaserIPDAYS.mp4`,
     title: "Teaser clip",
     type: "video",
   },

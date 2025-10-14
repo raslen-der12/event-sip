@@ -2,7 +2,7 @@
 import { io } from "socket.io-client";
 import { selectCurrentToken } from "../features/auth/authSlice";
 
-const API_URL    = process.env.REACT_APP_API_URL || "https://api.eventra.cloud";
+const API_URL    = process.env.REACT_APP_API_URL || process.env.APP_API_URL;
 const SOCKET_PATH= process.env.REACT_APP_SOCKET_PATH || "/socket.io";
 const ADMIN_NS   = process.env.REACT_APP_ADMIN_SOCKET_NAMESPACE || "/admin";
 
@@ -86,13 +86,6 @@ class AdminSocket {
       error("socket error:", err);
     });
 
-    this.socket.io.on("reconnect_attempt", (n) => log("reconnect_attempt", n));
-    this.socket.io.on("reconnect", (n) => info("reconnected", n));
-    this.socket.io.on("reconnect_error", (e) => error("reconnect_error", e?.message || e));
-    this.socket.io.on("reconnect_failed", () => error("reconnect_failed"));
-    this.socket.io.on("ping", () => DEBUG && console.debug("[admin-socket] ping"));
-    this.socket.io.on("pong", (ms) => DEBUG && console.debug("[admin-socket] pong", ms));
-    this.socket.io.on("connect_timeout", (ms) => warn("connect_timeout", ms));
 
     // ---- log ALL inbound events
     if (this.socket.onAny) {

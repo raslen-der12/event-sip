@@ -26,13 +26,13 @@ export default function EventPage() {
   { label: "Schedule", href: `/event/${eventId}/schedule` },
   { label: "Tickets", href: `/event/${eventId}/tickets` },
 ];
-  console.log("event",event);
+  const base = process.env.APP_API_URL
   return (
     <>
           <HeaderShell top={topbar} nav={nav} cta={cta} />
       <HeroEvent
         event={event?.event}
-        heroImage="https://api.eventra.cloud/uploads/images/admin/DSC_2257.png"
+        heroImage={`${base}/uploads/images/admin/DSC_2257.png`}
       />
       <FeaturesShowcase />
 
