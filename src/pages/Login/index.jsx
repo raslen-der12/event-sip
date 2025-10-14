@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   const from = new URLSearchParams(search).get("from") || "/";
 
-  const API_URL = process.env.APP_FRONTEND_URL || "http://api.eventra.cloud";
+  const API_URL = process.env.APP_FRONTEND_URL || "https://api.eventra.cloud";
 
   const onGoogleLogin = () => {
     const redirect_uri = `${window.location.origin}/oauth/callback`;

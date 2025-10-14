@@ -114,7 +114,7 @@ export default function Main() {
       />
 
     <ContactUs
-        image="http://api.eventra.cloud/uploads/images/admin/contactFrame.png"
+        image="https://api.eventra.cloud/uploads/images/admin/contactFrame.png"
         title="Feature Your Brand at GITS 2025"
         text="Maximize your visibility with our premium ad space. Perfect for industry leaders looking to make a bold impact."
         ctaText="Contact Us"

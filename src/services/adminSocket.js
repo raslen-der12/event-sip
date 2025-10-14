@@ -2,7 +2,7 @@
 import { io } from "socket.io-client";
 import { selectCurrentToken } from "../features/auth/authSlice";
 
-const API_URL    = process.env.REACT_APP_API_URL || "http://api.eventra.cloud";
+const API_URL    = process.env.REACT_APP_API_URL || "https://api.eventra.cloud";
 const SOCKET_PATH= process.env.REACT_APP_SOCKET_PATH || "/socket.io";
 const ADMIN_NS   = process.env.REACT_APP_ADMIN_SOCKET_NAMESPACE || "/admin";
 
