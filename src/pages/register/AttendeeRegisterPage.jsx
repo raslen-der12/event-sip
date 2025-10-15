@@ -18,22 +18,21 @@ import Footer from '../../components/footer/Footer';
 const toISODate = v => (v ? new Date(v).toLocaleDateString() : '');
 const required = v => (typeof v === 'string' ? v.trim() : v) ? true : false;
 
-/* Catalog of “actor types” */
+/* Catalog of “actor types” (FR) */
 const ROLE_TYPES = [
-  { key: 'BusinessOwner', title: 'Business Owner', desc: 'Owns or co-owns a company. Can later create a full business profile, sectors, products & services.' },
-  { key: 'Consultant',    title: 'Consultant',    desc: 'Advises businesses. Perfect if you sell expertise and want to list services later.' },
-  { key: 'Employee',      title: 'Employee',      desc: 'Represents an organization without owning it. Can network and book meetings.' },
-  { key: 'Expert',        title: 'Expert',        desc: 'Subject-matter specialist. Good for workshops, mentoring, and B2B leads.' },
-  { key: 'Investor',      title: 'Investor',      desc: 'Angel, VC or corporate. Signal interests and match with startups/exhibitors.' },
-  { key: 'Student',       title: 'Student',       desc: 'Early-career attendee. Learn, network, and explore opportunities.' },
+  { key: 'BusinessOwner', title: 'Chef d’entreprise', desc: 'Possède ou co-détient une entreprise. Peut ensuite créer un profil complet, définir les secteurs, produits et services.' },
+  { key: 'Consultant',    title: 'Consultant',        desc: 'Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard.' },
+  { key: 'Employee',      title: 'Employé',           desc: 'Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous.' },
+  { key: 'Expert',        title: 'Expert',            desc: 'Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B.' },
+  { key: 'Investor',      title: 'Investisseur',      desc: 'Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants.' },
+  { key: 'Student',       title: 'Étudiant',          desc: 'Début de carrière. Apprend, développe son réseau et découvre des opportunités.' },
 ];
 
-/* Track constants */
+/* Track constants + family logic (lets Masterclass & Atelier be parallel) */
 const TRACK_B2B_NAME = "B2B";
 const MASTERCLASS = "masterclass";
 const ATELIER = "atelier";
 
-/* Determine a normalized "family" for conflict logic */
 function familyOfTrack(track) {
   const t = String(track || '').toLowerCase();
   if (t.includes('masterclass')) return MASTERCLASS;
@@ -51,7 +50,7 @@ function compareTracks(a, b) {
   return A?.localeCompare(B, undefined, { sensitivity: "base" });
 }
 
-/* SubRole options */
+/* SubRole options (checkbox list) */
 const SUBROLE_OPTIONS = [
   'Researchers','Students','Coaches & Trainers','Experts & Consultants','Employees & Professionals','Entrepreneurs & Startups','Developers & Engineers',
   'Marketing & Communication','Audit, Accounting & Finance','Investment & Banking','Insurance & Microfinance','Legal & Lawyers','AI, IoT & Emerging Tech',
@@ -77,7 +76,7 @@ function triggerPopup({ title, body, type = "success", link }) {
   } catch {}
 }
 
-/* Order tracks by earliest time; keep B2B last */
+/* Track ordering by earliest time; keep B2B last */
 function orderTracksWithEarliestFirst(groups) {
   const entries = Object.entries(groups).map(([track, items]) => {
     const earliest = items.reduce((min, s) => {
@@ -334,7 +333,7 @@ function SessionModal({ open, onClose, session, counts }) {
               <div className="subt">Speakers</div>
               <div className="speakers-list">
                 {session.speakers.map((sp, i) => (
-                  <span key={i} className="chip">{sp.name || sp}</span>
+                  <span key={i} className="chip">{(sp && (sp.name || sp.fullName)) || sp}</span>
                 ))}
               </div>
             </div>
@@ -392,7 +391,7 @@ export default function AttendeeRegisterPage() {
 
   const [attendeeRegister, { isLoading: regLoading }] = useAttendeeRegisterMutation();
 
-  /* Photo */
+  /* Photo (optional now) */
   const fileRef = useRef(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -417,7 +416,6 @@ export default function AttendeeRegisterPage() {
     city: '',
     orgName: '',
     jobTitle: '',
-    businessRole: '',
     website: '',
     linkedin: '',
     languages: [],
@@ -435,10 +433,10 @@ export default function AttendeeRegisterPage() {
   const shouldShowOrgFields = !isStudent;
 
   /* ========= KEY CHANGE: track-aware selection ========= */
-  // We now key selections by a composite key:
+  // Composite key per time slot + family:
   //  - "masterclass|<startISO>" for Masterclass
   //  - "atelier|<startISO>" for Atelier
-  //  - "*|<startISO>" for all other tracks (conflict across others as before)
+  //  - "*|<startISO>" for other tracks (conflict across others as before)
   const [selectedBySlot, setSelectedBySlot] = useState({}); // { compositeKey: session }
   const compositeKeyFor = (session) => {
     const fam = familyOfTrack(session.track);
@@ -495,31 +493,30 @@ export default function AttendeeRegisterPage() {
   /* Step 1 → 2 */
   const goForm = () => {
     const e = {};
-    if (!roleType) e.roleType = 'Select your actor type';
+    if (!roleType) e.roleType = 'Sélectionnez votre type d’acteur';
     setErrs(e);
     if (Object.keys(e).length) return;
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /* Step 2 → 3 */
+  /* Step 2 → 3 (Photo is OPTIONAL now) */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
-    if (!required(form.pwd)) e2.pwd = 'Required';
-    else if ((form.pwd || '').length < 8) e2.pwd = 'Min 8 characters';
-    if (form.pwd2 !== form.pwd) e2.pwd2 = 'Passwords do not match';
+    if (!required(form.pwd)) e2.pwd = 'Requis';
+    else if ((form.pwd || '').length < 8) e2.pwd = 'Min 8 caractères';
+    if (form.pwd2 !== form.pwd) e2.pwd2 = 'Les mots de passe ne correspondent pas';
 
-    if (!required(form.fullName)) e2.fullName = 'Required';
-    if (!required(form.email)) e2.email = 'Required';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Invalid email';
-    if (!required(form.country)) e2.country = 'Required';
-    if (!photoFile) e2.photo = 'Photo is required';
-    if (!form.languages?.length) e2.languages = 'Pick at least 1 language';
+    if (!required(form.fullName)) e2.fullName = 'Requis';
+    if (!required(form.email)) e2.email = 'Requis';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Email invalide';
+    if (!required(form.country)) e2.country = 'Requis';
+    // PHOTO OPTIONAL: removed the "photo required" check
+    if (!form.languages?.length) e2.languages = 'Choisissez au moins 1 langue';
     if (shouldShowOrgFields) {
-      if (!required(form.orgName)) e2.orgName = 'Required';
-      if (!required(form.jobTitle)) e2.jobTitle = 'Required';
-      if (!required(form.businessRole)) e2.businessRole = 'Required';
+      if (!required(form.orgName)) e2.orgName = 'Requis';
+      if (!required(form.jobTitle)) e2.jobTitle = 'Requis';
     }
     setErrs(e2);
     if (Object.keys(e2).length) return;
@@ -528,7 +525,7 @@ export default function AttendeeRegisterPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /* Filtered/ordered sessions and sections (unchanged) */
+  /* Filtered/ordered sessions and sections */
   const filteredSortedSessions = useMemo(() => {
     if (!Array.isArray(sessions) || !sessions.length) return [];
 
@@ -583,7 +580,7 @@ export default function AttendeeRegisterPage() {
   /* Final submit */
   const finishAll = async () => {
     if (!selectedSessionIds.length) {
-      alert('Please pick at least one session (one per time slot & per track family).');
+      alert('Veuillez choisir au moins une session (une par créneau horaire et par famille de piste).');
       return;
     }
     const fd = new FormData();
@@ -603,7 +600,6 @@ export default function AttendeeRegisterPage() {
     if (shouldShowOrgFields) {
       fd.append('organization.orgName', form.orgName);
       fd.append('organization.jobTitle', form.jobTitle);
-      fd.append('organization.businessRole', form.businessRole);
     }
 
     fd.append('businessProfile.preferredLanguages', form.languages.join(','));
@@ -617,22 +613,22 @@ export default function AttendeeRegisterPage() {
     }
 
     selectedSessionIds.forEach(id => fd.append('sessionIds[]', id));
-    if (photoFile) fd.append('photo', photoFile);
+    if (photoFile) fd.append('photo', photoFile); // ONLY if provided (photo optional)
 
     try {
       await attendeeRegister(fd).unwrap();
       triggerPopup({
-        title: "Registration complete",
-        body: "Start your B2B journey",
+        title: "Inscription terminée",
+        body: "Commencez votre parcours B2B",
         type: "success",
-        link: { href: "/login", label: "Go to login" }
+        link: { href: "/login", label: "Aller à la connexion" }
       });
       setStep(4);
       setTimeout(() => navigate('/'), 1400);
     } catch (e) {
       triggerPopup({
-        title: "Registration failed",
-        body: e?.data?.message || "Something went wrong. Please try again.",
+        title: "Échec de l’inscription",
+        body: e?.data?.message || "Une erreur s’est produite. Veuillez réessayer.",
         type: "error"
       });
       alert(e?.data?.message || 'Registration failed');
@@ -668,15 +664,12 @@ export default function AttendeeRegisterPage() {
                     </>
                   ) : null}
                 </div>
-                <div style={{ color:'#64748b', fontWeight:700, marginTop:4 }}>
-                  Registration closes {toISODate(event.registrationDeadline)}
-                </div>
               </div>
             </>
           )}
         </header>
 
-        {/* Step dots */}
+        {/* Step dots (1..4) */}
         <div className="reg-steps">
           <span className={`reg-step-dot ${step === 4 ? 'active':''}`} />
           <span className={`reg-step-dot ${step === 1 ? 'active':''}`} />
@@ -684,12 +677,12 @@ export default function AttendeeRegisterPage() {
           <span className={`reg-step-dot ${step === 3 ? 'active':''}`} />
         </div>
 
-        {/* STEP 1 */}
+        {/* ===== STEP 1: Role Catalog ===== */}
         {step === 1 && (
           <section className="anim-in">
             <div className="att-section-head">
-              <div className="t">Choose your actor type</div>
-              <div className="h">This only adds two lightweight fields now. You can build a full Business Profile later.</div>
+              <div className="t">Choisissez votre type d'acteur</div>
+              <div className="h">Cela n'ajoute pour l'instant que deux champs légers. Vous pourrez créer un profil d'entreprise complet ultérieurement.</div>
             </div>
 
             <div className="role-grid">
@@ -710,62 +703,30 @@ export default function AttendeeRegisterPage() {
 
             <div className="att-form-grid" style={{ marginTop:14 }}>
               <div className="att-field full d-none">
-                <label>Selected actor type <span className="req">*</span></label>
+                <label>Type d'acteur sélectionné <span className="req">*</span></label>
                 <input value={roleType || ''} readOnly />
                 {errs.roleType && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.roleType}</div>}
               </div>
             </div>
 
             <div className="att-actions">
-              <button className="btn btn-line" onClick={() => navigate('/register')}>Back</button>
-              <button className="btn" onClick={goForm}>Continue</button>
+              <button className="btn btn-line" onClick={() => navigate('/register')}>Retour</button>
+              <button className="btn" onClick={goForm}>Continuer</button>
             </div>
           </section>
         )}
 
-        {/* STEP 2 */}
+        {/* ===== STEP 2: Form (FR, photo optional) ===== */}
         {step === 2 && (
           <form className="anim-in" onSubmit={submitForm}>
             <div className="att-section-head">
-              <div className="t">Attendee details</div>
-              <div className="h">All fields marked <span className="req">*</span> are required</div>
+              <div className="t">Détails des participants</div>
+              <div className="h">Tous les champs marqués <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> sont obligatoires</div>
             </div>
 
             <div className="att-form-grid">
-              {/* Photo */}
-              <div className="att-field full">
-                <label>Profile photo</label>
-                <div
-                  className="att-photo-drop"
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]);
-                  }}
-                >
-                  {!photoUrl ? (
-                    <div className="att-photo-empty">
-                      <div className="ico">📷</div>
-                      <div className="t">Drop an image here, or click to choose</div>
-                      <div className="h">PNG/JPG, under 5MB (optional)</div>
-                    </div>
-                  ) : (
-                    <div className="att-photo-prev">
-                      <img src={photoUrl} alt="preview" />
-                      <div className="att-photo-actions">
-                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Change</button>
-                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Remove</button>
-                      </div>
-                    </div>
-                  )}
-                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
-                </div>
-                {errs.photo && <div style={{ color:'#ef4444', fontWeight:800, marginTop:4 }}>{errs.photo}</div>}
-              </div>
-
               <div className="att-field">
-                <label>Full name <span className="req">*</span></label>
+                <label>Nom complet <span className="req">*</span></label>
                 <input value={form.fullName} onChange={e=>setField('fullName', e.target.value)} />
                 {errs.fullName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.fullName}</div>}
               </div>
@@ -777,13 +738,13 @@ export default function AttendeeRegisterPage() {
               </div>
 
               <div className="att-field">
-                <label>Phone</label>
+                <label>Téléphone</label>
                 <input value={form.phone} onChange={e=>setField('phone', e.target.value)} />
               </div>
 
-              {/* Country */}
+              {/* Country SELECT with flags */}
               <div className="att-field">
-                <label>Country <span className="req">*</span></label>
+                <label>Pays <span className="req">*</span></label>
                 <CountrySelect
                   value={form.country}
                   onChange={code => setField('country', (code || '').toUpperCase())}
@@ -792,7 +753,7 @@ export default function AttendeeRegisterPage() {
               </div>
 
               <div className="att-field">
-                <label>City</label>
+                <label>Ville</label>
                 <input value={form.city} onChange={e=>setField('city', e.target.value)} />
               </div>
 
@@ -800,53 +761,47 @@ export default function AttendeeRegisterPage() {
               {shouldShowOrgFields && (
                 <>
                   <div className="att-field">
-                    <label>Organization <span className="req">*</span></label>
+                    <label>Organisation <span className="req">*</span></label>
                     <input value={form.orgName} onChange={e=>setField('orgName', e.target.value)} />
                     {errs.orgName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.orgName}</div>}
                   </div>
 
                   <div className="att-field">
-                    <label>Job title <span className="req">*</span></label>
+                    <label>Intitulé du poste <span className="req">*</span></label>
                     <input value={form.jobTitle} onChange={e=>setField('jobTitle', e.target.value)} />
                     {errs.jobTitle && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.jobTitle}</div>}
-                  </div>
-
-                  <div className="att-field">
-                    <label>Business role <span className="req">*</span></label>
-                    <input placeholder="Founder, Manager, Consultant…" value={form.businessRole} onChange={e=>setField('businessRole', e.target.value)} />
-                    {errs.businessRole && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.businessRole}</div>}
                   </div>
                 </>
               )}
 
               <div className="att-field">
-                <label>Password <span className="req">*</span></label>
+                <label>Mot de passe <span className="req">*</span></label>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:8 }}>
                   <input
                     type={showPwd ? 'text' : 'password'}
                     value={form.pwd}
                     onChange={e => setField('pwd', e.target.value)}
-                    placeholder="At least 8 characters"
+                    placeholder="Au moins 8 caractères"
                   />
                   <button
                     type="button"
                     className="btn-line"
                     onClick={() => setShowPwd(v => !v)}
-                    aria-label={showPwd ? 'Hide password' : 'Show password'}
+                    aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   >
-                    {showPwd ? 'Hide' : 'Show'}
+                    {showPwd ? 'Masquer' : 'Afficher'}
                   </button>
                 </div>
                 {errs.pwd && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd}</div>}
               </div>
 
               <div className="att-field">
-                <label>Confirm password <span className="req">*</span></label>
+                <label>Confirmer le mot de passe <span className="req">*</span></label>
                 <input
                   type={showPwd ? 'text' : 'password'}
                   value={form.pwd2}
                   onChange={e => setField('pwd2', e.target.value)}
-                  placeholder="Repeat your password"
+                  placeholder="Répétez votre mot de passe"
                 />
                 {errs.pwd2 && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd2}</div>}
               </div>
@@ -861,9 +816,9 @@ export default function AttendeeRegisterPage() {
                 <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
               </div>
 
-              {/* Languages */}
+              {/* Languages SELECT (max 3) */}
               <div className="att-field full">
-                <label>Preferred languages <span className="req">*</span></label>
+                <label>Langues préférées <span className="req">*</span></label>
                 <LanguageSelect value={form.languages} onChange={v => setField('languages', v)} max={3} />
                 {errs.languages && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.languages}</div>}
               </div>
@@ -871,62 +826,93 @@ export default function AttendeeRegisterPage() {
               {/* SubRole — hidden for Student */}
               {showSubRoles  && (
                 <div className="att-field full">
-                  <label>Sub-roles (multi-select)</label>
+                  <label>Votre secteur de spécialité (multi-select)</label>
                   <SubRoleSelect
                     values={form.subRoles}
                     onChange={v => setField('subRoles', v)}
                     options={SUBROLE_OPTIONS}
                   />
-                  <div className="hint">Choose any that apply. This is simple metadata saved on your actor profile.</div>
+                  <div className="hint">Sélectionnez toutes les options qui s'appliquent.</div>
                 </div>
               )}
 
               <div className="att-field full">
-                <label>Objective</label>
+                <label>Objectif</label>
                 <select value={form.objective} onChange={e=>setField('objective', e.target.value)}>
-                  <option value="">Select…</option>
+                  <option value="">Sélectionnez…</option>
                   <option value="networking">Networking</option>
-                  <option value="find-partners">Find partners</option>
-                  <option value="find-investors">Find investors</option>
-                  <option value="find-clients">Find clients</option>
-                  <option value="learn-trends">Learn trends</option>
+                  <option value="find-partners">Réseautage</option>
+                  <option value="find-investors">Trouver des investisseurs</option>
+                  <option value="find-clients">Trouver des clients</option>
+                  <option value="learn-trends">Apprendre les tendances</option>
                 </select>
               </div>
 
               <div className="att-field full" style={{ alignItems:'flex-start' }}>
-                <label>Open to meetings?</label>
+                <label>Disponible pour des rendez-vous ?</label>
                 <label className="chk-inline">
                   <input type="checkbox" checked={!!form.openToMeetings} onChange={e=>setField('openToMeetings', e.target.checked)} />
-                  Yes, allow B2B requests
+                  Oui, autoriser les demandes B2B
                 </label>
+              </div>
+
+              {/* Photo (OPTIONNELLE) */}
+              <div className="att-field full">
+                <label>Photo de profil (optionnelle)</label>
+                <div
+                  className="att-photo-drop"
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]);
+                  }}
+                >
+                  {!photoUrl ? (
+                    <div className="att-photo-empty">
+                      <div className="ico">📷</div>
+                      <div className="t">Déposez une image ici ou cliquez pour choisir</div>
+                      <div className="h">PNG/JPG, moins de 5 Mo (optionnel)</div>
+                    </div>
+                  ) : (
+                    <div className="att-photo-prev">
+                      <img src={photoUrl} alt="preview" />
+                      <div className="att-photo-actions">
+                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Changer</button>
+                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Supprimer</button>
+                      </div>
+                    </div>
+                  )}
+                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
+                </div>
               </div>
             </div>
 
             <div className="att-actions">
-              <button type="button" className="btn btn-line" onClick={() => setStep(1)}>Back</button>
-              <button type="submit" className="btn">Continue</button>
+              <button type="button" className="btn btn-line" onClick={() => setStep(1)}>Retour</button>
+              <button type="submit" className="btn">Continuer</button>
             </div>
           </form>
         )}
 
-        {/* STEP 3 */}
+        {/* ===== STEP 3: Sessions (parallel families supported) ===== */}
         {step === 3 && (
           <div className="animate-fade-in">
             <div className="max-w-6xl mx-auto px-4 py-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-light text-gray-800">Choose Your Journey at IPDAYS X GITS 2025</h2>
-                <p className="text-gray-600 mt-2">Select the sessions you’d like to attend.</p>
+                <h2 className="text-2xl font-light text-gray-800">Choisissez votre parcours à IPDAYS X GITS 2025</h2>
+                <p className="text-gray-600 mt-2">Sélectionnez les sessions auxquelles vous souhaitez participer.</p>
               </div>
 
               {schedFetching ? (
                 <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
               ) : !filteredSortedSessions.length ? (
-                <div className="text-center text-gray-500 py-8">No sessions available yet.</div>
+                <div className="text-center text-gray-500 py-8">Aucune session disponible pour le moment.</div>
               ) : (
                 <>
                   <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-3xl mx-auto">
                     <p className="text-sm text-gray-700">
-                      <strong>Note:</strong> Masterclasses and Ateliers run in parallel tracks. You can pick one <em>Masterclass</em> and one <em>Atelier</em> at the same time, but not two in the same family/time slot.
+                      <strong>Note :</strong> Les <em>masterclasses</em> et les <em>ateliers</em> sont des pistes parallèles. Vous pouvez en choisir <b>une de chaque famille</b> pour un même créneau horaire, mais pas deux de la même famille simultanément.
                     </p>
                   </div>
 
@@ -973,7 +959,7 @@ export default function AttendeeRegisterPage() {
                                     )}
                                     {s.roomName ? (
                                       <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                        Room: {s.roomName}
+                                        Salle: {s.roomName}
                                       </span>
                                     ) : null}
                                     {s.roomLocation ? (
@@ -991,7 +977,7 @@ export default function AttendeeRegisterPage() {
 
                                   {!!s.speakers?.length && (
                                     <p className="text-sm text-gray-600">
-                                      {s.speakers.map(x => x.name || x).join(', ')}
+                                      {s.speakers.map(x => (x && (x.name || x.fullName)) || x).join(', ')}
                                     </p>
                                   )}
 
@@ -1004,9 +990,9 @@ export default function AttendeeRegisterPage() {
                                       <div className="h-full bg-blue-500" style={{ width: `${pct}%` }} />
                                     </div>
                                     <div className="flex gap-2 text-xs text-gray-600 mt-1">
-                                      <span><b>{reg}</b> registered</span>
-                                      {cap ? <span>• <b>{cap}</b> capacity</span> : null}
-                                      {c.waitlisted ? <span>• <b>{c.waitlisted}</b> waitlisted</span> : null}
+                                      <span><b>{reg}</b> inscrits</span>
+                                      {cap ? <span>• <b>{cap}</b> capacité</span> : null}
+                                      {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
                                     </div>
                                   </div>
 
@@ -1038,7 +1024,7 @@ export default function AttendeeRegisterPage() {
                                     }`}
                                     onClick={() => toggleSession(s)}
                                   >
-                                    {isSelected ? 'Selected' : 'Select'}
+                                    {isSelected ? 'Sélectionné' : 'Sélectionner'}
                                   </button>
                                 </div>
                               </article>
@@ -1054,14 +1040,14 @@ export default function AttendeeRegisterPage() {
                       className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                       onClick={() => setStep(2)}
                     >
-                      Back
+                      Retour
                     </button>
                     <button
                       className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
                       disabled={regLoading}
                       onClick={finishAll}
                     >
-                      {regLoading ? 'Submitting…' : 'Finish Registration'}
+                      {regLoading ? 'Envoi en cours…' : 'Soumettre'}
                     </button>
                   </div>
                 </>
@@ -1070,13 +1056,13 @@ export default function AttendeeRegisterPage() {
           </div>
         )}
 
-        {/* STEP 4 */}
+        {/* ===== STEP 4: Done ===== */}
         {step === 4 && (
           <div className="anim-in">
             <div className="reg-empty" style={{ borderStyle:'solid', color:'#111827' }}>
-              ✅ Registration received. We’ve also shown a popup with a quick link.
+              ✅ Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.
               <div style={{ marginTop: 8 }}>
-                <a className="btn" href="/login">Go to login</a>
+                <a className="btn" href="/login">Découvrez votre compte B2B</a>
               </div>
             </div>
           </div>

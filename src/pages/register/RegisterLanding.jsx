@@ -83,7 +83,7 @@ export default function RegisterLanding() {
       {/* --- Role Cards Section --- */}
       <div id="role-section" className="max-w-6xl mx-auto py-16 px-6 text-center">
         <h2 className="text-2xl font-semibold mb-8">
-          Choose your participation type
+          Choisissez votre type de participation
         </h2>
 
         <div className="grid sm:grid-cols-2 gap-8">
@@ -96,13 +96,13 @@ export default function RegisterLanding() {
               <Lottie animationData={attendeeAnim} loop={true} className="w-32 h-32" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-800">
-              Participate as Attendee
+               Réservez votre ticket
             </h3>
             <p className="text-gray-600 mb-4">
-              Attend sessions, join B2B meetings, and network with innovators.
+              Assistez à des sessions, participez à des réunions B2B et réseautez avec des innovateurs.
             </p>
-            <button className="px-5 py-2 bg-[#7BC2D5] text-white rounded-full hover:bg-[#68a7bb]">
-              Join as Attendee
+            <button className="px-5 py-2 bg-[#243D79] text-white rounded-full hover:bg-[#68a7bb]">
+              Participer en tant que participant
             </button>
           </div>
 
@@ -111,7 +111,7 @@ export default function RegisterLanding() {
             onClick={() => chooseRole("exhibitor")}
             className="cursor-pointer bg-white border border-gray-200 hover:border-[#7BC2D5] hover:shadow-lg transition rounded-2xl p-8 flex flex-col items-center"
           >
-            <div className="h-24 w-full flex items-center justify-center mb-4">
+            <div className="h-28 w-full flex items-center justify-center mb-4">
               <Lottie
                 animationData={exhibitorAnim}
                 loop={true}
@@ -119,13 +119,13 @@ export default function RegisterLanding() {
               />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-800">
-              Become an Exhibitor
+              Devenir exposant
             </h3>
             <p className="text-gray-600 mb-4">
-              Showcase your brand, display your innovations, and connect with partners.
+              Mettez en avant votre marque, présentez vos innovations et nouez des liens avec des partenaires.
             </p>
-            <button className="px-5 py-2 bg-[#7BC2D5] text-white rounded-full hover:bg-[#68a7bb]">
-              Exhibit Now
+            <button className="px-5 py-2 bg-[#243D79] text-white rounded-full hover:bg-[#68a7bb]">
+              Exposer maintenant
             </button>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function RegisterLanding() {
             }
             className="bg-[#7BC2D5] hover:bg-[#68a7bb] transition text-white font-medium px-6 py-3 rounded-full shadow-md"
           >
-            View Participation Options ↓
+            Voir les options de participation ↓
           </button>
         </div>
       </div>
