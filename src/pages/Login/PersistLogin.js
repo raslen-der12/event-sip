@@ -205,16 +205,11 @@ function NotificationsBridge({ token }) {
 const REFRESH_SKEW_MS = 90_000; // refresh ~90s before expiry
 const MIN_DELAY_MS = 5_000;
 
-// Strict classifier of "fatal auth" for toggling persist off.
-// We only consider:
-//  - 401 Unauthorized or 403 Forbidden
-//  - AND no access token in store
-//  - AND the backend message hints token/verification issue
 function isFatalAuthError(err) {
   const status = err?.status ?? err?.originalStatus ?? 0;
   if (!(status === 401 || status === 403)) return false;
   const msg = (err?.data?.message || err?.error || "").toString().toLowerCase();
-  if (!msg) return true; // conservative if status is 401/403 but no message
+  if (!msg) return true;
   return (
     msg.includes("token") ||
     msg.includes("unauthorized") ||
@@ -224,8 +219,109 @@ function isFatalAuthError(err) {
   );
 }
 
+/* ===================== Small UI bits (scoped) ===================== */
+const CenterWrap = ({ children }) => (
+  <div style={{
+    minHeight: "50vh",
+    display: "grid",
+    placeItems: "center",
+    padding: 16
+  }}>
+    {children}
+  </div>
+);
+
+const Card = ({ children, tone = "neutral" }) => {
+  const bg =
+    tone === "brand"   ? "linear-gradient(135deg, #3b82f6 0%, #6d28d9 100%)"
+  : tone === "error"   ? "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
+  :                      "linear-gradient(135deg, #111827 0%, #1f2937 100%)";
+  return (
+    <div style={{
+      width: "min(560px, 96%)",
+      borderRadius: 14,
+      color: "#fff",
+      background: bg,
+      boxShadow: "0 18px 34px rgba(0,0,0,.22)",
+      border: "1px solid rgba(255,255,255,.18)",
+      padding: 18,
+      display: "grid",
+      gap: 10
+    }}>
+      {children}
+    </div>
+  );
+};
+
+const Row = ({ children }) => (
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "space-between"
+  }}>
+    {children}
+  </div>
+);
+
+const Button = ({ onClick, children, variant = "solid", ariaLabel }) => {
+  const solid = variant === "solid";
+  return (
+    <button
+      onClick={onClick}
+      aria-label={ariaLabel}
+      style={{
+        appearance: "none",
+        cursor: "pointer",
+        borderRadius: 12,
+        padding: "10px 14px",
+        fontWeight: 900,
+        border: solid ? "0" : "1px solid rgba(255,255,255,.6)",
+        color: solid ? "#111827" : "#fff",
+        background: solid
+          ? "#fff"
+          : "transparent",
+        boxShadow: solid ? "0 10px 20px rgba(0,0,0,.18)" : "none"
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Spinner = () => (
+  <span
+    aria-hidden="true"
+    style={{
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      border: "3px solid rgba(255,255,255,.45)",
+      borderTopColor: "#fff",
+      display: "inline-block",
+      animation: "persistSpin 0.8s linear infinite",
+      verticalAlign: "-3px",
+      marginRight: 8
+    }}
+  />
+);
+
+// add a tiny keyframes once (scoped)
+const addSpinOnce = (() => {
+  let done = false;
+  return () => {
+    if (done) return;
+    const st = document.createElement("style");
+    st.innerHTML = `@keyframes persistSpin{to{transform: rotate(360deg)}}`;
+    document.head.appendChild(st);
+    done = true;
+  };
+})();
+
+/* ===================== Component ===================== */
 const PersistLogin = () => {
-  const [persist, setPersist] = usePersist(); // <-- we may turn it off safely
+  const [persist, setPersist] = usePersist();
   const token = useSelector(selectCurrentToken);
 
   const [refresh, { isUninitialized, isLoading, isSuccess, isError, error }] =
@@ -236,29 +332,26 @@ const PersistLogin = () => {
   const timerRef = useRef(null);
   const mountedRef = useRef(true);
 
-  // protects against random flips
   const failCountRef = useRef(0);
-  const suspendedRef = useRef(false); // once true, we stop auto-refresh until next login
+  const suspendedRef = useRef(false);
 
   const scheduleNextRefresh = (tok) => {
     clearTimeout(timerRef.current);
-    if (suspendedRef.current) return; // do not schedule while suspended
+    if (suspendedRef.current) return;
     if (!tok) return;
     const tte = getTteMs(tok);
     const delay = Math.max(MIN_DELAY_MS, isFinite(tte) ? tte - REFRESH_SKEW_MS : REFRESH_SKEW_MS);
     timerRef.current = setTimeout(async () => {
       try {
         await refresh().unwrap();
-        failCountRef.current = 0; // reset on success
+        failCountRef.current = 0;
       } catch (err) {
         console.error("scheduled refresh failed:", err);
         if (isFatalAuthError(err) && !token) {
           failCountRef.current += 1;
-          // Only toggle persist after 2 consecutive fatal failures (no token),
-          // to avoid accidental flips due to flaky network.
           if (failCountRef.current >= 2 && !suspendedRef.current) {
             suspendedRef.current = true;
-            setPersist(false); // stop further automatic refresh attempts
+            setPersist(false);
             clearTimeout(timerRef.current);
           }
         }
@@ -266,7 +359,6 @@ const PersistLogin = () => {
     }, delay);
   };
 
-  // On mount: if persist ON and no token, try silent refresh once
   useEffect(() => {
     mountedRef.current = true;
     (async () => {
@@ -279,7 +371,6 @@ const PersistLogin = () => {
         console.error("initial refresh failed:", err);
         if (isFatalAuthError(err) && !token) {
           failCountRef.current += 1;
-          // Do NOT flip persist here yet — we require two failures.
         }
       } finally {
         if (mountedRef.current) setBootTried(true);
@@ -292,10 +383,8 @@ const PersistLogin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist]);
 
-  // Whenever token changes, (re)schedule proactive refresh
   useEffect(() => {
     if (!persist) return;
-    // If user logged in again, re-enable scheduling.
     if (token) {
       suspendedRef.current = false;
       failCountRef.current = 0;
@@ -305,7 +394,17 @@ const PersistLogin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, persist]);
 
-  // ===== Render logic =====
+  const goHomeAndClear = () => {
+    try { localStorage.clear(); } catch {}
+    try { sessionStorage.clear(); } catch {}
+    // best effort: also broadcast popup close to avoid stale bridges
+    try { window.dispatchEvent(new CustomEvent("app:popup:closed")); } catch {}
+    window.location.replace("/");
+  };
+
+  addSpinOnce();
+
+  // ===== Render logic (UI only improved for loading/error) =====
   if (!persist) {
     return (
       <>
@@ -319,7 +418,22 @@ const PersistLogin = () => {
     return (
       <>
         <NotificationsBridge token={token} />
-        <p className="text-center">Loading…</p>
+        <CenterWrap>
+          <Card tone="brand">
+            <Row>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>
+                <Spinner />
+                Checking your session…
+              </div>
+              <Button variant="outline" onClick={goHomeAndClear} ariaLabel="Clear and go home">
+                Go back to home
+              </Button>
+            </Row>
+            <div style={{ fontSize: 13, opacity: 0.9 }}>
+              This may take a moment. If it hangs, you can return home — we’ll clear your local session data.
+            </div>
+          </Card>
+        </CenterWrap>
       </>
     );
   }
@@ -336,9 +450,21 @@ const PersistLogin = () => {
   return (
     <>
       <NotificationsBridge token={token} />
-      <p className="text-center">
-        {error?.data?.message || "Session expired. Please log in again."}
-      </p>
+      <CenterWrap>
+        <Card tone="error">
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>
+            {error?.data?.message || "Session expired. Please log in again."}
+          </div>
+          <Row>
+            <div style={{ fontSize: 13, opacity: 0.92 }}>
+              We’ll reset your local session and take you back to the homepage.
+            </div>
+            <Button onClick={goHomeAndClear} ariaLabel="Clear and go home">
+              Go back to home
+            </Button>
+          </Row>
+        </Card>
+      </CenterWrap>
     </>
   );
 };

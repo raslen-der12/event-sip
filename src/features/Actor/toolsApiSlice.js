@@ -205,7 +205,22 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: (res, err, id) => [{ type:'MeetingPrefs', id }]
     }),
-
+    siteSearch: builder.query({
+      query: ({ q = "", tags = [], limit = 20 } = {}) => {
+        const qs = new URLSearchParams();
+        if (q) qs.set("q", q);
+        if (tags?.length) qs.set("tags", tags.join(","));
+        if (limit) qs.set("limit", String(limit));
+        return `/search?${qs.toString()}`;
+      },
+      transformResponse: (resp) => resp?.data ?? [],
+      keepUnusedDataFor: 60,
+    }),
+    suggestTags: builder.query({
+      query: () => `/search/suggest-tags`,
+      transformResponse: (resp) => resp?.tags ?? [],
+      keepUnusedDataFor: 300,
+    }),
   }),
 });
 
@@ -226,5 +241,5 @@ export const {
   useGetAvailableSlotsQuery,
   useListActorNotificationsQuery,
   useAckActorNotificationMutation,
-  useGetMeetingPrefsQuery
+  useGetMeetingPrefsQuery,
 } = toolsApiSlice;

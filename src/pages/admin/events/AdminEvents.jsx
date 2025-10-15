@@ -149,7 +149,7 @@ export default function AdminEvents() {
       {/* keep your shared TopControls */}
       <TopControls
         defaultPeriod={period}
-        events={["All events", ...events.map(e => e.title)]}
+        events={["All events", ...events?.map(e => e.title)]}
         currencies={["USD","EUR","TND","GBP"]}
         onChange={(s)=>{
           if (s?.period) setPeriod(s.period);

@@ -680,10 +680,10 @@ fd.append(
 
       {/* Step dots (1..4) */}
       <div className="reg-steps">
+        <span className={`reg-step-dot ${step === 4 ? 'active':''}`} />
         <span className={`reg-step-dot ${step === 1 ? 'active':''}`} />
         <span className={`reg-step-dot ${step === 2 ? 'active':''}`} />
         <span className={`reg-step-dot ${step === 3 ? 'active':''}`} />
-        <span className={`reg-step-dot ${step === 4 ? 'active':''}`} />
       </div>
 
       {/* ===== STEP 1: Role Catalog ===== */}

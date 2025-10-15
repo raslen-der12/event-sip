@@ -1,43 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+
+    <!-- Viewport & color scheme -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Primary Meta -->
+    <title>GITS — Global Innovation & Tech Events</title>
+    <meta name="description" content="Discover GITS events across MENA & Africa: agendas, speakers, matchmaking, logistics tools, and registration — all in one place." />
+    <meta name="theme-color" content="#0e1223" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0f1d" media="(prefers-color-scheme: dark)" />
+    <meta name="robots" content="index,follow" />
+
+    <!-- Canonical (fill your production URL if known) -->
+    <!-- <link rel="canonical" href="https://example.com/" /> -->
+
+    <!-- Favicons & PWA -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="mask-icon" href="%PUBLIC_URL%/safari-pinned-tab.svg" color="#243A66" />
+    <meta name="msapplication-TileColor" content="#243A66" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Social Cards (Open Graph / Twitter) -->
+    <meta property="og:title" content="GITS — Global Innovation & Tech Events" />
+    <meta property="og:description" content="Top-tier tech & innovation events across MENA & Africa. Explore programs, speakers, logistics, and get your pass." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eventra.cloud" />
+    <meta property="og:image" content="%PUBLIC_URL%/og.jpg" />
+    <meta property="og:image:alt" content="GITS — Technology & Innovation Events" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GITS — Global Innovation & Tech Events" />
+    <meta name="twitter:description" content="Programs, speakers, networking, and logistics tools — everything for a world-class event experience." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/og.jpg" />
+
+    <!-- Performance (optional assets you actually have) -->
+    <!-- Preload brand font or logo if you ship them; otherwise leave commented -->
+    <!-- <link rel="preload" href="%PUBLIC_URL%/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin> -->
+    <link rel="preload" href="%PUBLIC_URL%/og.jpg" as="image" imagesrcset="%PUBLIC_URL%/og.jpg" />
+
+    <!-- Bootstrap (CSS-only, if you use it project-wide) -->
+    <!-- <link rel="stylesheet" href="%PUBLIC_URL%/bootstrap.min.css" /> -->
+
+    <!-- Minimal critical styles for splash and accessibility -->
+    <style>
+      :root {
+        --bg:#0e1223; --ink:#ffffff; --muted:#bfc7dd; --brand:#243A66; --accent:#EB5434;
+      }
+      html,body { height:100%; background:var(--bg); }
+      body { margin:0; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif; color:var(--ink); }
+      a { color: inherit; }
+      /* Accessible skip link */
+      .skip-link{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+      .skip-link:focus{ left:8px; top:8px; width:auto; height:auto; padding:.5rem .75rem; background:#fff; color:#111; border-radius:8px; z-index:9999; }
+
+      /* Simple app splash while React boots */
+      #app-splash{
+        position:fixed; inset:0; display:grid; place-items:center; background:linear-gradient(180deg,#0b0f1d,#101632);
+        z-index: 10;
+      }
+      .splash-card{
+        display:flex; flex-direction:column; align-items:center; gap:14px;
+      }
+      .splash-logo{ width:min(220px,48vw); height:auto; filter: drop-shadow(0 10px 30px rgba(0,0,0,.35)); }
+      .splash-text{ color:var(--muted); font-size:14px; letter-spacing:.2px; }
+      .spinner{
+        width:34px; height:34px; border-radius:999px;
+        border:3px solid rgba(255,255,255,.18); border-top-color:#fff;
+        animation:spin 1s linear infinite;
+      }
+      @keyframes spin{ to { transform:rotate(360deg); } }
+      /* When React mounts and paints, we fade this out (see inline script) */
+      .fade-out{ animation:fadeOut .28s ease forwards; }
+      @keyframes fadeOut { to { opacity:0; visibility:hidden; } }
+    </style>
+
+    <!-- Structured Data: Event (adjust values dynamically in app if needed) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": "GITS Summit",
+      "description": "A premier technology and innovation event featuring keynotes, masterclasses, and B2B matchmaking across MENA & Africa.",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
+      "startDate": "2025-12-10T09:00:00+01:00",
+      "endDate": "2025-12-12T18:00:00+01:00",
+      "image": ["%PUBLIC_URL%/og.jpg"],
+      "location": {
+        "@type": "Place",
+        "name": "GITS Venue",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Tunis",
+          "addressRegion": "TN",
+          "postalCode": "1000",
+          "addressCountry": "TN"
+        }
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "GITS",
+        "url": "/"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "/tickets",
+        "availability": "https://schema.org/InStock",
+        "price": "0",
+        "priceCurrency": "TND"
+      }
+    }
+    </script>
   </head>
+
   <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <!-- Minimal splash (removed once bundle loads) -->
+    <div id="app-splash" role="status" aria-live="polite" aria-label="Loading">
+      <div class="splash-card">
+        <img class="splash-logo" src="%PUBLIC_URL%/banner.png" alt="GITS" />
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="splash-text">Preparing your event experience…</div>
+      </div>
+    </div>
+
+    <!-- React root -->
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root" role="main" id="main"></div>
+
+    <!-- Optional: runtime public config injected before the app (for CRA) -->
     <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
+      If you want runtime (not build-time) config, uncomment and serve /env.js from your backend:
+      <script src="/env.js"></script>
+      window._env_ = window._env_ || { API_BASE_URL: "https://api.example.com" };
     -->
+
+    <!-- Hide splash once React paints (simple safeguard) -->
+    <script>
+      // Remove splash as soon as the window finishes loading the CRA bundles
+      window.addEventListener('load', function(){
+        var s = document.getElementById('app-splash');
+        if (s) { s.classList.add('fade-out'); setTimeout(function(){ s.remove(); }, 320); }
+      });
+    </script>
   </body>
 </html>
