@@ -1,235 +1,168 @@
-import React from "react";
+import React, { useState } from "react";
+import { Info, BookOpen, Users, Briefcase, GraduationCap, Calendar } from 'lucide-react'; // Added relevant icons
 import "./program-agenda.css";
 
-/**
- * ProgramAgenda — light agenda list (no matrix)
- *
- * Props:
- *  sessions?: Array<{
- *    _id?: string,
- *    sessionTitle: string,
- *    speaker?: string | { fullName?: string, orgName?: string },
- *    room?: string,
- *    startTime: string | Date,
- *    endTime: string | Date,
- *    summary?: string,
- *    tags?: string[]
- *  }>
- *  isLoading?: boolean
- *  heading?: string
- *  subheading?: string
- */
+export default function ProgramAgenda({ sessions, isLoading }) {
+  const [active, setActive] = React.useState(1); // Show day 2 first by default
+  const [filterType, setFilterType] = useState(''); // New: filter state
 
-const FALLBACK = makeFallback();
+  // Extract unique types for filters
+  const allTypes = [
+    { key: 'formation', label: 'Formation', icon: <BookOpen size={14} /> },
+    { key: 'panel', label: 'Panel', icon: <Users size={14} /> },
+    { key: 'atelier', label: 'Atelier', icon: <GraduationCap size={14} /> },
+    { key: 'masterclass', label: 'Masterclass', icon: <GraduationCap size={14} /> },
+    { key: 'b2b', label: 'B2B', icon: <Briefcase size={14} /> },
+    { key: 'demo', label: 'Demo', icon: <Calendar size={14} /> },
+  ];
 
-/* utils */
-const toDate = (d) => (d instanceof Date ? d : new Date(d));
-const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-const fmtTime = (d) => {
-  try {
-    const x = toDate(d);
-    return `${pad(x.getHours())}:${pad(x.getMinutes())}`;
-  } catch { return ""; }
-};
-const dayKey = (d) => {
-  try {
-    const x = toDate(d);
-    return `${x.getFullYear()}-${x.getMonth()+1}-${x.getDate()}`;
-  } catch { return "day"; }
-};
-const fmtDay = (d) => {
-  try {
-    const x = toDate(d);
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: "short", month: "short", day: "numeric",
-    }).format(x);
-  } catch { return ""; }
-};
+  const days = [
+    {
+      key: "2025-11-12",
+      label: "Mercredi 12 Novembre 2025",
+      items: [
+        { time: "09:00 - 16:00", title: "Formation 1", speaker: "AfriStart", type: "formation" },
+        { time: "09:00 - 16:00", title: "Formation 2", speaker: "WIDU.AFRICA – GIZ", type: "formation" },
+        { time: "09:00 - 16:00", title: "Formation 3", speaker: "Women Go Green", type: "formation" },
+        { time: "09:00 - 16:00", title: "Formation 4", speaker: "Green Hubs", type: "formation" }
+      ]
+    },
+    {
+      key: "2025-11-13",
+      label: "Jeudi 13 Novembre 2025",
+      sections: [
+        {
+          title: "PLÉNIÈRE",
+          moderator: "Modératrice : Mme Zeineb Melki - Journaliste et animatrice radio et télé",
+          sessions: [
+            { time: "09:00 - 09:30", title: "Mots d'ouverture", type: "panel" },
+            { time: "09:30 - 10:30", title: "Panel 1 – Stratégie d’accès aux marchés internationaux : enjeux critiques et leviers opérationnels", type: "panel" },
+            { time: "10:30 - 11:30", title: "Panel 2 - Think global, act local… avec nous", type: "panel" },
+            { time: "11:30 - 12:30", title: "Panel 3 - Export 2.0 : maîtrisez les outils digitaux pour conquérir l’international", type: "panel" },
+            { time: "12:30 - 13:00", title: "DEMO GITS THE PLATFORM", type: "demo" }
+          ]
+        },
+        {
+          title: "AFTERNOON - B2B & MATCHMAKING",
+          sessions: [
+            { time: "14:00 – 18:00", title: "Afternoon - B2B & Matchmaking via GITS (physique et virtual)", type: "b2b", highlight: true }
+          ]
+        },
+        {
+          title: "ATELIERS",
+          sessions: [
+            { time: "14:00 - 17:00", title: "Atelier 1 – Allez plus loin, plus vite : les plateformes digitales au service de votre internationalisation", type: "atelier" },
+            { time: "14:00 - 17:00", title: "Atelier 2 – Négociation de contrats à l’international", type: "atelier" },
+            { time: "14:00 - 17:00", title: "Atelier 3 – Clés techniques pour ouvrir les portes du monde", type: "atelier" },
+            { time: "14:00 - 17:00", title: "Atelier 4 – Branding et communication orientés export", type: "atelier" }
+          ]
+        },
+        {
+          title: "MASTERCLASSES",
+          sessions: [
+            { time: "14:00 - 15:00", title: "Masterclass 1 – Comment financer vos activités à l’export ?", type: "masterclass" },
+            { time: "15:00 - 16:00", title: "Masterclass 2 – Du local au global : maximisez votre portée avec le e-commerce et les plateformes digitales, quelle place pour l’IA ?", type: "masterclass" },
+            { time: "16:00 - 17:00", title: "Masterclass 3 – Go Global, the Right Way…", type: "masterclass" },
+            { time: "17:00 - 18:00", title: "Masterclass 4 – GITS Community : what next ?", type: "masterclass" }
+          ]
+        }
+      ]
+    }
+  ];
 
-function groupByDay(rows) {
-  const map = new Map();
-  (rows || []).forEach((x) => {
-    const k = dayKey(x?.startTime || x?.endTime);
-    if (!map.has(k)) map.set(k, []);
-    map.get(k).push(x);
-  });
-  const out = [...map.entries()].map(([k, arr]) => ({
-    key: k,
-    label: fmtDay(arr?.[0]?.startTime || arr?.[0]?.endTime),
-    items: arr.sort((a,b)=> toDate(a?.startTime) - toDate(b?.startTime))
-  }));
-  return out.sort((a,b)=> toDate(a.items[0]?.startTime) - toDate(b.items[0]?.startTime));
-}
+  const activeDay = days[active];
 
-/* tiny inline icons (no deps) */
-const I = {
-  clock: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor"/><path d="M12 7v6l4 2" stroke="currentColor"/></svg>),
-  room:  () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 10a9 9 0 1 0 18 0A9 9 0 0 0 3 10Zm9-7v7l5 3" stroke="currentColor"/></svg>),
-  mic:   () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="10" rx="3" stroke="currentColor"/><path d="M5 9v1a7 7 0 0 0 14 0V9M12 20v-3" stroke="currentColor"/></svg>),
-  tag:   () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10 4h7l3 3-10 10-7-7 7-6Z" stroke="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/></svg>),
-  x:     () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2"/></svg>),
-};
-
-export default function ProgramAgenda({
-  sessions,
-  isLoading,
-  heading = "Program",
-  subheading = "Agenda by day",
-}) {
-  // normalize to simple fields we need
-  const normalize = (s) => {
-    const speakerNames = Array.isArray(s?.speakers) && s.speakers.length
-      ? s.speakers.map(p => p?.name || p?.fullName).filter(Boolean).join(", ")
-      : undefined;
-    const sp =
-      speakerNames
-        ? { fullName: speakerNames, orgName: "" }
-        : typeof s?.speaker === "string"
-          ? { fullName: s.speaker, orgName: "" }
-          : (s?.speaker || null);
-
-    return {
-      ...s,
-      room: s?.room || s?.roomName || s?.track || "Room",
-      speaker: sp,
-    };
-  };
-
-  const data = (Array.isArray(sessions) && sessions.length ? sessions : FALLBACK).map(normalize);
-  const days = groupByDay(data);
-  const [active, setActive] = React.useState(0);
-  const [open, setOpen] = React.useState(null); // modal item
-
-  React.useEffect(() => {
-    if (active > days.length - 1) setActive(0);
-  }, [days.length, active]);
+  // Filter helper
+  const isMatching = (type) => !filterType || type === filterType;
 
   return (
-    <section id="schedule" className="ag">
+    <section className="ag">
       <div className="container">
         <header className="ag__head">
-          <div className="ag__titles">
-            <h2 className="ag__title">{heading}</h2>
-            {subheading ? <p className="ag__sub">{subheading}</p> : null}
-          </div>
-          <div className="ag__tabs" role="tablist" aria-label="Select day">
+          <h2 className="ag__title">Programme</h2>
+          <div className="ag__tabs">
             {days.map((d, i) => (
               <button
                 key={d.key}
-                type="button"
-                role="tab"
-                aria-selected={active === i}
-                className={`ag__pill ${active === i ? "is-active" : ""}`}
+                className={`ag__pill ${active === i ? 'is-active' : ''}`}
                 onClick={() => setActive(i)}
               >
-                {d.label || "Day"}
+                {d.label}
               </button>
             ))}
           </div>
         </header>
 
-        {/* loading state */}
-        {isLoading ? (
-          <div className="ag__skel">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="ag__skelRow" />)}
-          </div>
-        ) : null}
-
-        {!isLoading && (
-          <ul className="ag__list" role="list">
-            {(days[active]?.items || []).map((s) => (
-              <li key={s._id || s.id || s.sessionTitle} className="ag__item">
-                <button
-                  type="button"
-                  className="ag__card"
-                  onClick={() => setOpen(s)}
-                  title="View details"
-                >
-                  <div className="ag__time">
-                    <I.clock />
-                    <span>{fmtTime(s.startTime)}–{fmtTime(s.endTime)}</span>
-                  </div>
-
-                  <div className="ag__main">
-                    <h3 className="ag__name">{s.sessionTitle || "Session"}</h3>
-                    <div className="ag__meta">
-                      <span className="ag__metaRow">
-                        <I.mic />
-                        <span className="ag__speaker">
-                          {s?.speaker?.fullName || "Speaker"}
-                        </span>
-                        {s?.speaker?.orgName
-                          ? <span className="ag__org"> · {s.speaker.orgName}</span>
-                          : null}
-                      </span>
-
-                      <span className="ag__metaRow">
-                        <I.room />
-                        <span>{s.room}</span>
-                      </span>
-                    </div>
-
-                    {Array.isArray(s.tags) && s.tags.length ? (
-                      <div className="ag__tags">
-                        {s.tags.slice(0, 4).map((t) => (
-                          <span key={t} className="ag__tag"><I.tag />{t}</span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* detail modal */}
-      {open && (
-        <div className="ag__modal" role="dialog" aria-modal="true" aria-label="Session details">
-          <div className="ag__backdrop" onClick={() => setOpen(null)} />
-          <div className="ag__sheet">
-            <header className="ag__sheetHead">
-              <h3 className="ag__sheetTitle">{open.sessionTitle || "Session"}</h3>
-              <button className="ag__x" onClick={() => setOpen(null)} aria-label="Close"><I.x/></button>
-            </header>
-            <div className="ag__sheetMeta">
-              <div className="ag__sheetRow"><I.clock/>{fmtTime(open.startTime)}–{fmtTime(open.endTime)}</div>
-              <div className="ag__sheetRow"><I.room/>{open.room}</div>
-              <div className="ag__sheetRow">
-                <I.mic/>{open?.speaker?.fullName || "Speaker"}
-                {open?.speaker?.orgName ? <span className="ag__org"> · {open.speaker.orgName}</span> : null}
-              </div>
-            </div>
-            {open.summary ? <p className="ag__sheetTxt">{open.summary}</p> : null}
-            {Array.isArray(open.tags) && open.tags.length ? (
-              <div className="ag__sheetTags">
-                {open.tags.map(t => <span key={t} className="ag__tag">{t}</span>)}
-              </div>
-            ) : null}
-          </div>
+        {/* New: Filter Tags Bar */}
+        <div className="ag__filter-bar">
+          {allTypes.map(t => (
+            <button
+              key={t.key}
+              className={`ag__filter-tag ${filterType === t.key ? 'is-active' : ''}`}
+              onClick={() => setFilterType(filterType === t.key ? '' : t.key)}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          ))}
+          {filterType && (
+            <button className="ag__filter-clear" onClick={() => setFilterType('')}>
+              Clear
+            </button>
+          )}
         </div>
-      )}
+
+        <div className="ag__content">
+          {activeDay.items ? (
+            <ul className="ag__list">
+              {activeDay.items.filter(s => isMatching(s.type)).map((s, idx) => (
+                <li key={idx} className="ag__item">
+                  <div className="ag__card">
+                    <div className="ag__time">{s.time}</div>
+                    <div className="ag__main">
+                      <div className="ag__chipline">
+                        <span className="ag__type-tag">{allTypes.find(tt => tt.key === s.type)?.icon} {allTypes.find(tt => tt.key === s.type)?.label}</span>
+                      </div>
+                      <h3 className="ag__name">{s.title}</h3>
+                      <p className="ag__speaker">{s.speaker}</p>
+                    </div>
+                    <button className="ag__info-btn" aria-label="More info">
+                      <Info size={16} color="#64748b" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            activeDay.sections.map((section, idx) => (
+              <div key={idx} className="ag__section">
+                <h3 className="ag__sectionTitle" style={{ fontWeight: 600 }}>{section.title}</h3>
+                {section.moderator && <p className="ag__moderator">{section.moderator}</p>}
+                <ul className="ag__list">
+                  {section.sessions.filter(s => isMatching(s.type)).map((s, i) => (
+                    <li key={i} className="ag__item">
+                      <div
+                        className={`ag__card ${s.highlight ? 'ag__card--highlight' : ''}`}
+                      >
+                        <div className="ag__time">{s.time}</div>
+                        <div className="ag__main">
+                          <div className="ag__chipline">
+                            <span className="ag__type-tag">{allTypes.find(tt => tt.key === s.type)?.icon} {allTypes.find(tt => tt.key === s.type)?.label}</span>
+                          </div>
+                          <h3 className="ag__name" style={{ fontWeight: 400 }}>{s.title}</h3>
+                        </div>
+                        <button className="ag__info-btn" aria-label="More info">
+                          <Info size={16} color="#64748b" />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </section>
   );
-}
-
-/* small fallback sample (same dates across days) */
-function makeFallback() {
-  const base = new Date();
-  base.setHours(9, 0, 0, 0);
-  const t = (day, h, m) => {
-    const d = new Date(base);
-    d.setDate(d.getDate() + day);
-    d.setHours(h, m, 0, 0);
-    return d.toISOString();
-  };
-  return [
-    { _id:"a1", sessionTitle:"Opening Keynote",  speaker:{fullName:"Nada Ferchichi", orgName:"GITS"}, room:"Main Hall", startTime:t(0,9,0),  endTime:t(0,9,45),  tags:["Keynote"], summary:"Kickoff and outlook." },
-    { _id:"a2", sessionTitle:"B2B Matchmaking",  speaker:{fullName:"—"},           room:"B2B Lounge", startTime:t(0,10,0), endTime:t(0,12,0), tags:["Networking"] },
-    { _id:"a3", sessionTitle:"Panel: Funding",    speaker:{fullName:"Panel"},       room:"Main Hall", startTime:t(0,11,15), endTime:t(0,12,0), tags:["VC","SMEs"] },
-    { _id:"b1", sessionTitle:"Deep-Tech Demos",   speaker:{fullName:"Showcase"},    room:"Stage B",   startTime:t(1,9,30), endTime:t(1,10,30) },
-    { _id:"b2", sessionTitle:"Procurement 101",   speaker:{fullName:"Yosra K.", orgName:"GovLab"}, room:"Main Hall", startTime:t(1,10,45), endTime:t(1,11,25) },
-    { _id:"b3", sessionTitle:"Founders Fireside", speaker:{fullName:"Panel"},       room:"Main Hall", startTime:t(1,11,45), endTime:t(1,12,30) },
-  ];
 }

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "./action-ribbon.css";
 
 export default function ActionRibbon({
-  heading = "Take part in IPDAYS 2025",
+  heading = "Take part in IPDAYS X GITS",
   subheading = "Join the movement of innovators and entrepreneurs building a Tunisia open to the world.",
   actions = [
     { label: "Register now", color: "orange", href: "/register" },

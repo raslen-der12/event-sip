@@ -140,7 +140,7 @@ export default function HeroEvent({
                   <div className="h-2 rounded-full bg-[#1C3664]" style={{ width: `${filled}%` }} />
                 </div>
                 <div className="flex justify-between text-sm text-gray-300 mt-1">
-                  <span>Capacity</span>
+                  <span>Capacité</span>
                   <span>{seatsTaken ?? 0} / {capacity}</span>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function HeroEvent({
           >
             <div className="w-full max-w-md mx-auto lg:mr-0 bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl">
               <h3 className="text-xl font-semibold text-white mb-2 text-center">
-                Rejoignez l’aventure IPDAYS × GITS
+                Rejoignez l’aventure <br></br>IPDAYS × GITS 2025
               </h3>
               <p className="text-sm text-gray-200 text-center mb-4">
                 Réservez votre place pour vivre l’expérience entrepreneuriale la plus inspirante de 2025.
