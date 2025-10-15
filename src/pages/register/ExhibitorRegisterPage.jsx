@@ -231,6 +231,14 @@ function orderTracksWithEarliestFirst(groups) {
   return entries;
 }
 
+/* ===== Conflict bucket: Atelier vs Masterclass are separate ===== */
+function conflictBucket(track) {
+  const t = String(track || "").toLowerCase();
+  if (t.includes("atelier")) return "atelier";
+  if (t.includes("masterclass")) return "masterclass";
+  return "other";
+}
+
 /* ===== Modal (same style as attendee) ===== */
 function SessionModal({ open, onClose, session, counts }) {
   useEffect(() => {
@@ -334,7 +342,7 @@ export default function ExhibitorRegisterPage() {
 
   const [exhibitorRegister, { isLoading: regLoading }] = useExhibitorRegisterMutation();
 
-  /* Logo */
+  /* Logo (OPTIONAL now) */
   const fileRef = useRef(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
@@ -392,11 +400,13 @@ export default function ExhibitorRegisterPage() {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return (Array.isArray(raw) ? raw : []).map(normSession).filter(x => x.startISO);
   }, [schedulePack]);
-const firstDay = useMemo(() => {
-  const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
-  const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
-  return dayList[0] || null;
-}, [sessions]);
+
+  const firstDay = useMemo(() => {
+    const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
+    const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
+    return dayList[0] || null;
+  }, [sessions]);
+
   /* Track options */
   const uniqueTracks = useMemo(() => {
     const t = new Set();
@@ -404,32 +414,31 @@ const firstDay = useMemo(() => {
     return Array.from(t);
   }, [sessions]);
 
-  /* Recompute sections: group by track, sessions sorted by time, tracks ordered by earliest (B2B last) */
- const trackSections = useMemo(() => {
-  if (!sessions.length) return [];
+  /* Sections: group by track (B2B last), drop first day, allow filter */
+  const trackSections = useMemo(() => {
+    if (!sessions.length) return [];
 
-  // Drop firstDay entirely + apply track filter
-  const filtered = sessions.filter(s => {
-    if (firstDay && s.dayISO === firstDay) return false;   // <-- remove Day 1
-    if (track && s.track !== track) return false;
-    return true;
-  });
-  if (!filtered.length) return [];
+    // Drop firstDay entirely + apply track filter
+    const filtered = sessions.filter(s => {
+      if (firstDay && s.dayISO === firstDay) return false;   // remove Day 1
+      if (track && s.track !== track) return false;
+      return true;
+    });
+    if (!filtered.length) return [];
 
-  const group = {};
-  for (const s of filtered) {
-    const key = (s.track || "Other").trim();
-    if (!group[key]) group[key] = [];
-    group[key].push(s);
-  }
-  for (const t of Object.keys(group)) {
-    group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
-  }
+    const group = {};
+    for (const s of filtered) {
+      const key = (s.track || "Other").trim();
+      if (!group[key]) group[key] = [];
+      group[key].push(s);
+    }
+    for (const t of Object.keys(group)) {
+      group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
+    }
 
-  const ordered = orderTracksWithEarliestFirst(group);
-  return ordered.map(({ track, items }) => ({ track, items }));
-}, [sessions, track, firstDay]);
-
+    const ordered = orderTracksWithEarliestFirst(group);
+    return ordered.map(({ track, items }) => ({ track, items }));
+  }, [sessions, track, firstDay]);
 
   // Close modal + clear selections when filter changes
   useEffect(() => {
@@ -438,7 +447,10 @@ const firstDay = useMemo(() => {
     setSelectedBySlot({});
   }, [track]);
 
-  const toggleSession = (slotKey, session) => {
+  /* === Select: one per time slot PER TRACK FAMILY (Atelier vs Masterclass are separate) === */
+  const toggleSession = (slotStartISO, session) => {
+    const bucket = conflictBucket(session.track);
+    const slotKey = `${slotStartISO}|${bucket}`;
     setSelectedBySlot(prev => {
       const curr = prev[slotKey];
       if (curr && curr._id === session._id) {
@@ -450,7 +462,10 @@ const firstDay = useMemo(() => {
     });
   };
 
-  const selectedSessionIds = useMemo(() => Object.values(selectedBySlot).map(s => s._id), [selectedBySlot]);
+  const selectedSessionIds = useMemo(
+    () => Object.values(selectedBySlot).map(s => s._id),
+    [selectedBySlot]
+  );
 
   /* Step 1 → 2 */
   const goForm = () => {
@@ -462,7 +477,7 @@ const firstDay = useMemo(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* Step 2 → 3 */
+  /* Step 2 → 3 (Logo OPTIONAL now) */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
@@ -471,7 +486,7 @@ const firstDay = useMemo(() => {
     if (!required(form.email)) e2.email = "Required";
     if (!EMAIL_RX.test(form.email || "")) e2.email = "Invalid email";
     if (!required(form.country)) e2.country = "Required";
-    if (!logoFile) e2.logo = "Logo is required";
+    // LOGO no longer required: removed validation
     if (!form.languages?.length) e2.languages = "Pick at least 1 language";
     if (!required(form.pwd)) e2.pwd = "Required";
     else if ((form.pwd || "").length < 8) e2.pwd = "Min 8 characters";
@@ -523,9 +538,9 @@ const firstDay = useMemo(() => {
       form.subRoles.forEach(v => fd.append("subRole[]", v));
     }
 
-    // Sessions + file
+    // Sessions + optional logo
     selectedSessionIds.forEach(id => fd.append("sessionIds[]", id));
-    fd.append("logo", logoFile); // server reads this
+    if (logoFile) fd.append("logo", logoFile); // only if provided
 
     try {
       await exhibitorRegister(fd).unwrap();
@@ -634,9 +649,9 @@ const firstDay = useMemo(() => {
             </div>
 
             <div className="att-form-grid">
-              {/* Logo */}
+              {/* Logo (OPTIONAL) */}
               <div className="att-field full">
-                <label>Company logo <span className="req">*</span></label>
+                <label>Company logo <span style={{ color:"#64748b", fontWeight:700 }}>(optional)</span></label>
                 <div
                   className="att-photo-drop"
                   onClick={() => fileRef.current?.click()}
@@ -663,7 +678,7 @@ const firstDay = useMemo(() => {
                   )}
                   <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setLogoFile(e.target.files?.[0] || null)} />
                 </div>
-                {errs.logo && <div style={{ color:"#ef4444", fontWeight:800, marginTop:4 }}>{errs.logo}</div>}
+                {/* removed: errs.logo */}
               </div>
 
               <div className="att-field">
@@ -789,12 +804,14 @@ const firstDay = useMemo(() => {
           </form>
         )}
 
-        {/* ===== STEP 3: Sessions (track groups, B2B last, one per slot) ===== */}
+        {/* ===== STEP 3: Sessions (track groups, B2B last, one per slot family) ===== */}
         {step === 3 && (
           <div className="anim-in">
             <div className="att-section-head">
               <div className="t">Choose your sessions</div>
-              <div className="h">Pick one session per time slot. Click <b>Info</b> for details; click a card to select.</div>
+              <div className="h">
+                Pick one session per time slot. <b>Atelier</b> and <b>Masterclass</b> are separate tracks — you may choose one in each at the same time.
+              </div>
             </div>
 
             {/* Filter bar — track only */}
@@ -828,7 +845,8 @@ const firstDay = useMemo(() => {
                       <h3 className="att-track-sep-v2">{tname || 'Other'}</h3>
 
                       {items.map(s => {
-                        const slotKey = s.startISO; // one selection per slot time
+                        // key changed: include conflict bucket so Atelier vs Masterclass do not conflict
+                        const slotKey = `${s.startISO}|${conflictBucket(s.track)}`;
                         const isSelected = selectedBySlot[slotKey]?._id === s._id;
                         const c   = counts?.[s._id] || {};
                         const reg = c.registered || 0;
@@ -897,7 +915,7 @@ const firstDay = useMemo(() => {
                               <button
                                 type="button"
                                 className="btn sm"
-                                onClick={() => toggleSession(slotKey, s)}
+                                onClick={() => toggleSession(s.startISO, s)}
                               >
                                 {isSelected ? 'Selected' : 'Select'}
                               </button>

@@ -120,12 +120,12 @@ export default function EventsPage() {
   }, [data]);
 
   const countries = useMemo(() => {
-    const set = new Set(events.map((e) => String(e.country || "").trim()).filter(Boolean));
+    const set = new Set(events?.map((e) => String(e.country || "").trim()).filter(Boolean));
     return ["all", ...Array.from(set)];
   }, [events]);
 
   const targets = useMemo(() => {
-    const set = new Set(events.map((e) => String(e.target || "").trim()).filter(Boolean));
+    const set = new Set(events?.map((e) => String(e.target || "").trim()).filter(Boolean));
     return ["all", ...Array.from(set)];
   }, [events]);
 

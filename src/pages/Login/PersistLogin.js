@@ -457,7 +457,7 @@ const PersistLogin = () => {
           </div>
           <Row>
             <div style={{ fontSize: 13, opacity: 0.92 }}>
-              We’ll reset your local session and take you back to the homepage.
+              Something wrong happened !
             </div>
             <Button onClick={goHomeAndClear} ariaLabel="Clear and go home">
               Go back to home
