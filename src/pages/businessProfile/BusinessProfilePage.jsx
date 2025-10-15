@@ -1,23 +1,27 @@
+// src/pages/bp/BusinessProfilePage.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "./business-profile.css";
+
 import BusinessOverview from "../../components/BusinessProfile/BusinessOverview";
 import BusinessTeam from "../../components/BusinessProfile/BusinessTeam";
 import BusinessContact from "../../components/BusinessProfile/BusinessContact";
 import BusinessEngagements from "../../components/BusinessProfile/BusinessEngagements";
 import BusinessSectors from "../../components/BusinessProfile/BusinessSectors";
+
 import HeaderShell from "../../components/layout/HeaderShell";
 import Footer from "../../components/footer/Footer";
 import { cta, footerData, nav, topbar } from "../main.mock";
 import imageLink from "../../utils/imageLink";
+
 import {
   useGetMyBPQuery,
   useGetProfileBySlugQuery,
   useGetProfileByIdQuery,
   useListProfileItemsQuery,
   useGetProfileOverviewQuery,
-  useGetPublicTeamQuery,          // <-- NEW hook
+  useGetPublicTeamQuery,
 } from "../../features/bp/BPApiSlice";
 
 /* tiny inline icons */
@@ -116,29 +120,47 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   const params = useParams();
   const { search } = useLocation();
   const qs = new URLSearchParams(search);
+
   const slugParam = params?.slug || qs.get("slug") || "";
   const idParam = params?.id || qs.get("id") || "";
 
-  // 1) Owner summary (when viewing your own profile and no slug/id given)
+  /** KEY FIX:
+   * If there is an explicit slug/id in URL, we DO NOT fall back to the owner's profile.
+   * We show "not found / invalid" state when the backend doesn't return a profile.
+   */
+  const hasExplicitTarget = !!(slugParam || idParam);
+
+  // 1) Owner summary (only when NO explicit target is requested)
   const { data: mySummary, isFetching: myFetching } = useGetMyBPQuery(undefined, {
-    skip: !!(slugParam || idParam),
+    skip: hasExplicitTarget,
   });
 
-  // 2) Public lookups
-  const { data: bySlugData, isFetching: slugFetching, isError: slugErr } =
-    useGetProfileBySlugQuery(slugParam, { skip: !slugParam });
+  // 2) Public lookups (only when explicit)
+  const {
+    data: bySlugData,
+    isFetching: slugFetching,
+    isError: slugErr,
+  } = useGetProfileBySlugQuery(slugParam, { skip: !slugParam });
 
-  const { data: byIdData, isFetching: idFetching, isError: idErr } =
-    useGetProfileByIdQuery(idParam, { skip: !idParam });
+  const {
+    data: byIdData,
+    isFetching: idFetching,
+    isError: idErr,
+  } = useGetProfileByIdQuery(idParam, { skip: !idParam });
 
-  // Normalize profile
+  // Normalize responses
   const ownerProf = mySummary?.data || mySummary?.profile || null;
   const slugProf = bySlugData?.data || bySlugData?.profile || (isObj(bySlugData) ? bySlugData : null);
   const idProf   = byIdData?.data || byIdData?.profile || (isObj(byIdData) ? byIdData : null);
-  const apiProfileRaw = slugProf || idProf || ownerProf || null;
+
+  // Decide which profile to present (NO owner fallback if explicit target exists)
+  const apiProfileRaw = hasExplicitTarget
+    ? (slugProf || idProf || null)
+    : (ownerProf || null);
+
   const profileId = apiProfileRaw?._id || apiProfileRaw?.id || null;
 
-  // 3) Items (public)
+  // 3) Items / Overview / Team are loaded only if we actually have a profile id
   const {
     data: itemsResp,
     isFetching: itemsFetching,
@@ -147,42 +169,54 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
   const flatItems = itemsResp?.data || (Array.isArray(itemsResp) ? itemsResp : []) || [];
 
-  // 3.5) Overview (stats + rating + innovation/presence)
   const { data: overviewDataRaw } = useGetProfileOverviewQuery(profileId, { skip: !profileId });
   const overviewData = overviewDataRaw || {};
 
-  // 4) Team (public) — RTK HOOK (this was missing)
   const { data: teamResp = [], isFetching: teamFetching } = useGetPublicTeamQuery(profileId, {
     skip: !profileId,
   });
 
-  // 5) Build presentation
+  // 4) Aggregate loading & error
+  const loading =
+    (hasExplicitTarget ? (slugFetching || idFetching) : myFetching) || itemsFetching;
+
+  const notFound =
+    hasExplicitTarget &&
+    !loading &&
+    !apiProfileRaw && // nothing came back
+    !teamFetching &&
+    // either error flags or simply no data:
+    (slugErr || idErr || (!slugProf && !idProf));
+
+  // 5) Presentable profile fields
   const baseRaw = isObj(profile) ? profile : {};
-  const p = {
-    id: profileId || baseRaw.id,
-    name: apiProfileRaw?.name || apiProfileRaw?.displayName || baseRaw.name || "",
-    tagline: apiProfileRaw?.tagline || baseRaw.tagline || "",
-    website: apiProfileRaw?.website || apiProfileRaw?.contacts?.website || baseRaw.website || "",
-    location:
-      apiProfileRaw?.location ||
-      [apiProfileRaw?.city, apiProfileRaw?.country].filter(Boolean).join(", ") ||
-      baseRaw.location ||
-      "",
-    verified: !!(apiProfileRaw?.published || apiProfileRaw?.verified || baseRaw.verified),
+  const p = apiProfileRaw
+    ? {
+        id: profileId || baseRaw.id,
+        name: apiProfileRaw?.name || apiProfileRaw?.displayName || baseRaw.name || "",
+        tagline: apiProfileRaw?.tagline || baseRaw.tagline || "",
+        website: apiProfileRaw?.website || apiProfileRaw?.contacts?.website || baseRaw.website || "",
+        location:
+          apiProfileRaw?.location ||
+          [apiProfileRaw?.city, apiProfileRaw?.country].filter(Boolean).join(", ") ||
+          baseRaw.location ||
+          "",
+        verified: !!(apiProfileRaw?.published || apiProfileRaw?.verified || baseRaw.verified),
 
-    // media
-    logo: imageLink(apiProfileRaw?.logoUpload) || baseRaw.logo || "",
-    banner: imageLink(apiProfileRaw?.bannerUpload) || baseRaw.banner || "",
+        // media
+        logo: imageLink(apiProfileRaw?.logoUpload) || baseRaw.logo || "",
+        banner: imageLink(apiProfileRaw?.bannerUpload) || baseRaw.banner || "",
 
-    industries: safeArray(apiProfileRaw?.industries),
+        industries: safeArray(apiProfileRaw?.industries),
 
-    offering: safeArray(apiProfileRaw?.offering),
-    seeking: safeArray(apiProfileRaw?.seeking),
-    innovation: safeArray(apiProfileRaw?.innovation),
-    contacts: { ...safeObj(baseRaw.contacts), ...safeObj(apiProfileRaw?.contacts) },
+        offering: safeArray(apiProfileRaw?.offering),
+        seeking: safeArray(apiProfileRaw?.seeking),
+        innovation: safeArray(apiProfileRaw?.innovation),
+        contacts: { ...safeObj(baseRaw.contacts), ...safeObj(apiProfileRaw?.contacts) },
 
-    rating: apiProfileRaw?.rating ?? baseRaw.rating,
-  };
+        rating: apiProfileRaw?.rating ?? baseRaw.rating,
+      }
+    : null;
 
   // derive product/service lists from items
   const products = flatItems
@@ -209,21 +243,17 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
   const sectors = flatItems.length ? groupItemsToSectors(flatItems) : [];
 
-  // Gallery (owner summary usually contains it)
   const gallery =
     Array.isArray(apiProfileRaw?.gallery) ? apiProfileRaw.gallery
-      : Array.isArray(ownerProf?.gallery) ? ownerProf.gallery
-      : [];
-
-  const loading = myFetching || slugFetching || idFetching || itemsFetching;
-  const hadError = slugErr || idErr || itemsErr;
+    : Array.isArray(ownerProf?.gallery) ? ownerProf.gallery
+    : [];
 
   /* tabs */
   const [tab, setTab] = useHashTab("overview");
 
   const fallbackLogo = (name = "BP") =>
     `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(
-      name.slice(0, 24)
+      String(name || "BP").slice(0, 24)
     )}`;
 
   const heroBg = (bannerUrl) =>
@@ -234,7 +264,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   const peerId =
     apiProfileRaw?.owner?.actor ||
     apiProfileRaw?.ownerId ||
-    profileId;
+    p?.id;
 
   const onMsg = () => {
     if (peerId) navigate(`/messages?member=${peerId}`);
@@ -246,7 +276,6 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Map backend team rows -> BusinessTeam expected shape
   const teamMembers = React.useMemo(() => {
     return (teamResp || []).map((m) => {
       const fullName =
@@ -277,140 +306,123 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
       <HeaderShell top={topbar} nav={nav} cta={cta} />
 
       <main className="bp">
-        {/* HERO */}
-        <header className="bp-hero">
-          <div className="bp-banner" style={heroBg(p.banner)} aria-hidden="true" />
-          <div className="container bp-hero-inner">
-            <div className="bp-brand">
-              <div className="bp-logo-wrap  mt-2" title={`${p.name} logo`}>
-                <img
-                  className="bp-logo-img"
-                  src={p.logo || fallbackLogo(p.name)}
-                  alt={`${p.name} logo`}
-                  onError={(e) => (e.currentTarget.src = fallbackLogo(p.name))}
-                />
+        {/* ======= NOT FOUND (explicit target only) ======= */}
+        {notFound && (
+          <div className="container" style={{ padding: "48px 0" }}>
+            <div className="reg-empty" style={{ borderStyle: "solid" }}>
+              ❌ No or invalid Business Profile for this user.
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                <button className="btn" onClick={() => navigate("/exhibitors")}>Browse Exhibitors</button>
+                <button className="btn btn-line" onClick={() => navigate("/")}>Back to Home</button>
               </div>
-
-              <div className="bp-id">
-                <h1 className="bpp-name align-items-start">
-                  {p.name}
-                  {loading ? <span className="bp-dot"> Loading…</span> : null}
-                  {hadError ? <span className="bp-dot -warn"> Offline view</span> : null}
-                </h1>
-                {p.tagline ? <p className="bp-tag">{p.tagline}</p> : null}
-                {apiProfileRaw?.about ? <p className="bp-about">{apiProfileRaw.about}</p> : null}
-                <div className="bp-meta">
-                  {p.location ? (
-                    <span className="chip">
-                      <I.pin />
-                      {p.location}
-                    </span>
-                  ) : null}
-                  {p.website ? (
-                    <a className="chip link" href={p.website} target="_blank" rel="noreferrer">
-                      <I.link />
-                      Website
-                    </a>
-                  ) : null}
-                  {p.verified ? (
-                    <span className="chip ok">
-                      <I.shield />
-                      Verified
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div className="bp-cta">
-              <button type="button" className="btn" onClick={onMsg}>
-                Message company
-              </button>
-              <button type="button" className="btn btn-outline" onClick={onMeet}>
-                Request meeting
-              </button>
             </div>
           </div>
+        )}
 
-          {/* TABS (sticky) */}
-          <nav className="bp-tabs" aria-label="Profile sections">
-            <div className="container bp-tabs-row">
-              {TABS.map((t) => (
-                <button
-                  key={t.key}
-                  className={`bp-tab ${tab === t.key ? "is-active" : ""}`}
-                  onClick={() => setTab(t.key)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setTab(t.key);
-                    }
-                  }}
-                  aria-current={tab === t.key ? "page" : undefined}
-                >
-                  {t.label}
-                </button>
-              ))}
-              {teamFetching && <span className="bp-dot"> Loading team…</span>}
-            </div>
-          </nav>
-        </header>
+        {/* ======= LOADING SKELETON ======= */}
+        {loading && !notFound && (
+          <div className="container" style={{ padding: "48px 0" }}>
+            <div className="reg-skel" />
+          </div>
+        )}
 
-        {/* CONTENT */}
-        <section className="container bp-body">
-          {tab === "overview" && (
-            <BusinessOverview
-              stats={overviewData || {}}
-              products={products}
-              services={services}
-              clients={[]}
-              industries={p.industries}
-              rating={overviewData?.rating?.avg ?? p.rating}
-              offerings={p.offering}
-              lookingFor={p.seeking}
-              capabilities={p.innovation}
-              innovation={overviewData?.innovation || {}}
-              locations={overviewData?.locations || []}
-              certifications={overviewData?.certifications || []}
-              gallery={gallery}
-            />
-          )}
+        {/* ======= MAIN VIEW (only when we have a profile) ======= */}
+        {!loading && !notFound && p && (
+          <>
+            {/* HERO */}
+            <header className="bp-hero">
+              <div className="bp-banner" style={heroBg(p.banner)} aria-hidden="true" />
+              <div className="container bp-hero-inner">
+                <div className="bp-brand">
+                  <div className="bp-logo-wrap mt-2" title={`${p.name} logo`}>
+                    <img
+                      className="bp-logo-img"
+                      src={p.logo || fallbackLogo(p.name)}
+                      alt={`${p.name} logo`}
+                      onError={(e) => (e.currentTarget.src = fallbackLogo(p.name))}
+                    />
+                  </div>
 
-          {tab === "sectors" && <BusinessSectors sectors={sectors} />}
+                  <div className="bp-id">
+                    <h1 className="bpp-name align-items-start">
+                      {p.name}
+                    </h1>
+                    {p.tagline ? <p className="bp-tag">{p.tagline}</p> : null}
+                    {apiProfileRaw?.about ? <p className="bp-about">{apiProfileRaw.about}</p> : null}
+                    <div className="bp-meta">
+                      {p.location ? (
+                        <span className="chip">
+                          <I.pin />
+                          {p.location}
+                        </span>
+                      ) : null}
+                      {p.website ? (
+                        <a className="chip link" href={p.website} target="_blank" rel="noreferrer">
+                          <I.link />
+                          Website
+                        </a>
+                      ) : null}
+                      {p.verified ? (
+                        <span className="chip ok">
+                          <I.shield />
+                          Verified
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
 
-          {tab === "team" && (
-            <BusinessTeam
-              members={teamMembers}
-              onMessage={(m) => navigate(`/messages?member=${m.entityId}`)}
-              onMeet={(m) => navigate(`/team?prefill=${m.entityId}`)}
-              onProfile={(m) => navigate(`/member/${m.entityType}/${m.entityId}`)}
-            />
-          )}
+                <div className="bp-cta">
+                  <button type="button" className="btn" onClick={onMsg}>
+                    Message company
+                  </button>
+                  <button type="button" className="btn btn-outline" onClick={onMeet}>
+                    Request meeting
+                  </button>
+                </div>
+              </div>
 
-          {tab === "contact" && (
-  <BusinessContact
-    companyName={p.name}
-    contacts={apiProfileRaw?.contacts}                 // <-- the dashboard's contacts array
-    locations={overviewData?.locations || []}          // if you have them; else omit
-    collateral={[]}                                     // or map from a profile field if you have downloads
-    topics={["Sales Inquiry","Partnership","Support","Press","Other"]}
-    onMessage={(c) => {
-      // e.g. message the owner; or open a chat with a contact
-      const peerId =
-        apiProfileRaw?.owner?.actor ||
-        apiProfileRaw?.ownerId ||
-        p.id;
-      if (peerId) window.location.href = `/messages?member=${peerId}`;
-    }}
-    onMeet={(c) => {
-      // route to your meeting flow/panel
-      window.location.href = "/team"; // or your actual meeting route
-    }}
-  />
-)}
+              {/* TABS (sticky) */}
+              <nav className="bp-tabs" aria-label="Profile sections">
+                <div className="container bp-tabs-row">
+                  {TABS.map((t) => (
+                    <button
+                      key={t.key}
+                      className={`bp-tab ${window.location.hash.replace("#", "") === t.key ? "is-active" : ""}`}
+                      onClick={() => (window.location.hash = t.key)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          window.location.hash = t.key;
+                        }
+                      }}
+                      aria-current={window.location.hash.replace("#", "") === t.key ? "page" : undefined}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                  {teamFetching && <span className="bp-dot"> Loading team…</span>}
+                </div>
+              </nav>
+            </header>
 
-          {tab === "engagements" && <BusinessEngagements items={[]} />}
-        </section>
+            {/* CONTENT */}
+            <section className="container bp-body">
+              {/* manage tabs via hook */}
+              <TabContent
+                p={p}
+                apiProfileRaw={apiProfileRaw}
+                overviewData={overviewData}
+                products={products}
+                services={services}
+                sectors={sectors}
+                gallery={gallery}
+                teamMembers={teamMembers}
+                navigate={navigate}
+              />
+            </section>
+          </>
+        )}
       </main>
 
       <Footer
@@ -420,6 +432,81 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
         actions={footerData.actions}
         bottomLinks={footerData.bottomLinks}
       />
+    </>
+  );
+}
+
+/* separate component so we can use the same tab state logic cleanly */
+function TabContent({
+  p,
+  apiProfileRaw,
+  overviewData,
+  products,
+  services,
+  sectors,
+  gallery,
+  teamMembers,
+  navigate,
+}) {
+  const [tab, setTab] = useHashTab("overview");
+
+  React.useEffect(() => {
+    // keep .is-active in sync for buttons above
+    // handled by hash; nothing else needed
+  }, [tab]);
+
+  return (
+    <>
+      {tab === "overview" && (
+        <BusinessOverview
+          stats={overviewData || {}}
+          products={products}
+          services={services}
+          clients={[]}
+          industries={p.industries}
+          rating={overviewData?.rating?.avg ?? p.rating}
+          offerings={p.offering}
+          lookingFor={p.seeking}
+          capabilities={p.innovation}
+          innovation={overviewData?.innovation || {}}
+          locations={overviewData?.locations || []}
+          certifications={overviewData?.certifications || []}
+          gallery={gallery}
+        />
+      )}
+
+      {tab === "sectors" && <BusinessSectors sectors={sectors} />}
+
+      {tab === "team" && (
+        <BusinessTeam
+          members={teamMembers}
+          onMessage={(m) => navigate(`/messages?member=${m.entityId}`)}
+          onMeet={(m) => navigate(`/team?prefill=${m.entityId}`)}
+          onProfile={(m) => navigate(`/member/${m.entityType}/${m.entityId}`)}
+        />
+      )}
+
+      {tab === "contact" && (
+        <BusinessContact
+          companyName={p.name}
+          contacts={apiProfileRaw?.contacts}
+          locations={overviewData?.locations || []}
+          collateral={[]}
+          topics={["Sales Inquiry","Partnership","Support","Press","Other"]}
+          onMessage={() => {
+            const peerId =
+              apiProfileRaw?.owner?.actor ||
+              apiProfileRaw?.ownerId ||
+              p.id;
+            if (peerId) window.location.href = `/messages?member=${peerId}`;
+          }}
+          onMeet={() => {
+            window.location.href = "/team";
+          }}
+        />
+      )}
+
+      {tab === "engagements" && <BusinessEngagements items={[]} />}
     </>
   );
 }

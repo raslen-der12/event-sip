@@ -19,6 +19,11 @@
 .b2bx-row{
   display:flex; gap:12px;
 }
+@media ( max-width:915px) {
+  .b2bx-row{
+      flex-direction: column;
+  }
+}
 
 /* Card base */
 .b2bx-card{

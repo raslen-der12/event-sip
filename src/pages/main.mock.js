@@ -81,7 +81,7 @@ export const heroV2 = {
   desc: "Hands-on sessions, real projects, and a community that ships. MERN, AI, cloud, and more.",
   ctaPrimary: { href: "/Register", label: "Register" },
   ctaSecondary: { href: "/schedule", label: "View Schedule" },
-  tags: ["MERN", "AI", "Cloud", "Workshops"],
+  tags: ["IPDAYS", "Events", "speaker", "Program"],
   stats: [
     { label: "EVENTS", value: 128 },
     { label: "ATTENDEES", value: "5.3K" },

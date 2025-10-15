@@ -1,14 +1,18 @@
+/* src/components/footer/footer.css */
+
 /* Midnight footer: deep neutral with subtle purple wash */
 .ft{
   color:#fff;
-  /* If you have tokens, you can define --footer-bg / --footer-edge in tokens.css.
-     Fallbacks below keep it dark but not flat black. */
   --footer-bg: color-mix(in oklab, var(--brand-900, #243A66) 50%, #0b0d12);
   --footer-edge: #ffffff22;
   background:
     radial-gradient(1200px 420px at 85% -10%, color-mix(in oklab, var(--brand-600, #243A66) 22%, transparent), transparent),
     linear-gradient(0deg, color-mix(in oklab, var(--footer-bg) 94%, black) 0%, color-mix(in oklab, var(--footer-bg) 86%, black) 100%);
   padding:32px 0 20px;
+
+  /* Sticky footer helpers — works when a parent is flex-col */
+  margin-top:auto;          /* allow footer to push to bottom */
+  flex-shrink:0;            /* don't collapse */
 }
 
 /* top row */
@@ -33,7 +37,7 @@
 }
 .ft-soc:hover{ border-color:#fff; background:#ffffff14; }
 
-/* quick actions (replaces form) */
+/* quick actions */
 .ft-acts{
   display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; align-content:start;
 }
@@ -76,6 +80,7 @@
   margin-top:18px; padding-top:12px;
   border-top:1px solid var(--footer-edge);
   display:flex; gap:12px; align-items:center; justify-content:space-between;
+  flex-wrap:wrap;
 }
 @media (max-width:560px){ .ft-bottom{ flex-direction:column; align-items:flex-start; gap:8px; } }
 .ft-copy{ color:#ffffffa6; font-weight:700; }
