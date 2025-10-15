@@ -1,50 +1,27 @@
+// src/components/event/organizers/EventOrganizers.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import "./organizers.css";
-
-/**
- * Visible tabs (UI wording) mapped to a canonical backend type filter.
- * We normalize incoming item.type -> one of: host | co-host | sponsor | partner | media
- */
-const VISIBLE_TABS = [
-  { key: "all",             label: "All",                filter: null },
-  { key: "organizers",      label: "Organizers",         filter: "host" },
-  { key: "co-funders",      label: "Co-Funders",         filter: "sponsor" },
-  { key: "co-organizers",   label: "Co-Organizers",      filter: "co-host" },
-  { key: "media-partners",  label: "Media Partners",     filter: "media" },
-  { key: "hospitality",     label: "Hospitality Partners", filter: "partner" },
-];
-
-/** map various backend variants to canonical buckets */
-const TYPE_ALIASES = {
-  "cl-host": "co-host",
-  "cohost": "co-host",
-  "co_host": "co-host",
-  "co-organizer": "co-host",
-  "co-organizers": "co-host",
-
-  "organizer": "host",
-  "organizers": "host",
-
-  "co-funder": "sponsor",
-  "co-funders": "sponsor",
-
-  "media partners": "media",
-  "media-partners": "media",
-  "media_partner": "media",
-
-  "hospitality partners": "partner",
-  "hospitality": "partner",
-};
-
-function canonType(t) {
-  const raw = String(t || "").trim().toLowerCase();
-  if (!raw) return "partner"; // sensible default bucket
-  return TYPE_ALIASES[raw] || raw; // if already canonical we keep it
-}
+import imageLink from "../../../utils/imageLink";
 
 function titleCase(s = "") {
-  return String(s).replace(/\b\w/g, (m) => m.toUpperCase());
+  return String(s)
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+// order comparator: smaller first; 0 goes to the end; then by name
+function orderComparator(a, b) {
+  const ak = a.order && a.order > 0 ? a.order : Number.MAX_SAFE_INTEGER;
+  const bk = b.order && b.order > 0 ? b.order : Number.MAX_SAFE_INTEGER;
+  if (ak !== bk) return ak - bk;
+  return String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" });
+}
+
+function normalizeType(raw) {
+  return String(raw || "partner").trim(); // keep adaptive; no alias map
 }
 
 function InitialLogo({ text }) {
@@ -70,38 +47,54 @@ export default function EventOrganizers({
   // Normalize input
   const normalized = Array.isArray(items)
     ? items.map((x, i) => {
-        const id = x._id || x.id || `org-${i}`;
-        const name = x.name || x.type || "Organization";
-        const link = x.link || "";
-        const logo = x.logo || "";
-        const ctype = canonType(x.type);
+        const id    = x._id || x.id || `org-${i}`;
+        const name  = x.name || x.type || "Organization";
+        const link  = x.link || "";
+        const logo  = x.logo || "";
+        const type  = normalizeType(x.type);
+        const order = typeof x.order === "number" ? x.order : Number(x.order) || 0;
         return {
-          id,
-          name,
-          link,
-          logo,
-          type: ctype, // canonical type used for filter
-          typeLabel: titleCase(ctype.replace(/-/g, " ")),
+          id, name, link, logo, type, order,
+          typeLabel: titleCase(type),
         };
       })
     : [];
 
-  // Counts per visible tab (based on its canonical filter)
-  const counts = VISIBLE_TABS.reduce((acc, t) => {
-    if (t.filter == null) {
-      acc[t.key] = normalized.length;
-    } else {
-      acc[t.key] = normalized.filter((x) => x.type === t.filter).length;
-    }
-    return acc;
-  }, {});
+  // Build adaptive tabs from existing types (alpha order)
+  const typeList = Array.from(
+    new Set(normalized.map((o) => o.type).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 
-  // Filter by selected tab
-  const activeTab = VISIBLE_TABS.find((t) => t.key === tab) || VISIBLE_TABS[0];
-  const filtered =
-    activeTab.filter == null
-      ? normalized
+  const tabs = React.useMemo(() => {
+    const base = [{ key: "all", label: "All", filter: null }];
+    const dyn  = typeList.map((t) => ({
+      key: t,
+      label: titleCase(t),
+      filter: t,
+    }));
+    return base.concat(dyn);
+  }, [typeList]);
+
+  // Counts per tab
+  const counts = React.useMemo(() => {
+    const acc = { all: normalized.length };
+    typeList.forEach((t) => {
+      acc[t] = normalized.filter((x) => x.type === t).length;
+    });
+    return acc;
+  }, [normalized, typeList]);
+
+  // Active tab/filter
+  const activeTab = tabs.find((t) => t.key === tab) || tabs[0];
+
+  // Filter + order
+  const filtered = React.useMemo(() => {
+    const arr = activeTab.filter == null
+      ? normalized.slice()
       : normalized.filter((x) => x.type === activeTab.filter);
+    arr.sort(orderComparator);
+    return arr;
+  }, [normalized, activeTab]);
 
   return (
     <section className="orgs">
@@ -113,7 +106,7 @@ export default function EventOrganizers({
           </div>
 
           <div className="org-tabs" role="tablist" aria-label="Organizer types">
-            {VISIBLE_TABS.map((t) => (
+            {tabs.map((t) => (
               <button
                 key={t.key}
                 role="tab"
@@ -143,13 +136,13 @@ export default function EventOrganizers({
         ) : (
           <div className="org-grid">
             {filtered.map((o) => {
-              const cell = (
+              const card = (
                 <div key={o.id} className="org-card" title={o.name}>
                   <div className="org-frame">
                     <div className="org-grad" />
                     {o.logo ? (
                       <img
-                        src={o.logo}
+                        src={imageLink(o.logo)}
                         alt={o.name}
                         className="org-logo"
                         loading="lazy"
@@ -170,10 +163,10 @@ export default function EventOrganizers({
                   rel="noopener noreferrer"
                   aria-label={`${o.name} (${o.typeLabel})`}
                 >
-                  {cell}
+                  {card}
                 </a>
               ) : (
-                cell
+                card
               );
             })}
           </div>
@@ -192,9 +185,9 @@ EventOrganizers.propTypes = {
       id: PropTypes.string,
       logo: PropTypes.string,
       link: PropTypes.string,
-      // accept any string type from backend; we normalize it internally
-      type: PropTypes.string,
+      type: PropTypes.string, // any string; UI adapts
       name: PropTypes.string,
+      order: PropTypes.number,
     })
   ),
   loading: PropTypes.bool,

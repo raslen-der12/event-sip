@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FiChevronLeft, FiChevronRight, FiZap } from "react-icons/fi";
+import imageLink from "../../../utils/imageLink";
     const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
 
 const FALLBACK = [
@@ -134,7 +135,7 @@ export default function FeaturesShowcase({
               >
                 <div className="relative h-48 md:h-56 overflow-hidden">
                   <img
-                    src={bg}
+                    src={imageLink(bg)}
                     alt={f.title}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                   />

@@ -227,7 +227,7 @@ Cette édition vise à ouvrir les portes de l’écosystème tunisien vers l’e
 
       ctaLabel="Je m’inscris"
       ctaHref="/register"
-      imageSrc={`${base}/uploads/images/admin/gits-ipdays.png`}
+      imageSrc={`https://gits.seketak-eg.com/wp-content/uploads/2025/10/IPDAYS-X-GITS.png`}
     />
 
 

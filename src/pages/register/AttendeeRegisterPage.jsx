@@ -114,6 +114,15 @@ const LANGS = [
   { code: 'ar', label: 'Arabic'  },
 ];
 
+/* Objective chips (single select, same UI style as languages) */
+const OBJECTIVES = [
+  { code: 'networking',     label: 'Networking' },
+  { code: 'find-partners',  label: 'Réseautage' },
+  { code: 'find-investors', label: 'Trouver des investisseurs' },
+  { code: 'find-clients',   label: 'Trouver des clients' },
+  { code: 'learn-trends',   label: 'Apprendre les tendances' },
+];
+
 /* ===== Small controls reused ===== */
 function CountrySelect({ value, onChange, placeholder='Select country' }) {
   const [open, setOpen] = useState(false);
@@ -199,6 +208,47 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
             >
               {l.label}
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ObjectiveSelect({ values = [], onChange }) {
+  const toggle = (code) => {
+    const has = values.includes(code);
+    if (has) onChange(values.filter(v => v !== code));
+    else onChange([...values, code]);
+  };
+
+  const remove = (code) => onChange(values.filter(v => v !== code));
+
+  return (
+    <div>
+      <div className="objective-grid">
+        {OBJECTIVES.map(o => {
+          const active = values.includes(o.code);
+          return (
+            <div
+              key={o.code}
+              className={`lang-item ${active ? 'active' : ''}`}
+              onClick={() => toggle(o.code)}
+            >
+              {o.label}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="lang-chips" style={{ marginTop: 8 }}>
+        {values.map(code => {
+          const item = OBJECTIVES.find(x => x.code === code);
+          return (
+            <span key={code} className="lang-chip">
+              {item?.label || code}
+              <span className="x" onClick={() => remove(code)}>×</span>
+            </span>
           );
         })}
       </div>
@@ -419,7 +469,7 @@ export default function AttendeeRegisterPage() {
     website: '',
     linkedin: '',
     languages: [],
-    objective: '',
+    objective: [],
     pwd: '',
     pwd2: '',
     openToMeetings: true,
@@ -433,10 +483,6 @@ export default function AttendeeRegisterPage() {
   const shouldShowOrgFields = !isStudent;
 
   /* ========= KEY CHANGE: track-aware selection ========= */
-  // Composite key per time slot + family:
-  //  - "masterclass|<startISO>" for Masterclass
-  //  - "atelier|<startISO>" for Atelier
-  //  - "*|<startISO>" for other tracks (conflict across others as before)
   const [selectedBySlot, setSelectedBySlot] = useState({}); // { compositeKey: session }
   const compositeKeyFor = (session) => {
     const fam = familyOfTrack(session.track);
@@ -512,7 +558,6 @@ export default function AttendeeRegisterPage() {
     if (!required(form.email)) e2.email = 'Requis';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Email invalide';
     if (!required(form.country)) e2.country = 'Requis';
-    // PHOTO OPTIONAL: removed the "photo required" check
     if (!form.languages?.length) e2.languages = 'Choisissez au moins 1 langue';
     if (shouldShowOrgFields) {
       if (!required(form.orgName)) e2.orgName = 'Requis';
@@ -603,7 +648,10 @@ export default function AttendeeRegisterPage() {
     }
 
     fd.append('businessProfile.preferredLanguages', form.languages.join(','));
-    fd.append('matchingIntent.objective', form.objective);
+    fd.append(
+        'matchingIntent.objective',
+        Array.isArray(form.objective) ? form.objective.join(',') : form.objective
+      );
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
     fd.append('links.website', form.website);
     fd.append('links.linkedin', form.linkedin);
@@ -836,16 +884,13 @@ export default function AttendeeRegisterPage() {
                 </div>
               )}
 
+              {/* Objective chips (single select) */}
               <div className="att-field full">
                 <label>Objectif</label>
-                <select value={form.objective} onChange={e=>setField('objective', e.target.value)}>
-                  <option value="">Sélectionnez…</option>
-                  <option value="networking">Networking</option>
-                  <option value="find-partners">Réseautage</option>
-                  <option value="find-investors">Trouver des investisseurs</option>
-                  <option value="find-clients">Trouver des clients</option>
-                  <option value="learn-trends">Apprendre les tendances</option>
-                </select>
+                <ObjectiveSelect
+                    values={form.objective}
+                    onChange={(v) => setField('objective', v)}
+                  />
               </div>
 
               <div className="att-field full" style={{ alignItems:'flex-start' }}>

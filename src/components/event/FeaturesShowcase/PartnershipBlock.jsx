@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import "./features-showcase.css"; // reuse .fsx-title / .fsx-icon
 
 export default function PartnershipBlock({
-  heading = "Partenariat Stratégique IPDAYS × GITS",
+  heading = "Partenariat Stratégique IPDAYS × GITS 2025",
   strap = "Quand l’impact local rencontre la portée mondiale",
   paragraphs = [
-    "L’édition 2025 marque une alliance inédite entre IPDAYS et GITS (Global Investment & Trading Summit).",
+    "L’édition 2025 marque une alliance inédite entre IPDAYS et GITS 2025 (Global Investment & Trading Summit).",
     "Ensemble, nous créons un pont unique entre l’innovation régionale et les opportunités internationales."
   ],
   ctaLabel = "Je m’inscris",

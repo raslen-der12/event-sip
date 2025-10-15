@@ -17,7 +17,7 @@ export default function AboutIntro({
     >
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
         {/* LEFT SIDE - TEXT */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 w-75">
           <header className="flex items-center mb-6">
             <span className="text-[#EB5434] text-3xl mr-3">
               <FiZap />
@@ -29,7 +29,7 @@ export default function AboutIntro({
 
           {contentHtml && (
             <div
-              className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg"
+              className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg text-justify"
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           )}

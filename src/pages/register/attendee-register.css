@@ -323,3 +323,7 @@
     background: linear-gradient(135deg, #84BBF6 0%, #09519E 100%) !important;
 
 }
+.objective-grid{
+  display: flex;
+  gap: 6px;
+}

@@ -2,24 +2,22 @@
 import { io } from "socket.io-client";
 import { selectCurrentToken } from "../features/auth/authSlice";
 
-const API_URL    = process.env.REACT_REACT_APP_API_URL || process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
-const SOCKET_PATH= process.env.REACT_APP_SOCKET_PATH || "/socket.io";
-const ADMIN_NS   = process.env.REACT_APP_ADMIN_SOCKET_NAMESPACE || "/admin";
+const API_URL     = process.env.REACT_REACT_APP_API_URL || process.env.REACT_APP_API_URL || "https://api.eventra.cloud";
+const SOCKET_PATH = process.env.REACT_APP_SOCKET_PATH || "/socket.io";
+const ADMIN_NS    = process.env.REACT_APP_ADMIN_SOCKET_NAMESPACE || "/admin";
 
-// debug toggle: set REACT_APP_ADMIN_SOCKET_DEBUG=1 or localStorage.ADMIN_SOCKET_DEBUG="1"
-const envDebug   = String(process.env.REACT_APP_ADMIN_SOCKET_DEBUG || "").trim();
-const lsDebug    = typeof window !== "undefined" ? window.localStorage.getItem("ADMIN_SOCKET_DEBUG") : null;
-let   DEBUG      = (envDebug === "1" || envDebug.toLowerCase() === "true") || (lsDebug === "1" || lsDebug === "true");
+// Debug flag (default OFF). You can still re-enable at runtime via adminSocket.enableDebug(true)
+let DEBUG = false;
 
-const log   = (...a) => { if (DEBUG) console.log("%c[admin-socket]", "color:#6c5ce7", ...a); };
-const info  = (...a) => { if (DEBUG) console.info("%c[admin-socket]", "color:#00b894", ...a); };
-const warn  = (...a) => { if (DEBUG) console.warn("%c[admin-socket]", "color:#fdcb6e", ...a); };
-const error = (...a) => { if (DEBUG) console.error("%c[admin-socket]", "color:#d63031", ...a); };
+const log   = () => {};
+const info  = () => {};
+const warn  = () => {};
+const error = () => {};
 
 const listeners = new Map(); // event -> Set<fn>
 function emitLocal(event, payload) {
   const set = listeners.get(event);
-  if (set) set.forEach(fn => { try { fn(payload); } catch (e) { error("listener error", e); } });
+  if (set) set.forEach(fn => { try { fn(payload); } catch (e) { /* suppressed */ } });
 }
 
 const safe = (v) => {
@@ -37,7 +35,7 @@ class AdminSocket {
   enableDebug(on = true) {
     DEBUG = !!on;
     try { localStorage.setItem("ADMIN_SOCKET_DEBUG", on ? "1" : "0"); } catch {}
-    log("debug:", on);
+    // no console output; just flips the flag for future use if you add logs later
   }
 
   init(store) {
@@ -51,13 +49,11 @@ class AdminSocket {
 
   ensureConnected() {
     if (this.socket?.connected) return this.socket;
-    if (!this.store) { warn("no store set; call adminSocket.init(store) first"); return null; }
+    if (!this.store) { return null; }
 
     const state = this.store.getState();
     const token = selectCurrentToken(state);
     const auth  = token ? { token: `Bearer ${token}` } : undefined;
-
-    log("connecting to", `${API_URL}${ADMIN_NS}`, { path: SOCKET_PATH, auth: !!auth });
 
     this.socket = io(`${API_URL}${ADMIN_NS}`, {
       path: SOCKET_PATH,
@@ -66,37 +62,27 @@ class AdminSocket {
       auth
     });
 
-    // ---- core lifecycle
+    // ---- core lifecycle (no console output)
     this.socket.on("connect", () => {
       this.connectedOnce = true;
-      info("connected", { id: this.socket.id });
       emitLocal("connected");
     });
 
     this.socket.on("disconnect", (reason) => {
-      warn("disconnected:", reason);
       emitLocal("disconnected", reason);
     });
 
-    this.socket.on("connect_error", (err) => {
-      error("connect_error:", err?.message || err);
+    this.socket.on("connect_error", () => {
+      // suppressed
     });
 
-    this.socket.on("error", (err) => {
-      error("socket error:", err);
+    this.socket.on("error", () => {
+      // suppressed
     });
 
+    // ---- removed noisy onAny debug logger
 
-    // ---- log ALL inbound events
-    if (this.socket.onAny) {
-      this.socket.onAny((event, ...args) => {
-        if (!DEBUG) return;
-        const out = args.length === 1 ? args[0] : args;
-        console.debug("%c[admin-socket] <-", "color:#0984e3", event, safe(out));
-      });
-    }
-
-    // ---- specific streams you care about
+    // ---- specific streams
     this.socket.on("chat:new",        (pl) => emitLocal("chat:new", pl));
     this.socket.on("chat:system",     (pl) => emitLocal("chat:system", pl));
     this.socket.on("chat:deleted",    (pl) => emitLocal("chat:deleted", pl));
@@ -109,32 +95,26 @@ class AdminSocket {
     return this.socket;
   }
 
-  // emit with debug + optional ack timeout
+  // emit with optional ack timeout (no console logs)
   emitWithAck(event, payload, timeoutMs = 4000) {
     this.ensureConnected();
-    if (!this.socket) { error("emitWithAck: no socket"); return Promise.reject(new Error("no socket")); }
-
-    if (DEBUG) console.debug("%c[admin-socket] ->", "color:#e17055", event, safe(payload));
+    if (!this.socket) return Promise.reject(new Error("no socket"));
 
     return new Promise((resolve, reject) => {
       let timer = null;
       try {
         const ack = (res) => {
           if (timer) clearTimeout(timer);
-          info(`ack for ${event}:`, safe(res));
           resolve(res);
         };
-        // some server handlers don’t ack; we still want to log that we sent
         if (timeoutMs > 0) {
           timer = setTimeout(() => {
-            warn(`no ack for ${event} within ${timeoutMs}ms (this can be normal)`);
-            resolve(null);
+            resolve(null); // no ack within timeout (can be normal)
           }, timeoutMs);
         }
         this.socket.emit(event, payload, ack);
       } catch (e) {
         if (timer) clearTimeout(timer);
-        error(`emit error for ${event}:`, e);
         reject(e);
       }
     });

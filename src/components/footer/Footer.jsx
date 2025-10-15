@@ -23,7 +23,7 @@ export default function Footer({
               <a className="brand" href="/" aria-label={brand?.name || "Home"}>
                 <img
                   width={130}
-                  src={imageLink(brand.logoSrc) || imageLink("default/LOGO GITS COLOR.png")}
+                  src={ imageLink("default/LOGO GITS COLOR.png")}
                   alt={brand?.name || "Brand logo"}
                 />
               </a>

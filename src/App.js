@@ -134,7 +134,7 @@ function App() {
 
 
         </Route>
-        <Route element={<RequireAuth allowedRoles={['admin', 'super', 'attendee']} />}>
+        <Route element={<RequireAuth allowedRoles={['admin', 'super']} />}>
 
           <Route path="/admin" element={<AdminShell nav={adminNav} user={adminUser} />}>
             <Route index element={<AdminHome />} />

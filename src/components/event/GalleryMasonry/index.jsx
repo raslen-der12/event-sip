@@ -33,42 +33,42 @@ const FALLBACK = [
   {
     _id: "g1",
     file:
-      `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/kh_occ_D1_478.png`,
     title: "Keynote crowd",
     type: "image",
   },
   {
     _id: "g2",
     file:
-      `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/kh_occ_D1_772.png`,
     title: "Live demo",
     type: "image",
   },
   {
     _id: "g3",
     file:
-      `${base}/uploads/images/admin/sans titre-50.png?q=80&w=1600&auto=format&fit=crop`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/kh_occ_D2_551.png`,
     title: "Panel talk",
     type: "image",
   },
   {
     _id: "g4",
     file:
-      `${base}/uploads/images/admin/KH_03168.png`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/kh_occ_D2_598.png`,
     title: "Expo floor",
     type: "image",
   },
     {
     _id: "g7",
     file:
-      `${base}/uploads/images/admin/KH_03168.png`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/sans-titre-22.png`,
     title: "Expo floor",
     type: "image",
   },
     {
     _id: "g8",
     file:
-      `${base}/uploads/images/admin/sans titre-136.png`,
+      `https://gits.seketak-eg.com/wp-content/uploads/2025/10/sans-titre-132.png`,
     title: "Expo floor",
     type: "image",
   },
@@ -82,7 +82,7 @@ const FALLBACK = [
   {
     _id: "g6",
     file:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "",
     title: "Program brochure",
     type: "pdf",
   },
