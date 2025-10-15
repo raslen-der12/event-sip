@@ -99,6 +99,15 @@ const COUNTRIES = [
   { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
 ];
 
+/* Objective options (multi-choice) */
+const OBJECTIVE_OPTIONS = [
+  { value: "networking", label: "Networking" },
+  { value: "find-partners", label: "Réseautage" },
+  { value: "find-investors", label: "Trouver des investisseurs" },
+  { value: "find-clients", label: "Trouver des clients" },
+  { value: "learn-trends", label: "Apprendre les tendances" },
+];
+
 /* Language list (max 3) */
 const LANGS = [
   { code: 'en', label: 'English' },
@@ -415,7 +424,7 @@ const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQue
     website: '',
     linkedin: '',
     languages: [],
-    objective: '',
+    objective: [],
         pwd: '',
     pwd2: '',
     openToMeetings: true,
@@ -597,7 +606,11 @@ const trackSections = useMemo(() => {
     // languages (max 3)
     fd.append('businessProfile.preferredLanguages', form.languages.join(','));
 
-    fd.append('matchingIntent.objective', form.objective);
+fd.append(
+  'matchingIntent.objective',
+  Array.isArray(form.objective) ? form.objective.join(',') : (form.objective || '')
+);
+
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
 
     fd.append('links.website', form.website);
@@ -749,6 +762,10 @@ const trackSections = useMemo(() => {
               {errs.country && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.country}</div>}
             </div>
 
+            <div className="att-field">
+              <label>Région</label>
+              <input value={form.city} onChange={e=>setField('city', e.target.value)} />
+            </div>
             
 
             {/* Org fields — hidden for Student */}
@@ -825,17 +842,44 @@ const trackSections = useMemo(() => {
               </div>
             )}
 
-            <div className="att-field full">
-              <label>Objective</label>
-              <select value={form.objective} onChange={e=>setField('objective', e.target.value)}>
-                <option value="">Sélectionnez…</option>
-                <option value="networking">Networking</option>
-                <option value="find-partners">Réseautage</option>
-                <option value="find-investors">Trouver des investisseurs</option>
-                <option value="find-clients">Trouver des clients</option>
-                <option value="learn-trends">Apprendre les tendances</option>
-              </select>
-            </div>
+<div className="att-field full">
+  <label>Objectif</label>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+    {OBJECTIVE_OPTIONS.map(opt => {
+      // support both previous single-string values and new-array shape
+      const current = Array.isArray(form.objective)
+        ? form.objective
+        : form.objective
+        ? [form.objective]
+        : [];
+
+      const checked = current.includes(opt.value);
+
+      return (
+        <label key={opt.value} className="chk-inline" style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <input
+            type="checkbox"
+            value={opt.value}
+            checked={checked}
+            onChange={e => {
+              const nowChecked = e.target.checked;
+              const base = current;
+              const next = nowChecked
+                ? Array.from(new Set([...base, opt.value]))
+                : base.filter(v => v !== opt.value);
+              setField('objective', next);
+            }}
+          />
+          <span style={{ fontSize:14 }}>{opt.label}</span>
+        </label>
+      );
+    })}
+  </div>
+
+  <div className="hint mt-2 text-xs text-gray-500">Sélectionnez toutes les options qui s'appliquent.</div>
+</div>
+
 
             <div className="att-field full" style={{ alignItems:'flex-start' }}>
               <label>Disponible pour des rendez-vous ?</label>

@@ -24,7 +24,7 @@ export default function Footer({
               <div className="ft-logo ph" aria-hidden />
             )}
             <div className="ft-bcopy">
-              <div className="ft-name">{brand?.name || "GITS"}</div>
+              <div className="ft-name">{brand?.name || ""}</div>
               {brand?.tagline ? <p className="ft-tag">{brand.tagline}</p> : null}
               {socials?.length ? (
                 <div className="ft-socials">
@@ -57,7 +57,7 @@ export default function Footer({
 
         {/* bottom bar */}
         <div className="ft-bottom">
-          <div className="ft-copy">© {year} {brand?.name || "GITS"}. All rights reserved.</div>
+          <div className="ft-copy">© Powered by SEKETAK Solutions </div>
           {bottomLinks?.length ? (
             <div className="ft-bl">
               {bottomLinks.map((b) => (

@@ -22,12 +22,12 @@ export default function ImpactHighlights({
   onItemClick,
 }) {
   const fallback = [
-    { id: "f1", title: "1.5k+ participants", description: "International audience across MENA, EU, and NA." },
-    { id: "f2", title: "400+ B2B meetings", description: "Curated matchmaking produced measurable deal flow." },
-    { id: "f3", title: "95% satisfaction", description: "Post-event survey: content, logistics, and value." },
-    { id: "f4", title: "120 exhibitors", description: "Showcasing solutions from startups and enterprises." },
-    { id: "f5", title: "30+ sessions", description: "Keynotes, panels, and workshops across 2 days." },
-    { id: "f6", title: "Global coverage", description: "Media mentions and social reach across regions." },
+    { id: "f1", title: "1.5k+ participants", description: "Audience internationale Afrique, MENA region & Europe " },
+    { id: "f2", title: "400+ B2B meetings", description: "Matchmaking structuré et résultats mesurables" },
+    { id: "f3", title: "95% satisfaction", description: "Enquête post-événement : contenu, logistique, valeur ajoutée" },
+    { id: "f4", title: "50+ exposants ", description: "Startups, entreprises et institutions" },
+    { id: "f5", title: "50+ sessions ", description: "Conférences, panels, ateliers sur 2 jours" },
+    { id: "f6", title: "Couverture mondiale ", description: "Médias et réseaux sociaux à portée internationale" },
   ];
 
   const list = isLoading ? [] : (impacts?.length ? impacts : fallback);

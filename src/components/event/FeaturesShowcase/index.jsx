@@ -19,15 +19,7 @@ const FALLBACK = [
     desc: "Touch, try, and stress-test new tech—from enterprise software to robotics—guided by the teams who built it.",
     image:
       `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
-  },
-  {
-    _id: "fx3",
-    title: "Gov/Enterprise Tracks",
-    subtitle: "Real procurement paths",
-    desc: "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready.",
-    image:
-      `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
-  },
+  }
 ];
 
 export default function FeaturesShowcase({

@@ -8,9 +8,11 @@ export default function AboutIntro({
   chips = [],
   ctaLabel,
   ctaHref,
-  imageSrc = "/assets/images/about.jpg", // ✅ add default image path
+  imageSrc = "https://gits.seketak-eg.com/wp-content/uploads/2025/10/IPDAYS-X-GITS.png",
   className = "",
 }) {
+  const isExternal = ctaHref && /^https?:\/\//i.test(ctaHref);
+
   return (
     <section
       className={`w-full bg-[#f9f9f9] py-16 px-6 lg:px-16 font-['Poppins'] ${className}`}
@@ -19,7 +21,7 @@ export default function AboutIntro({
         {/* LEFT SIDE - TEXT */}
         <div className="lg:col-span-2">
           <header className="flex items-center mb-6">
-            <span className="text-[#EB5434] text-3xl mr-3">
+            <span className="text-[#EB5434] text-3xl mr-3" aria-hidden>
               <FiZap />
             </span>
             <h2 className="text-2xl md:text-4xl font-semibold text-[#1C3664]">
@@ -29,7 +31,7 @@ export default function AboutIntro({
 
           {contentHtml && (
             <div
-              className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg"
+              className="text-gray-700 leading-relaxed mb-6 text-sm md:text-base text-justify max-w-[65ch]"
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           )}
@@ -39,10 +41,10 @@ export default function AboutIntro({
               {chips.map((t, i) => (
                 <li
                   key={i}
-                  className="flex items-center text-gray-600 text-sm md:text-base"
+                  className="flex items-start text-gray-600 text-xs md:text-sm"
                 >
-                  <span className="w-2 h-2 rounded-full bg-[#EB5434] mr-2"></span>
-                  <span dangerouslySetInnerHTML={{ __html: t }} />
+                  <span className="w-2 h-2 rounded-full bg-[#EB5434] mt-2 mr-2 flex-shrink-0" />
+                  <span className="break-words text-justify" dangerouslySetInnerHTML={{ __html: t }} />
                 </li>
               ))}
             </ul>
@@ -52,9 +54,12 @@ export default function AboutIntro({
             <div>
               <a
                 href={ctaHref}
-                className="inline-block px-8 py-3 text-lg font-semibold rounded-lg text-white 
-                bg-gradient-to-r from-[#EB5434] to-[#FF7B5E] shadow-md transition-all duration-300 
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="inline-block px-8 py-3 text-lg font-semibold rounded-lg text-white \
+                bg-gradient-to-r from-[#EB5434] to-[#FF7B5E] shadow-md transition-all duration-300 \
                 hover:shadow-lg hover:-translate-y-1 hover:brightness-110"
+                aria-label={ctaLabel}
               >
                 {ctaLabel}
               </a>
@@ -64,13 +69,13 @@ export default function AboutIntro({
 
         {/* RIGHT SIDE - IMAGE */}
         <div className="lg:col-span-1">
-          <div className="relative overflow-hidden rounded-2xl ">
+          <div className="relative overflow-hidden rounded-2xl shadow-sm">
             <img
               src={imageSrc}
               alt="About section illustration"
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
-            <div className="absolute inset-0  rounded-2xl"></div>
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" />
           </div>
         </div>
       </div>
