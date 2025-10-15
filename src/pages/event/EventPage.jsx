@@ -222,16 +222,12 @@ export default function EventPage() {
       />
     <AboutIntro
       heading="À propos des IPDAYS X GITS 2025"
-      contentHtml="<p>Cette édition, placée sous le thème “L’INTERNATIONAL”, a pour objectif d’ouvrir les portes aux Startups et aux PME innovantes, ainsi qu’à l’écosystème tunisien, vers le monde, en mettant en lumière les opportunités de collaboration, d’export, d’internationalisation et de partenariats internationaux.</p>"
-      chips={[
-        "Je m’inscris maintenant",
-        "Voir le programme",
-        "Ajouter au calendrier",
-        "Places limitées",
-      ]}
+      contentHtml="<p>Un événement inclusif à la recherche d’impact durable
+Cette édition vise à ouvrir les portes de l’écosystème tunisien vers l’extérieur, en mettant en lumière les opportunités de collaboration, d’export, de partenariats stratégiques et d’immersion dans les marchés internationaux. Elle réunira startups, porteurs de projets, investisseurs, mentors et experts pour échanger, inspirer et coconstruire des solutions à impact global.</p>"
+
       ctaLabel="Je m’inscris"
       ctaHref="/register"
-      imageSrc={`${base}/uploads/images/admin/logo-ipdays.png`}
+      imageSrc={`${base}/uploads/images/admin/gits-ipdays.png`}
     />
 
 

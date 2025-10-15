@@ -78,57 +78,7 @@ export default function RegisterLanding() {
   // 🧩 ROLE SELECTION SECTION
   const RoleChooser = (
     <div className="w-full bg-gray-50">
-      {/* --- Hero Section (Image Left / Text Right) --- */}
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center py-16 px-6">
-        {/* Left: Event Image */}
-        <div className="w-full rounded-2xl overflow-hidden shadow-md">
-          <img
-            src={
-              imageLink(headerEvent.cover) ||
-              `${base}/uploads/images/admin/cover-ipdays.jpg`
-            }
-            alt={headerEvent.title || "Event Cover"}
-            className="w-full h-full object-cover"
-          />
-        </div>
 
-        {/* Right: Event Info */}
-        <div className="text-left">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            {headerEvent.title || "L’international"}
-          </h1>
-          <p className="text-lg text-gray-700 mb-4">
-            {headerEvent.subtitle || "Les InnoPreneurs Days – IPDAYS 2025."}
-          </p>
-          <p className="text-gray-600 mb-6 leading-relaxed">
-            {headerEvent.description ||
-              "Cette édition, placée sous le thème “L’INTERNATIONAL”, a pour objectif d’ouvrir les portes de l’écosystème tunisien vers le monde, en mettant en lumière les opportunités de collaboration, d’export, et de partenariats à l’échelle internationale."}
-          </p>
-
-          {/* Event Details */}
-          <div className="flex flex-wrap gap-6 text-gray-700 mb-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#7BC2D5]" />
-              <span>{headerEvent.date || "12–13 November 2025"}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#7BC2D5]" />
-              <span>{headerEvent.venue || "Tunis – Hybrid Edition"}</span>
-            </div>
-          </div>
-
-          <button
-            onClick={() =>
-              document
-                .getElementById("role-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
-            className="bg-[#7BC2D5] hover:bg-[#68a7bb] transition text-white font-medium px-6 py-3 rounded-full shadow-md"
-          >
-            View Participation Options ↓
-          </button>
-        </div>
-      </div>
 
       {/* --- Role Cards Section --- */}
       <div id="role-section" className="max-w-6xl mx-auto py-16 px-6 text-center">
@@ -178,6 +128,58 @@ export default function RegisterLanding() {
               Exhibit Now
             </button>
           </div>
+        </div>
+      </div>
+
+            {/* --- Hero Section (Image Left / Text Right) --- */}
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center py-16 px-6">
+        {/* Left: Event Image */}
+        <div className="w-full rounded-2xl overflow-hidden shadow-md">
+          <img
+            src={
+              imageLink(headerEvent.cover) ||
+              `${base}/uploads/images/admin/cover-ipdays.jpg`
+            }
+            alt={headerEvent.title || "Event Cover"}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Right: Event Info */}
+        <div className="text-left">
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            {headerEvent.title || "L’international"}
+          </h1>
+          <p className="text-lg text-gray-700 mb-4">
+            {headerEvent.subtitle || "Les InnoPreneurs Days X the Global Investment & Trade Summit 2025"}
+          </p>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            {headerEvent.description ||
+              "Cette édition, placée sous le thème “L’INTERNATIONAL”, a pour objectif d’ouvrir les portes de l’écosystème tunisien vers le monde, en mettant en lumière les opportunités de collaboration, d’export, et de partenariats à l’échelle internationale."}
+          </p>
+
+          {/* Event Details */}
+          <div className="flex flex-wrap gap-6 text-gray-700 mb-6">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#7BC2D5]" />
+              <span>{headerEvent.date || "12–13 November 2025"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#7BC2D5]" />
+              <span>{headerEvent.venue || "Tunis – Hybrid Edition"}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() =>
+              document
+                .getElementById("role-section")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="bg-[#7BC2D5] hover:bg-[#68a7bb] transition text-white font-medium px-6 py-3 rounded-full shadow-md"
+          >
+            View Participation Options ↓
+          </button>
         </div>
       </div>
     </div>

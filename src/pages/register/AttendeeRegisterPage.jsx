@@ -903,146 +903,167 @@ const trackSections = useMemo(() => {
         </form>
       )}
 
-      {/* ===== STEP 3: Sessions (richer UX) ===== */}
-      {step === 3 && (
-        <div className="anim-in">
-  <div className="att-section-head">
-    <div className="t">Choose your sessions</div>
-    <div className="h">Pick one session per time slot. Click <b>Info</b> to view details; click a card to select.</div>
-  </div>
-
-  {/* Filter bar v2 (TRACK ONLY) */}
-  <div className="att-filter-bar-v2">
-    <div className="att-field">
-      <label>Track</label>
-      <select value={track} onChange={e => setTrack(e.target.value)}>
-        <option value="">All tracks</option>
-        {uniqueTracks
-          .sort(compareTracks)  // show B2B last in dropdown too
-          .map(t => <option key={t} value={t}>{t}</option>)}
-      </select>
-    </div>
-  </div>
-
-  {schedFetching ? (
-    <div className="reg-skel" />
-  ) : !filteredSortedSessions.length ? (
-    <div className="reg-empty">No sessions available yet.</div>
-  ) : (
-    <>
-      <div className="att-session-list-v2">
-  {trackSections.map(section => (
-    
-    <div key={section.track} className="att-track-section-v2">
-      <h3 className="att-track-sep-v2">
-        {section.track}
-      </h3>
-
-      {section.items.map(s => {
-        const slotKey = s.startISO; // keep “one per time slot” logic
-        const isSelected = selectedBySlot[slotKey]?._id === s._id;
-        const c = counts?.[s._id] || {};
-        const reg = c.registered || 0;
-        const cap = s.roomCapacity || 0;
-        const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
-        const title = s.title || s.sessionTitle || 'Session';
-        const when = new Date(s.startISO);
-
-        return (
-          <article
-            key={s._id}
-            className={`att-session-card-v2 ${isSelected ? 'is-selected' : ''} ${section.track ==="B2B" ?'bg-new':''}`}
-          >
-            {s.cover ? (
-              <img
-                src={s.cover}
-                alt={title}
-                className="session-cover-v2"
-              />
-            ) : null}
-
-            <div className="session-head-v2">
-              <div className="session-chipline-v2">
-                {s.track ? <span className="badge">{s.track}</span> : <span className="badge">Session</span>}
-                {s.roomName ? <span className="chip">Room: {s.roomName}</span> : null}
-                {s.roomLocation ? <span className="chip">Loc: {s.roomLocation}</span> : null}
-                <span className="chip">
-                  {when.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })} • {when.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
-                </span>
-              </div>
-
-              <div className="att-session-title-v2">{title}</div>
-
-              {!!s.speakers?.length && (
-                <div className="att-session-meta-v2">
-                  {s.speakers.map(x => x.name || x).join(', ')}
-                </div>
-              )}
-            </div>
-
-            {s.summary ? (
-              <div className="session-summary-v2">
-                {s.summary}
-              </div>
-            ) : null}
-
-            <div className="cap-mini-v2">
-              <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
-              <div className="cap-mini-meta">
-                <span><b>{reg}</b> registered</span>
-                {cap ? <span>• <b>{cap}</b> capacity</span> : null}
-                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> waitlisted</span> : null}
-              </div>
-            </div>
-
-            {!!s.tags?.length && (
-              <div className="tag-row">
-                {s.tags.slice(0,8).map(t => <span key={t} className="tag">{t}</span>)}
-              </div>
-            )}
-
-            <div className="session-actions-v2">
-              <button
-                type="button"
-                className="btn-line sm"
-                onClick={() => { setModalSession(s); setModalOpen(true); }}
-              >
-                Info
-              </button>
-              <button
-                type="button"
-                className="btn sm"
-                onClick={() => toggleSession(slotKey, s)}
-              >
-                {isSelected ? 'Selected' : 'Select'}
-              </button>
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  ))}
-</div>
-
-
-      <div className="att-actions" style={{ marginTop:16 }}>
-        <button className="btn btn-line" onClick={() => setStep(2)}>Back</button>
-        <button className="btn" disabled={regLoading} onClick={finishAll}>
-          {regLoading ? 'Submitting…' : 'Finish registration'}
-        </button>
+ {/* ===== STEP 3: Sessions (enhanced UI/UX) ===== */}
+{step === 3 && (
+  <div className="animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-light text-gray-800">Choose Your Journey at IPDAYS X GITS 2025</h2>
+        <p className="text-gray-600 mt-2">Select the sessions you’d like to attend.</p>
       </div>
-    </>
-  )}
 
-  {/* Modal unchanged */}
-  <SessionModal
-    open={modalOpen}
-    onClose={() => setModalOpen(false)}
-    session={modalSession}
-    counts={counts}
-  />
-</div>
+      {schedFetching ? (
+        <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
+      ) : !filteredSortedSessions.length ? (
+        <div className="text-center text-gray-500 py-8">No sessions available yet.</div>
+      ) : (
+        <>
+          {/* Explanation for Parallel Tracks */}
+          <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-3xl mx-auto">
+            <p className="text-sm text-gray-700">
+              <strong>Note:</strong> Masterclasses and Ateliers run in parallel tracks, meaning they occur at the same time. You can only select one session per time slot. Choose the one that best fits your interests!
+            </p>
+          </div>
+
+          <div className="space-y-12">
+            {trackSections.map(section => (
+              <div key={section.track} className="att-track-section">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+                  {section.track}
+                </h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {section.items.map(s => {
+                    const slotKey = s.startISO;
+                    const isSelected = selectedBySlot[slotKey]?._id === s._id;
+                    const c = counts?.[s._id] || {};
+                    const reg = c.registered || 0;
+                    const cap = s.roomCapacity || 0;
+                    const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
+                    const title = s.title || s.sessionTitle || 'Session';
+                    const when = new Date(s.startISO);
+
+                    return (
+                      <article
+                        key={s._id}
+                        className={`p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow ${isSelected ? 'ring-2 ring-blue-500' : ''} ${section.track === 'B2B' ? 'bg-blue-50' : ''}`}
+                      >
+                        {s.cover ? (
+                          <img
+                            src={s.cover}
+                            alt={title}
+                            className="w-full h-32 object-cover rounded-md mb-4"
+                          />
+                        ) : null}
+
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {s.track ? (
+                              <span className="inline-block px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
+                                {s.track}
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-full">
+                                Session
+                              </span>
+                            )}
+                            {s.roomName ? (
+                              <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
+                                Room: {s.roomName}
+                              </span>
+                            ) : null}
+                            {s.roomLocation ? (
+                              <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
+                                Loc: {s.roomLocation}
+                              </span>
+                            ) : null}
+                            <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
+                              {when.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} •{' '}
+                              {when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+
+                          <h4 className="text-lg font-medium text-gray-800">{title}</h4>
+
+                          {!!s.speakers?.length && (
+                            <p className="text-sm text-gray-600">
+                              {s.speakers.map(x => x.name || x).join(', ')}
+                            </p>
+                          )}
+
+                          {s.summary ? (
+                            <p className="text-sm text-gray-600 line-clamp-3">{s.summary}</p>
+                          ) : null}
+
+                          <div className="mt-2">
+                            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-500" style={{ width: `${pct}%` }} />
+                            </div>
+                            <div className="flex gap-2 text-xs text-gray-600 mt-1">
+                              <span><b>{reg}</b> registered</span>
+                              {cap ? <span>• <b>{cap}</b> capacity</span> : null}
+                              {c.waitlisted ? <span>• <b>{c.waitlisted}</b> waitlisted</span> : null}
+                            </div>
+                          </div>
+
+                          {!!s.tags?.length && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {s.tags.slice(0, 8).map(t => (
+                                <span key={t} className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                          <button
+                            type="button"
+                            className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                            onClick={() => { setModalSession(s); setModalOpen(true); }}
+                          >
+                            Info
+                          </button>
+                          <button
+                            type="button"
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                              isSelected
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            }`}
+                            onClick={() => toggleSession(slotKey, s)}
+                          >
+                            {isSelected ? 'Selected' : 'Select'}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-between mt-8">
+            <button
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              onClick={() => setStep(2)}
+            >
+              Back
+            </button>
+            <button
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
+              disabled={regLoading}
+              onClick={finishAll}
+            >
+              {regLoading ? 'Submitting…' : 'Finish Registration'}
+            </button>
+          </div>
+        </>
       )}
+    </div>
+  </div>
+)}
 
       {/* ===== STEP 4: Done ===== */}
       {step === 4 && (
