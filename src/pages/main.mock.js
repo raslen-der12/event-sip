@@ -2,7 +2,8 @@ export const topbar = {
   phone: "+201118488222",
   email: "eventora@seketak-eg.com",
   hours: "Mon–Fri: 9:00 – 18:30",
-  socials: ["fb","ig","tw","yt"],
+  socials: [{ fb: "https://www.facebook.com/share/1BTdfK3er7/?mibextid=wwXIfr", ig: "https://www.instagram.com/seketak_solutions?igsh=M2RjYmF5cnVubzA0", yt: "https://youtube.com/@seketak?si=zxyzezoCp_kaTnwt",in:"https://www.linkedin.com/company/seketak-solutions/" }]
+
 };
 
 export const nav = [
@@ -80,7 +81,7 @@ export const heroV2 = {
   desc: "Hands-on sessions, real projects, and a community that ships. MERN, AI, cloud, and more.",
   ctaPrimary: { href: "/Register", label: "Register" },
   ctaSecondary: { href: "/schedule", label: "View Schedule" },
-  tags: ["MERN", "AI", "Cloud", "Workshops"],
+  tags: ["IPDAYS", "Events", "speaker", "Program"],
   stats: [
     { label: "EVENTS", value: 128 },
     { label: "ATTENDEES", value: "5.3K" },

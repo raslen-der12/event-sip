@@ -17,7 +17,7 @@ export default function NotFound() {
           <code>{pathname}{search}</code>
         </p>
         <div className="nf-actions">
-          <button className="btn -ghost" onClick={() => nav(-1)}>
+          <button className="btn -ghost text-bg-dark" onClick={() => nav(-1)}>
             <FiChevronLeft /> Go Back
           </button>
           <Link className="btn" to="/"><FiHome /> Home</Link>

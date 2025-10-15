@@ -527,7 +527,7 @@ function EventPicker({ onPick }) {
         <div className="muted">{isFetching ? "Loading…" : `${events.length || 0} events`}</div>
       </div>
       <div className="evt-grid">
-        {(!events || !events.length) ? <div className="muted">No events.</div> : events.map((e)=> {
+        {(!events || !events.length) ? <div className="muted">No events.</div> : events?.map((e)=> {
           const card = toEventCard(e);
           return (
             <button key={card.id} className="evt-card" onClick={()=>onPick(card)} title={card.name}>

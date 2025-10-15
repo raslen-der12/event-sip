@@ -85,14 +85,12 @@ function App() {
       <Route path="*" element={<NotFound />} />
       
       {/* Public route - NO LOGIN REQUIRED */}
-      
       <Route element={<PersistLogin />}>
         <Route path="/" element={<Main />} />
 
         <Route path="/register" element={<RegisterLanding  />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />
-
         <Route path="/reset-password" element={<ResetPassword/>} />
         <Route path="/restore-email" element={<RestoreEmail/>} />
         <Route path="/unauthorized" element={<Unauthorized />} />

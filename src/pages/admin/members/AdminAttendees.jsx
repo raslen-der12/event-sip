@@ -722,7 +722,7 @@ function EventPicker({ onPick }) {
         {!events || !events.length ? (
           <div className="muted">No events.</div>
         ) : (
-          events.map((e) => {
+          events?.map((e) => {
             const card = toEventCard(e);
             return (
               <button

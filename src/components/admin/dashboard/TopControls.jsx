@@ -36,7 +36,7 @@ export default function TopControls({
           <label className="select">
             <span>Event</span>
             <select value={event} onChange={(e) => setEvent(e.target.value)}>
-              {events.map((n) => <option key={n} value={n}>{n}</option>)}
+              {events?.map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </label>
         </div>

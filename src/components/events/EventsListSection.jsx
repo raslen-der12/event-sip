@@ -14,7 +14,7 @@ export default function EventsListSection({ heading, subheading, events = [] }) 
         </header>
 
         <div className="ev-grid">
-          {events.map((e) => <EventCard key={e.id} {...e} />)}
+          {events?.map((e) => <EventCard key={e.id} {...e} />)}
         </div>
 
         {events.length === 0 && <div className="ev-empty">No events available.</div>}
