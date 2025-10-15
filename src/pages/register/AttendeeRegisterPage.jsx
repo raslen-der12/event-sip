@@ -20,12 +20,13 @@ const required = v => (typeof v === 'string' ? v.trim() : v) ? true : false;
 
 /* Catalog of “actor types” */
 const ROLE_TYPES = [
-  { key: 'BusinessOwner', title: 'Business Owner', desc: 'Owns or co-owns a company. Can later create a full business profile, sectors, products & services.' },
-  { key: 'Consultant',    title: 'Consultant',    desc: 'Advises businesses. Perfect if you sell expertise and want to list services later.' },
-  { key: 'Employee',      title: 'Employee',      desc: 'Represents an organization without owning it. Can network and book meetings.' },
-  { key: 'Expert',        title: 'Expert',        desc: 'Subject-matter specialist. Good for workshops, mentoring, and B2B leads.' },
-  { key: 'Investor',      title: 'Investor',      desc: 'Angel, VC or corporate. Signal interests and match with startups/exhibitors.' },
-  { key: 'Student',       title: 'Student',       desc: 'Early-career attendee. Learn, network, and explore opportunities.' },
+{ key: 'BusinessOwner', title: 'Chef d’entreprise', desc: 'Possède ou co-détient une entreprise. Peut ensuite créer un profil complet, définir les secteurs, produits et services.' },
+{ key: 'Consultant',    title: 'Consultant',        desc: 'Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard.' },
+{ key: 'Employee',      title: 'Employé',           desc: 'Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous.' },
+{ key: 'Expert',        title: 'Expert',            desc: 'Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B.' },
+{ key: 'Investor',      title: 'Investisseur',      desc: 'Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants.' },
+{ key: 'Student',       title: 'Étudiant',          desc: 'Début de carrière. Apprend, développe son réseau et découvre des opportunités.' },
+
 ];
 /* === NEW: track comparator (B2B last) & filtered list === */
 const TRACK_B2B_NAME = "B2B";
@@ -411,7 +412,6 @@ const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQue
     city: '',
     orgName: '',
     jobTitle: '',
-    businessRole: '',
     website: '',
     linkedin: '',
     languages: [],
@@ -499,7 +499,6 @@ const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQue
     if (shouldShowOrgFields) {
       if (!required(form.orgName)) e2.orgName = 'Required';
       if (!required(form.jobTitle)) e2.jobTitle = 'Required';
-      if (!required(form.businessRole)) e2.businessRole = 'Required';
     }
     setErrs(e2);
     if (Object.keys(e2).length) return;
@@ -593,7 +592,6 @@ const trackSections = useMemo(() => {
     if (shouldShowOrgFields) {
       fd.append('organization.orgName', form.orgName);
       fd.append('organization.jobTitle', form.jobTitle);
-      fd.append('organization.businessRole', form.businessRole);
     }
 
     // languages (max 3)
@@ -662,9 +660,6 @@ const trackSections = useMemo(() => {
                   </>
                 ) : null}
               </div>
-              <div style={{ color:'#64748b', fontWeight:700, marginTop:4 }}>
-                Registration closes {toISODate(event.registrationDeadline)}
-              </div>
             </div>
           </>
         )}
@@ -682,8 +677,8 @@ const trackSections = useMemo(() => {
       {step === 1 && (
         <section className="anim-in">
           <div className="att-section-head">
-            <div className="t">Choose your actor type</div>
-            <div className="h">This only adds two lightweight fields now. You can build a full Business Profile later.</div>
+            <div className="t">Choisissez votre type d'acteur</div>
+            <div className="h">Cela n'ajoute pour l'instant que deux champs légers. Vous pourrez créer un profil d'entreprise complet ultérieurement.</div>
           </div>
 
           <div className="role-grid">
@@ -705,7 +700,7 @@ const trackSections = useMemo(() => {
           <div className="att-form-grid" style={{ marginTop:14 }}>
 
             <div className="att-field full d-none">
-              <label>Selected actor type <span className="req">*</span></label>
+              <label>Type d'acteur sélectionné <span className="req">*</span></label>
               <input value={roleType || ''} readOnly />
               {errs.roleType && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.roleType}</div>}
             </div>
@@ -722,45 +717,13 @@ const trackSections = useMemo(() => {
       {step === 2 && (
         <form className="anim-in" onSubmit={submitForm}>
           <div className="att-section-head">
-            <div className="t">Attendee details</div>
-            <div className="h">All fields marked <span className="req">*</span> are required</div>
+            <div className="t">Détails des participants</div>
+            <div className="h" >Tous les champs marqués <span className="req" style={{ color:'#ef4444', fontWeight:800 }} >*</span> sont obligatoires</div>
           </div>
 
-          <div className="att-form-grid">
-            {/* Photo */}
-            <div className="att-field full">
-              <label>Profile photo <span className="req">*</span></label>
-              <div
-                className="att-photo-drop"
-                onClick={() => fileRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => {
-                  e.preventDefault();
-                  if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]);
-                }}
-              >
-                {!photoUrl ? (
-                  <div className="att-photo-empty">
-                    <div className="ico">📷</div>
-                    <div className="t">Drop an image here, or click to choose</div>
-                    <div className="h">PNG/JPG, under 5MB</div>
-                  </div>
-                ) : (
-                  <div className="att-photo-prev">
-                    <img src={photoUrl} alt="preview" />
-                    <div className="att-photo-actions">
-                      <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Change</button>
-                      <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Remove</button>
-                    </div>
-                  </div>
-                )}
-                <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
-              </div>
-              {errs.photo && <div style={{ color:'#ef4444', fontWeight:800, marginTop:4 }}>{errs.photo}</div>}
-            </div>
-            
+          <div className="att-form-grid">            
             <div className="att-field">
-              <label>Full name <span className="req">*</span></label>
+              <label>Nom complet <span className="req">*</span></label>
               <input value={form.fullName} onChange={e=>setField('fullName', e.target.value)} />
               {errs.fullName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.fullName}</div>}
             </div>
@@ -772,13 +735,13 @@ const trackSections = useMemo(() => {
             </div>
 
             <div className="att-field">
-              <label>Phone</label>
+              <label>Téléphone</label>
               <input value={form.phone} onChange={e=>setField('phone', e.target.value)} />
             </div>
 
             {/* Country SELECT with flags */}
             <div className="att-field">
-              <label>Country <span className="req">*</span></label>
+              <label>Pays <span className="req">*</span></label>
               <CountrySelect
                 value={form.country}
                 onChange={code => setField('country', (code || '').toUpperCase())}
@@ -786,42 +749,33 @@ const trackSections = useMemo(() => {
               {errs.country && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.country}</div>}
             </div>
 
-            <div className="att-field">
-              <label>City</label>
-              <input value={form.city} onChange={e=>setField('city', e.target.value)} />
-            </div>
             
 
             {/* Org fields — hidden for Student */}
             {shouldShowOrgFields && (
               <>
                 <div className="att-field">
-                  <label>Organization <span className="req">*</span></label>
+                  <label>Organisation <span className="req">*</span></label>
                   <input value={form.orgName} onChange={e=>setField('orgName', e.target.value)} />
                   {errs.orgName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.orgName}</div>}
                 </div>
 
                 <div className="att-field">
-                  <label>Job title <span className="req">*</span></label>
+                  <label>Intitulé du poste <span className="req">*</span></label>
                   <input value={form.jobTitle} onChange={e=>setField('jobTitle', e.target.value)} />
                   {errs.jobTitle && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.jobTitle}</div>}
                 </div>
 
-                <div className="att-field">
-                  <label>Business role <span className="req">*</span></label>
-                  <input placeholder="Founder, Manager, Consultant…" value={form.businessRole} onChange={e=>setField('businessRole', e.target.value)} />
-                  {errs.businessRole && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.businessRole}</div>}
-                </div>
               </>
             )}
             <div className="att-field">
-              <label>Password <span className="req">*</span></label>
+              <label>Mot de passe <span className="req">*</span></label>
               <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:8 }}>
                 <input
                   type={showPwd ? 'text' : 'password'}
                   value={form.pwd}
                   onChange={e => setField('pwd', e.target.value)}
-                  placeholder="At least 8 characters"
+                  placeholder="Au moins 8 caractères"
                 />
                 <button
                   type="button"
@@ -836,12 +790,12 @@ const trackSections = useMemo(() => {
             </div>
 
             <div className="att-field">
-              <label>Confirm password <span className="req">*</span></label>
+              <label>Confirmer le mot de passe <span className="req">*</span></label>
               <input
                 type={showPwd ? 'text' : 'password'}
                 value={form.pwd2}
                 onChange={e => setField('pwd2', e.target.value)}
-                placeholder="Repeat your password"
+                placeholder="Répétez votre mot de passe"
               />
               {errs.pwd2 && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd2}</div>}
             </div>
@@ -850,14 +804,10 @@ const trackSections = useMemo(() => {
               <input placeholder="https://…" value={form.website} onChange={e=>setField('website', e.target.value)} />
             </div>
 
-            <div className="att-field">
-              <label>LinkedIn</label>
-              <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
-            </div>
 
             {/* Languages SELECT (max 3) */}
             <div className="att-field full">
-              <label>Preferred languages <span className="req">*</span></label>
+              <label>Langues préférées <span className="req">*</span></label>
               <LanguageSelect value={form.languages} onChange={v => setField('languages', v)} max={3} />
               {errs.languages && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.languages}</div>}
             </div>
@@ -865,40 +815,72 @@ const trackSections = useMemo(() => {
             {/* NEW: SubRole checkbox list — hidden for Student */}
             {showSubRoles  && (
               <div className="att-field full">
-                <label>Sub-roles (multi-select)</label>
+                <label>Votre secteur de spécialité (multi-select)</label>
                 <SubRoleSelect
                   values={form.subRoles}
                   onChange={v => setField('subRoles', v)}
                   options={SUBROLE_OPTIONS}
                 />
-                <div className="hint">Choose any that apply. This is simple metadata saved on your actor profile.</div>
+                <div className="hint">Sélectionnez toutes les options qui s'appliquent.</div>
               </div>
             )}
 
             <div className="att-field full">
               <label>Objective</label>
               <select value={form.objective} onChange={e=>setField('objective', e.target.value)}>
-                <option value="">Select…</option>
+                <option value="">Sélectionnez…</option>
                 <option value="networking">Networking</option>
-                <option value="find-partners">Find partners</option>
-                <option value="find-investors">Find investors</option>
-                <option value="find-clients">Find clients</option>
-                <option value="learn-trends">Learn trends</option>
+                <option value="find-partners">Réseautage</option>
+                <option value="find-investors">Trouver des investisseurs</option>
+                <option value="find-clients">Trouver des clients</option>
+                <option value="learn-trends">Apprendre les tendances</option>
               </select>
             </div>
 
             <div className="att-field full" style={{ alignItems:'flex-start' }}>
-              <label>Open to meetings?</label>
+              <label>Disponible pour des rendez-vous ?</label>
               <label className="chk-inline">
                 <input type="checkbox" checked={!!form.openToMeetings} onChange={e=>setField('openToMeetings', e.target.checked)} />
-                Yes, allow B2B requests
+                Oui, autoriser les demandes B2B
               </label>
+            </div>
+
+                        {/* Photo */}
+            <div className="att-field full">
+              <label>Photo de profil <span className="req">*</span></label>
+              <div
+                className="att-photo-drop"
+                onClick={() => fileRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]);
+                }}
+              >
+                {!photoUrl ? (
+                  <div className="att-photo-empty">
+                    <div className="ico">📷</div>
+                    <div className="t">Déposez une image ici ou cliquez pour choisir</div>
+                    <div className="h">PNG/JPG, moins de 2 Mo</div>
+                  </div>
+                ) : (
+                  <div className="att-photo-prev">
+                    <img src={photoUrl} alt="preview" />
+                    <div className="att-photo-actions">
+                      <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Changement</button>
+                      <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Supprimer</button>
+                    </div>
+                  </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
+              </div>
+              {errs.photo && <div style={{ color:'#ef4444', fontWeight:800, marginTop:4 }}>{errs.photo}</div>}
             </div>
           </div>
 
           <div className="att-actions">
             <button type="button" className="btn btn-line" onClick={() => setStep(1)}>Back</button>
-            <button type="submit" className="btn">Continue</button>
+            <button type="submit" className="btn">Continuer</button>
           </div>
         </form>
       )}
@@ -908,20 +890,20 @@ const trackSections = useMemo(() => {
   <div className="animate-fade-in">
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-light text-gray-800">Choose Your Journey at IPDAYS X GITS 2025</h2>
-        <p className="text-gray-600 mt-2">Select the sessions you’d like to attend.</p>
+        <h2 className="text-2xl font-light text-gray-800">Choisissez votre parcours à IPDAYS X GITS 2025</h2>
+        <p className="text-gray-600 mt-2">Sélectionnez les sessions auxquelles vous souhaitez participer.</p>
       </div>
 
       {schedFetching ? (
         <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
       ) : !filteredSortedSessions.length ? (
-        <div className="text-center text-gray-500 py-8">No sessions available yet.</div>
+        <div className="text-center text-gray-500 py-8">Aucune session disponible pour le moment.</div>
       ) : (
         <>
           {/* Explanation for Parallel Tracks */}
           <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-3xl mx-auto">
             <p className="text-sm text-gray-700">
-              <strong>Note:</strong> Masterclasses and Ateliers run in parallel tracks, meaning they occur at the same time. You can only select one session per time slot. Choose the one that best fits your interests!
+              <strong>Note:</strong> Les masterclasses et les ateliers se déroulent en parallèle, c'est-à-dire qu'ils ont lieu au même moment. Vous ne pouvez sélectionner qu'une seule session par créneau horaire. Choisissez celle qui correspond le mieux à vos intérêts !
             </p>
           </div>
 
@@ -968,7 +950,7 @@ const trackSections = useMemo(() => {
                             )}
                             {s.roomName ? (
                               <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                Room: {s.roomName}
+                                Salle: {s.roomName}
                               </span>
                             ) : null}
                             {s.roomLocation ? (
@@ -999,8 +981,8 @@ const trackSections = useMemo(() => {
                               <div className="h-full bg-blue-500" style={{ width: `${pct}%` }} />
                             </div>
                             <div className="flex gap-2 text-xs text-gray-600 mt-1">
-                              <span><b>{reg}</b> registered</span>
-                              {cap ? <span>• <b>{cap}</b> capacity</span> : null}
+                              <span><b>{reg}</b> Oersonnes inscrites</span>
+                              {cap ? <span>• <b>{cap}</b> Capacité</span> : null}
                               {c.waitlisted ? <span>• <b>{c.waitlisted}</b> waitlisted</span> : null}
                             </div>
                           </div>
@@ -1033,7 +1015,7 @@ const trackSections = useMemo(() => {
                             }`}
                             onClick={() => toggleSession(slotKey, s)}
                           >
-                            {isSelected ? 'Selected' : 'Select'}
+                            {isSelected ? 'Sélectionné' : 'Sélectionner'}
                           </button>
                         </div>
                       </article>
@@ -1049,14 +1031,14 @@ const trackSections = useMemo(() => {
               className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               onClick={() => setStep(2)}
             >
-              Back
+              Retour
             </button>
             <button
               className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
               disabled={regLoading}
               onClick={finishAll}
             >
-              {regLoading ? 'Submitting…' : 'Finish Registration'}
+              {regLoading ? 'Envoi en cours…' : 'Soumettre'}
             </button>
           </div>
         </>
@@ -1064,14 +1046,13 @@ const trackSections = useMemo(() => {
     </div>
   </div>
 )}
-
       {/* ===== STEP 4: Done ===== */}
       {step === 4 && (
   <div className="anim-in">
     <div className="reg-empty" style={{ borderStyle:'solid', color:'#111827' }}>
-      ✅ Registration received. We’ve also shown a popup with a quick link.
+      ✅ Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.
       <div style={{ marginTop: 8 }}>
-        <a className="btn" href="/login">Go to login</a>
+        <a className="btn" href="/login">Découvrez votre compte B2B </a>
       </div>
     </div>
   </div>

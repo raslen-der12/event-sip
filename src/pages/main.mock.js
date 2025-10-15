@@ -1,6 +1,6 @@
 export const topbar = {
-  phone: "+33 877 554 332",
-  email: "info@website.com",
+  phone: "+201118488222",
+  email: "eventora@seketak-eg.com",
   hours: "Mon–Fri: 9:00 – 18:30",
   socials: ["fb","ig","tw","yt"],
 };
