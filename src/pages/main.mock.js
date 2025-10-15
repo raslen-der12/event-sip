@@ -1,8 +1,9 @@
 export const topbar = {
-  phone: "+33 877 554 332",
-  email: "info@website.com",
+  phone: "+9613002430",
+  email: "Eventora@seketak-eg.com",
   hours: "Mon–Fri: 9:00 – 18:30",
-  socials: ["fb","ig","tw","yt"],
+  socials: [{ fb: "https://www.facebook.com/share/1BTdfK3er7/?mibextid=wwXIfr", ig: "https://www.instagram.com/seketak_solutions?igsh=M2RjYmF5cnVubzA0", yt: "https://youtube.com/@seketak?si=zxyzezoCp_kaTnwt",in:"https://www.linkedin.com/company/seketak-solutions/" }]
+
 };
 
 export const nav = [

@@ -392,7 +392,11 @@ export default function ExhibitorRegisterPage() {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return (Array.isArray(raw) ? raw : []).map(normSession).filter(x => x.startISO);
   }, [schedulePack]);
-
+const firstDay = useMemo(() => {
+  const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
+  const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
+  return dayList[0] || null;
+}, [sessions]);
   /* Track options */
   const uniqueTracks = useMemo(() => {
     const t = new Set();
@@ -401,25 +405,31 @@ export default function ExhibitorRegisterPage() {
   }, [sessions]);
 
   /* Recompute sections: group by track, sessions sorted by time, tracks ordered by earliest (B2B last) */
-  const trackSections = useMemo(() => {
-    if (!sessions.length) return [];
+ const trackSections = useMemo(() => {
+  if (!sessions.length) return [];
 
-    const filtered = sessions.filter(s => (track ? s.track === track : true));
-    if (!filtered.length) return [];
+  // Drop firstDay entirely + apply track filter
+  const filtered = sessions.filter(s => {
+    if (firstDay && s.dayISO === firstDay) return false;   // <-- remove Day 1
+    if (track && s.track !== track) return false;
+    return true;
+  });
+  if (!filtered.length) return [];
 
-    const group = {};
-    for (const s of filtered) {
-      const key = (s.track || "Other").trim();
-      if (!group[key]) group[key] = [];
-      group[key].push(s);
-    }
-    for (const t of Object.keys(group)) {
-      group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
-    }
+  const group = {};
+  for (const s of filtered) {
+    const key = (s.track || "Other").trim();
+    if (!group[key]) group[key] = [];
+    group[key].push(s);
+  }
+  for (const t of Object.keys(group)) {
+    group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
+  }
 
-    const ordered = orderTracksWithEarliestFirst(group);
-    return ordered.map(({ track, items }) => ({ track, items }));
-  }, [sessions, track]);
+  const ordered = orderTracksWithEarliestFirst(group);
+  return ordered.map(({ track, items }) => ({ track, items }));
+}, [sessions, track, firstDay]);
+
 
   // Close modal + clear selections when filter changes
   useEffect(() => {
@@ -580,10 +590,10 @@ export default function ExhibitorRegisterPage() {
 
         {/* Step dots */}
         <div className="reg-steps">
+          <span className={`reg-step-dot ${step === 4 ? "active":""}`} />
           <span className={`reg-step-dot ${step === 1 ? "active":""}`} />
           <span className={`reg-step-dot ${step === 2 ? "active":""}`} />
           <span className={`reg-step-dot ${step === 3 ? "active":""}`} />
-          <span className={`reg-step-dot ${step === 4 ? "active":""}`} />
         </div>
 
         {/* ===== STEP 1: Role Catalog ===== */}

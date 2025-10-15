@@ -157,13 +157,13 @@ export default function EventsPage() {
   }, [events, qs, country, target, when, sort]);
   const countries = useMemo(() => {
     const set = new Set(
-      events.map((e) => String(e.country || "").toLowerCase()).filter(Boolean)
+      events?.map((e) => String(e.country || "").toLowerCase()).filter(Boolean)
     );
     return ["all", ...Array.from(set)];
   }, [events]);
   const targets = useMemo(() => {
     const set = new Set(
-      events.map((e) => String(e.target || "").toLowerCase()).filter(Boolean)
+      events?.map((e) => String(e.target || "").toLowerCase()).filter(Boolean)
     );
     return ["all", ...Array.from(set)];
   }, [events]);
