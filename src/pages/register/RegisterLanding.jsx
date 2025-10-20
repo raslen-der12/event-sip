@@ -32,10 +32,11 @@ function StepDots({ current = 0 }) {
 
 export default function RegisterLanding() {
   const navigate = useNavigate();
+
   const [params, setParams] = useSearchParams();
   const urlEventId = params.get("eventId") || "68e6764bb4f9b08db3ccec04";
   const [selectedEvent, setSelectedEvent] = useState(null);
-
+  navigate(`/register/attendee?eventId=${urlEventId}`)
   const { data: eventById, isFetching: fetchingOne } = useGetEventQuery(urlEventId, {
     skip: !urlEventId,
   });

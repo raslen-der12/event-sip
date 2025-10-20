@@ -40,16 +40,6 @@ function familyOfTrack(track) {
   return 'other';
 }
 
-function compareTracks(a, b) {
-  const A = (a || "").trim();
-  const B = (b || "").trim();
-  const aIsB2B = A.toLowerCase() === TRACK_B2B_NAME.toLowerCase();
-  const bIsB2B = B.toLowerCase() === TRACK_B2B_NAME.toLowerCase();
-  if (aIsB2B && !bIsB2B) return 1;
-  if (!aIsB2B && bIsB2B) return -1;
-  return A?.localeCompare(B, undefined, { sensitivity: "base" });
-}
-
 /* SubRole options (checkbox list) */
 const SUBROLE_OPTIONS = [
   'Researchers','Students','Coaches & Trainers','Experts & Consultants','Employees & Professionals','Entrepreneurs & Startups','Developers & Engineers',
@@ -76,28 +66,6 @@ function triggerPopup({ title, body, type = "success", link }) {
   } catch {}
 }
 
-/* Track ordering by earliest time; keep B2B last */
-function orderTracksWithEarliestFirst(groups) {
-  const entries = Object.entries(groups).map(([track, items]) => {
-    const earliest = items.reduce((min, s) => {
-      const t = new Date(s.startISO).getTime();
-      return Number.isFinite(t) ? Math.min(min, t) : min;
-    }, Infinity);
-    return { track, items, earliest };
-  });
-
-  entries.sort((a, b) => {
-    const aIsB2B = a.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
-    const bIsB2B = b.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
-    if (aIsB2B && !bIsB2B) return 1;
-    if (!aIsB2B && bIsB2B) return -1;
-    if (a.earliest !== b.earliest) return a.earliest - b.earliest;
-    return String(a.track || "").localeCompare(String(b.track || ""), undefined, { sensitivity: "base" });
-  });
-
-  return entries;
-}
-
 /* Country list (trimmed) */
 const COUNTRIES = [
   { code: 'TN', name: 'Tunisia' }, { code: 'FR', name: 'France' }, { code: 'US', name: 'United States' },
@@ -114,7 +82,7 @@ const LANGS = [
   { code: 'ar', label: 'Arabic'  },
 ];
 
-/* Objective chips (single select, same UI style as languages) */
+/* Objective chips (checkbox-like) */
 const OBJECTIVES = [
   { code: 'networking',     label: 'Networking' },
   { code: 'find-partners',  label: 'Réseautage' },
@@ -214,6 +182,64 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
     </div>
   );
 }
+function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes les pistes' }) {
+  const [open, setOpen] = React.useState(false);
+  const wrapRef = React.useRef(null);
+
+  // close on outside click
+  React.useEffect(() => {
+    const onDoc = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  const label = value || placeholder;
+
+  return (
+    <div className="sel-wrap" ref={wrapRef}>
+      <div className="sel-head" onClick={() => setOpen(v => !v)}>
+        <span className={value ? '' : 'ph'}>{label}</span>
+        <span style={{ fontWeight: 900, color: '#64748b' }}>{open ? '▲' : '▼'}</span>
+      </div>
+      {open && (
+        <div className="sel-pop">
+          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>Toutes</div>
+          {options.map(opt => (
+            <div key={opt} className="sel-item" onClick={() => { onChange(opt); setOpen(false); }}>
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GenderSelect({ value = '', onChange, name = 'gender' }) {
+  const Item = ({ val, label }) => {
+    const active = value === val;
+    return (
+      <label className={`lang-item ${active ? 'active' : ''}`} style={{ cursor:'pointer' }}>
+        <input
+          type="radio"
+          name={name}
+          value={val}
+          checked={active}
+          onChange={() => onChange(val)}
+          style={{ display: 'none' }}
+        />
+        <span>{label}</span>
+      </label>
+    );
+  };
+
+  return (
+    <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
+      <Item val="male" label="Homme" />
+      <Item val="female" label="Femme" />
+    </div>
+  );
+}
 
 function ObjectiveSelect({ values = [], onChange }) {
   const toggle = (code) => {
@@ -305,12 +331,33 @@ const normSession = (s) => {
   };
 };
 
+function orderTracksWithEarliestFirst(groups) {
+  const entries = Object.entries(groups).map(([track, items]) => {
+    const earliest = items.reduce((min, s) => {
+      const t = new Date(s.startISO).getTime();
+      return Number.isFinite(t) ? Math.min(min, t) : min;
+    }, Infinity);
+    return { track, items, earliest };
+  });
+
+  entries.sort((a, b) => {
+    const aIsB2B = a.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
+    const bIsB2B = b.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
+    if (aIsB2B && !bIsB2B) return 1;
+    if (!aIsB2B && bIsB2B) return -1;
+    if (a.earliest !== b.earliest) return a.earliest - b.earliest;
+    return String(a.track || "").localeCompare(String(b.track || ""), undefined, { sensitivity: "base" });
+  });
+
+  return entries;
+}
+
 const groupByDayAndSlot = (raw) => {
   const sessions = raw.map(normSession).filter(x => x.startISO);
   const dayMap = new Map();
   for (const s of sessions) {
     if (!dayMap.has(s.dayISO)) dayMap.set(s.dayISO, new Map());
-    const slotKey = s.startISO; // column per timeslot
+    const slotKey = s.startISO;
     const slot = dayMap.get(s.dayISO);
     if (!slot.has(slotKey)) slot.set(slotKey, []);
     slot.get(slotKey).push(s);
@@ -418,30 +465,30 @@ function SessionModal({ open, onClose, session, counts }) {
   return ReactDOM.createPortal(node, document.body);
 }
 
-const isB2B = (name) => String(name || '').trim().toLowerCase() === 'b2b';
-
-/* ===== Main component ===== */
+/* ===== Main (single-page progressive flow) ===== */
 export default function AttendeeRegisterPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  /* Steps: 1 = pick role, 2 = form, 3 = sessions, 4 = done */
-  const [step, setStep] = useState(1);
-
   const eventId = params.get('eventId') || '68e6764bb4f9b08db3ccec04';
   const { data: event, isLoading: evLoading, isError: evErr } = useGetEventQuery(eventId, { skip: !eventId });
 
-  /* ---- Session filters (NO ROOM) ---- */
+  // progressive reveal
+  const [roleType, setRoleType] = useState('');
+  const [showSessions, setShowSessions] = useState(false);
+  const [finished, setFinished] = useState(false);
+
+  // sessions filter
   const [track, setTrack] = useState('');
 
   const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQuery(
     { eventId, track, includeCounts: 1 },
-    { skip: !eventId || step !== 3 },
+    { skip: !eventId || !showSessions },
   );
 
   const [attendeeRegister, { isLoading: regLoading }] = useAttendeeRegisterMutation();
 
-  /* Photo (optional now) */
+  /* Photo (optional) */
   const fileRef = useRef(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -454,11 +501,8 @@ export default function AttendeeRegisterPage() {
     setPhotoUrl('');
   }, [photoFile]);
 
-  /* Role extras */
-  const [roleType, setRoleType] = useState('');
-
-  /* Form state */
-  const [form, setForm] = useState({
+  // initial form factory (role can affect requireds later if you want)
+  const makeInitialForm = () => ({
     fullName: '',
     email: '',
     phone: '',
@@ -470,11 +514,14 @@ export default function AttendeeRegisterPage() {
     linkedin: '',
     languages: [],
     objective: [],
+    gender: '', 
     pwd: '',
     pwd2: '',
     openToMeetings: true,
     subRoles: [],
   });
+
+  const [form, setForm] = useState(makeInitialForm());
   const setField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const [errs, setErrs] = useState({});
 
@@ -482,7 +529,20 @@ export default function AttendeeRegisterPage() {
   const showSubRoles = roleType && roleType !== 'BusinessOwner';
   const shouldShowOrgFields = !isStudent;
 
-  /* ========= KEY CHANGE: track-aware selection ========= */
+  // Changing role resets everything below + sessions
+  const handlePickRole = (key) => {
+    if (key === roleType) return;
+    setRoleType(key);
+    setForm(makeInitialForm());
+    setErrs({});
+    setPhotoFile(null);
+    setShowSessions(false);
+    setSelectedBySlot({});
+    setFinished(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  /* Track-aware selection (parallel families) */
   const [selectedBySlot, setSelectedBySlot] = useState({}); // { compositeKey: session }
   const compositeKeyFor = (session) => {
     const fam = familyOfTrack(session.track);
@@ -491,26 +551,62 @@ export default function AttendeeRegisterPage() {
     return `*|${base}`;
   };
 
-  const [activeDay, setActiveDay] = useState(null);
   const [modalSession, setModalSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
 
   const counts = schedulePack?.counts || {};
 
-  /* Build days/slotted view from API data */
-  const { sessions, days } = useMemo(() => {
+  /* Normalize sessions */
+  const { sessions } = useMemo(() => {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return groupByDayAndSlot(Array.isArray(raw) ? raw : []);
   }, [schedulePack]);
 
-  /* Track/day options */
-  const allSessions = sessions;
-  const uniqueTracks = useMemo(() => {
-    const t = new Set();
-    allSessions.forEach(s => { if (s.track) t.add(s.track); });
-    return Array.from(t);
-  }, [allSessions]);
+  // --- place right after:  const { sessions } = useMemo(...);
+
+// find earliest day (day 1)
+const earliestDayISO = useMemo(() => {
+  const ds = Array.from(new Set((sessions || []).map(s => s.dayISO).filter(Boolean)));
+  ds.sort((a, b) => new Date(a) - new Date(b));
+  return ds[0] || null;
+}, [sessions]);
+
+// sessions to actually display (no day 1, no "Formation")
+const displaySessions = useMemo(() => {
+  const rxFormation = /^\s*formation\s*$/i;
+  return (sessions || []).filter(s => {
+    if (earliestDayISO && s.dayISO === earliestDayISO) return false;   // drop day 1
+    if (rxFormation.test(s.track || '')) return false;                  // drop "Formation"
+    return true;
+  });
+}, [sessions, earliestDayISO]);
+
+// Track/day options (filter list too)
+const uniqueTracks = useMemo(() => {
+  const t = new Set();
+  displaySessions.forEach(s => { if (s.track) t.add(s.track); });
+  return Array.from(t);
+}, [displaySessions]);
+
+// Compact sections (use filtered sessions)
+const trackSections = useMemo(() => {
+  if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
+
+  const group = {};
+  for (const s of displaySessions) {
+    if (track && s.track !== track) continue;
+    const key = (s.track || "Autre").trim();
+    if (!group[key]) group[key] = [];
+    group[key].push(s);
+  }
+  for (const t of Object.keys(group)) {
+    group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
+  }
+
+  const ordered = orderTracksWithEarliestFirst(group);
+  return ordered.map(({ track, items }) => ({ track, items }));
+}, [displaySessions, track]);
 
   useEffect(() => {
     setModalOpen(false);
@@ -536,17 +632,7 @@ export default function AttendeeRegisterPage() {
     [selectedBySlot]
   );
 
-  /* Step 1 → 2 */
-  const goForm = () => {
-    const e = {};
-    if (!roleType) e.roleType = 'Sélectionnez votre type d’acteur';
-    setErrs(e);
-    if (Object.keys(e).length) return;
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  /* Step 2 → 3 (Photo is OPTIONAL now) */
+  /* Validate & reveal sessions */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
@@ -566,63 +652,14 @@ export default function AttendeeRegisterPage() {
     setErrs(e2);
     if (Object.keys(e2).length) return;
 
-    setStep(3);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setShowSessions(true);
+    setTimeout(() => {
+      const anchor = document.getElementById('sessions-anchor');
+      if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 40);
   };
 
-  /* Filtered/ordered sessions and sections */
-  const filteredSortedSessions = useMemo(() => {
-    if (!Array.isArray(sessions) || !sessions.length) return [];
-
-    const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
-    const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
-    const firstDay = dayList[0] || null;
-
-    const filtered = sessions.filter(s => {
-      if (firstDay && s.dayISO === firstDay) return false;
-      if (track && s.track !== track) return false;
-      return true;
-    });
-
-    filtered.sort((a, b) => {
-      const t = compareTracks(a.track, b.track);
-      if (t !== 0) return t;
-      return new Date(a.startISO) - new Date(b.startISO);
-    });
-
-    return filtered;
-  }, [sessions, track]);
-
-  const trackSections = useMemo(() => {
-    if (!Array.isArray(sessions) || !sessions.length) return [];
-
-    const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
-    const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
-    const firstDay = dayList[0] || null;
-
-    const filtered = sessions.filter(s => {
-      if (firstDay && s.dayISO === firstDay) return false;
-      if (track && s.track !== track) return false;
-      return true;
-    });
-
-    if (!filtered.length) return [];
-
-    const group = {};
-    for (const s of filtered) {
-      const key = (s.track || "Other").trim();
-      if (!group[key]) group[key] = [];
-      group[key].push(s);
-    }
-    for (const t of Object.keys(group)) {
-      group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
-    }
-
-    const ordered = orderTracksWithEarliestFirst(group);
-    return ordered.map(({ track, items }) => ({ track, items }));
-  }, [sessions, track]);
-
-  /* Final submit */
+  /* Submit all */
   const finishAll = async () => {
     if (!selectedSessionIds.length) {
       alert('Veuillez choisir au moins une session (une par créneau horaire et par famille de piste).');
@@ -631,10 +668,9 @@ export default function AttendeeRegisterPage() {
     const fd = new FormData();
     fd.append('eventId', eventId);
     fd.append('role', 'attendee');
-
     fd.append('actorType', roleType);
     fd.append('pwd', form.pwd);
-
+    fd.append('personal.gender', form.gender || '');
     fd.append('personal.fullName', form.fullName);
     fd.append('personal.email', form.email);
     fd.append('personal.phone', form.phone);
@@ -648,20 +684,17 @@ export default function AttendeeRegisterPage() {
     }
 
     fd.append('businessProfile.preferredLanguages', form.languages.join(','));
-    fd.append(
-        'matchingIntent.objective',
-        Array.isArray(form.objective) ? form.objective.join(',') : form.objective
-      );
+    fd.append('matchingIntent.objective', Array.isArray(form.objective) ? form.objective.join(',') : form.objective);
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
     fd.append('links.website', form.website);
     fd.append('links.linkedin', form.linkedin);
 
-    if (showSubRoles && Array.isArray(form.subRoles)) {
+    if (Array.isArray(form.subRoles)) {
       form.subRoles.forEach(v => fd.append('subRole[]', v));
     }
 
     selectedSessionIds.forEach(id => fd.append('sessionIds[]', id));
-    if (photoFile) fd.append('photo', photoFile); // ONLY if provided (photo optional)
+    if (photoFile) fd.append('photo', photoFile);
 
     try {
       await attendeeRegister(fd).unwrap();
@@ -671,7 +704,8 @@ export default function AttendeeRegisterPage() {
         type: "success",
         link: { href: "/login", label: "Aller à la connexion" }
       });
-      setStep(4);
+      setFinished(true);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60);
       setTimeout(() => navigate('/'), 1400);
     } catch (e) {
       triggerPopup({
@@ -683,12 +717,14 @@ export default function AttendeeRegisterPage() {
     }
   };
 
+  /* Compact sessions data (space-efficient) */
+
   /* ===== UI ===== */
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
       <div className="reg-wrap">
-        {/* Header */}
+        {/* Event header */}
         <header className="anim-in" style={{ display:'grid', gridTemplateColumns:'140px 1fr', gap:12, alignItems:'center' }}>
           {evLoading ? (
             <div className="reg-skel" />
@@ -717,56 +753,34 @@ export default function AttendeeRegisterPage() {
           )}
         </header>
 
-        {/* Step dots (1..4) */}
-        <div className="reg-steps">
-          <span className={`reg-step-dot ${step === 4 ? 'active':''}`} />
-          <span className={`reg-step-dot ${step === 1 ? 'active':''}`} />
-          <span className={`reg-step-dot ${step === 2 ? 'active':''}`} />
-          <span className={`reg-step-dot ${step === 3 ? 'active':''}`} />
-        </div>
+        {/* ===== SECTION 1: Role (always visible) ===== */}
+        <section className="anim-in">
+          <div className="att-section-head">
+            <div className="t">Choisissez votre type d'acteur</div>
+            <div className="h">En sélectionnant, le formulaire s’affiche juste en dessous. Changer le type réinitialise le formulaire et les choix de sessions.</div>
+          </div>
 
-        {/* ===== STEP 1: Role Catalog ===== */}
-        {step === 1 && (
-          <section className="anim-in">
-            <div className="att-section-head">
-              <div className="t">Choisissez votre type d'acteur</div>
-              <div className="h">Cela n'ajoute pour l'instant que deux champs légers. Vous pourrez créer un profil d'entreprise complet ultérieurement.</div>
-            </div>
+          <div className="role-grid">
+            {ROLE_TYPES.map(r => {
+              const active = roleType === r.key;
+              return (
+                <article
+                  key={r.key}
+                  onClick={() => handlePickRole(r.key)}
+                  className={`role-card ${active ? 'active' : ''}`}
+                  title={r.title}
+                >
+                  <div className="role-title">{r.title}</div>
+                  <div className="role-desc">{r.desc}</div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
 
-            <div className="role-grid">
-              {ROLE_TYPES.map(r => {
-                const active = roleType === r.key;
-                return (
-                  <article
-                    key={r.key}
-                    onClick={() => setRoleType(r.key)}
-                    className={`role-card ${active ? 'active' : ''}`}
-                  >
-                    <div className="role-title">{r.title}</div>
-                    <div className="role-desc">{r.desc}</div>
-                  </article>
-                );
-              })}
-            </div>
-
-            <div className="att-form-grid" style={{ marginTop:14 }}>
-              <div className="att-field full d-none">
-                <label>Type d'acteur sélectionné <span className="req">*</span></label>
-                <input value={roleType || ''} readOnly />
-                {errs.roleType && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.roleType}</div>}
-              </div>
-            </div>
-
-            <div className="att-actions">
-              <button className="btn btn-line" onClick={() => navigate('/register')}>Retour</button>
-              <button className="btn" onClick={goForm}>Continuer</button>
-            </div>
-          </section>
-        )}
-
-        {/* ===== STEP 2: Form (FR, photo optional) ===== */}
-        {step === 2 && (
-          <form className="anim-in" onSubmit={submitForm}>
+        {/* ===== SECTION 2: Form (appears after role picked) ===== */}
+        {roleType && !finished && (
+          <form className="anim-in reg-card" onSubmit={submitForm} style={{ marginTop: 14 }}>
             <div className="att-section-head">
               <div className="t">Détails des participants</div>
               <div className="h">Tous les champs marqués <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> sont obligatoires</div>
@@ -790,7 +804,6 @@ export default function AttendeeRegisterPage() {
                 <input value={form.phone} onChange={e=>setField('phone', e.target.value)} />
               </div>
 
-              {/* Country SELECT with flags */}
               <div className="att-field">
                 <label>Pays <span className="req">*</span></label>
                 <CountrySelect
@@ -804,9 +817,11 @@ export default function AttendeeRegisterPage() {
                 <label>Ville</label>
                 <input value={form.city} onChange={e=>setField('city', e.target.value)} />
               </div>
-
-              {/* Org fields — hidden for Student */}
-              {shouldShowOrgFields && (
+              <div className="att-field">
+                <label>Genre</label>
+                <GenderSelect value={form.gender} onChange={v => setField('gender', v)} />
+              </div>
+                            {shouldShowOrgFields && (
                 <>
                   <div className="att-field">
                     <label>Organisation <span className="req">*</span></label>
@@ -864,14 +879,12 @@ export default function AttendeeRegisterPage() {
                 <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
               </div>
 
-              {/* Languages SELECT (max 3) */}
               <div className="att-field full">
                 <label>Langues préférées <span className="req">*</span></label>
                 <LanguageSelect value={form.languages} onChange={v => setField('languages', v)} max={3} />
                 {errs.languages && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.languages}</div>}
               </div>
 
-              {/* SubRole — hidden for Student */}
               {showSubRoles  && (
                 <div className="att-field full">
                   <label>Votre secteur de spécialité (multi-select)</label>
@@ -884,13 +897,12 @@ export default function AttendeeRegisterPage() {
                 </div>
               )}
 
-              {/* Objective chips (single select) */}
               <div className="att-field full">
                 <label>Objectif</label>
                 <ObjectiveSelect
-                    values={form.objective}
-                    onChange={(v) => setField('objective', v)}
-                  />
+                  values={form.objective}
+                  onChange={(v) => setField('objective', v)}
+                />
               </div>
 
               <div className="att-field full" style={{ alignItems:'flex-start' }}>
@@ -933,176 +945,125 @@ export default function AttendeeRegisterPage() {
               </div>
             </div>
 
-            <div className="att-actions">
-              <button type="button" className="btn btn-line" onClick={() => setStep(1)}>Retour</button>
+            <div className="att-actions" style={{ justifyContent:'flex-end' }}>
               <button type="submit" className="btn">Continuer</button>
             </div>
           </form>
         )}
 
-        {/* ===== STEP 3: Sessions (parallel families supported) ===== */}
-        {step === 3 && (
-          <div className="animate-fade-in">
-            <div className="max-w-6xl mx-auto px-4 py-8">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-light text-gray-800">Choisissez votre parcours à IPDAYS X GITS 2025</h2>
-                <p className="text-gray-600 mt-2">Sélectionnez les sessions auxquelles vous souhaitez participer.</p>
-              </div>
-
-              {schedFetching ? (
-                <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
-              ) : !filteredSortedSessions.length ? (
-                <div className="text-center text-gray-500 py-8">Aucune session disponible pour le moment.</div>
-              ) : (
-                <>
-                  <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-3xl mx-auto">
-                    <p className="text-sm text-gray-700">
-                      <strong>Note :</strong> Les <em>masterclasses</em> et les <em>ateliers</em> sont des pistes parallèles. Vous pouvez en choisir <b>une de chaque famille</b> pour un même créneau horaire, mais pas deux de la même famille simultanément.
-                    </p>
-                  </div>
-
-                  <div className="space-y-12">
-                    {trackSections.map(section => (
-                      <div key={section.track} className="att-track-section">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
-                          {section.track}
-                        </h3>
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                          {section.items.map(s => {
-                            const compositeKey = compositeKeyFor(s);
-                            const isSelected = selectedBySlot[compositeKey]?._id === s._id;
-                            const c = counts?.[s._id] || {};
-                            const reg = c.registered || 0;
-                            const cap = s.roomCapacity || 0;
-                            const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
-                            const title = s.title || s.sessionTitle || 'Session';
-                            const when = new Date(s.startISO);
-
-                            return (
-                              <article
-                                key={s._id}
-                                className={`p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow ${isSelected ? 'ring-2 ring-blue-500' : ''} ${section.track === 'B2B' ? 'bg-blue-50' : ''}`}
-                              >
-                                {s.cover ? (
-                                  <img
-                                    src={s.cover}
-                                    alt={title}
-                                    className="w-full h-32 object-cover rounded-md mb-4"
-                                  />
-                                ) : null}
-
-                                <div className="space-y-2">
-                                  <div className="flex flex-wrap gap-2">
-                                    {s.track ? (
-                                      <span className="inline-block px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                                        {s.track}
-                                      </span>
-                                    ) : (
-                                      <span className="inline-block px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-full">
-                                        Session
-                                      </span>
-                                    )}
-                                    {s.roomName ? (
-                                      <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                        Salle: {s.roomName}
-                                      </span>
-                                    ) : null}
-                                    {s.roomLocation ? (
-                                      <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                        Loc: {s.roomLocation}
-                                      </span>
-                                    ) : null}
-                                    <span className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                      {when.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} •{' '}
-                                      {when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                  </div>
-
-                                  <h4 className="text-lg font-medium text-gray-800">{title}</h4>
-
-                                  {!!s.speakers?.length && (
-                                    <p className="text-sm text-gray-600">
-                                      {s.speakers.map(x => (x && (x.name || x.fullName)) || x).join(', ')}
-                                    </p>
-                                  )}
-
-                                  {s.summary ? (
-                                    <p className="text-sm text-gray-600 line-clamp-3">{s.summary}</p>
-                                  ) : null}
-
-                                  <div className="mt-2">
-                                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                                      <div className="h-full bg-blue-500" style={{ width: `${pct}%` }} />
-                                    </div>
-                                    <div className="flex gap-2 text-xs text-gray-600 mt-1">
-                                      <span><b>{reg}</b> inscrits</span>
-                                      {cap ? <span>• <b>{cap}</b> capacité</span> : null}
-                                      {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
-                                    </div>
-                                  </div>
-
-                                  {!!s.tags?.length && (
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                      {s.tags.slice(0, 8).map(t => (
-                                        <span key={t} className="inline-block px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                                          {t}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="flex gap-2 mt-4">
-                                  <button
-                                    type="button"
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                                    onClick={() => { setModalSession(s); setModalOpen(true); }}
-                                  >
-                                    Info
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                                      isSelected
-                                        ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                    }`}
-                                    onClick={() => toggleSession(s)}
-                                  >
-                                    {isSelected ? 'Sélectionné' : 'Sélectionner'}
-                                  </button>
-                                </div>
-                              </article>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between mt-8">
-                    <button
-                      className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                      onClick={() => setStep(2)}
-                    >
-                      Retour
-                    </button>
-                    <button
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
-                      disabled={regLoading}
-                      onClick={finishAll}
-                    >
-                      {regLoading ? 'Envoi en cours…' : 'Soumettre'}
-                    </button>
-                  </div>
-                </>
-              )}
+        {/* ===== SECTION 3: Sessions (appears after form is valid) ===== */}
+        {roleType && showSessions && !finished && (
+          <section className="anim-in" id="sessions-anchor" style={{ marginTop: 16 }}>
+            <div className="att-section-head">
+              <div className="t">Sélectionnez vos sessions</div>
+              <div className="h">Pistes parallèles: vous pouvez choisir une <b>masterclass</b> et un <b>atelier</b> sur le même créneau, mais pas deux de la même famille.</div>
             </div>
-          </div>
+
+            {/* Compact filter bar */}
+            <div className="filter-bar">
+               <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder="Toutes les pistes" />
+            </div>
+
+
+            {schedFetching ? (
+              <div className="reg-skel" style={{ height: 160 }} />
+            ) : !trackSections.length ? (
+              <div className="reg-empty">Aucune session disponible pour le moment.</div>
+            ) : (
+              <div className="att-session-list-v2">
+                {trackSections.map(section => (
+                  <div key={section.track} className="att-track-section-v2">
+                    <div className="att-track-sep-v2">{section.track}</div>
+
+                    {section.items.map(s => {
+                      const compositeKey = compositeKeyFor(s);
+                      const isSelected = selectedBySlot[compositeKey]?._id === s._id;
+                      const c = counts?.[s._id] || {};
+                      const reg = c.registered || 0;
+                      const cap = s.roomCapacity || 0;
+                      const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
+                      const title = s.title || s.sessionTitle || 'Session';
+                      const when = new Date(s.startISO);
+
+                      return (
+                        <article
+                          key={s._id}
+                          className={`att-session-card-v2 ${isSelected ? 'is-selected' : ''}`}
+                          onClick={() => toggleSession(s)}
+                          title={title}
+                        >
+                          <div className="session-head-v2">
+                            <div className="session-chipline-v2">
+                              {s.track ? <span className="badge">{s.track}</span> : <span className="chip">Session</span>}
+                              {s.roomName ? <span className="chip">Salle: {s.roomName}</span> : null}
+                              {s.roomLocation ? <span className="chip">Loc: {s.roomLocation}</span> : null}
+                              <span className="chip">
+                                {when.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • {when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className="att-session-title-v2">{title}</div>
+                            {!!s.speakers?.length && (
+                              <div className="att-session-meta-v2">
+                                {s.speakers.map(x => (x && (x.name || x.fullName)) || x).join(', ')}
+                              </div>
+                            )}
+                          </div>
+
+                          {s.summary ? (
+                            <div className="session-summary-v2">
+                              {s.summary.length > 220 ? `${s.summary.slice(0, 220)}…` : s.summary}
+                            </div>
+                          ) : null}
+
+                          {(cap || reg) ? (
+                            <div className="cap-mini-v2">
+                              <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
+                              <div className="cap-mini-meta">
+                                <span><b>{reg}</b> inscrits</span>
+                                {cap ? <span>• <b>{cap}</b> capacité</span> : null}
+                                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="session-actions-v2">
+                            <button
+                              type="button"
+                              className="btn-line sm"
+                              onClick={(e) => { e.stopPropagation(); setModalSession(s); setModalOpen(true); }}
+                            >
+                              Info
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn sm`}
+                              onClick={(e) => { e.stopPropagation(); toggleSession(s); }}
+                            >
+                              {isSelected ? 'Sélectionné' : 'Sélectionner'}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="att-actions" style={{ marginTop: 16 }}>
+              <button
+                className="btn"
+                disabled={regLoading}
+                onClick={finishAll}
+              >
+                {regLoading ? 'Envoi en cours…' : 'Soumettre'}
+              </button>
+            </div>
+          </section>
         )}
 
-        {/* ===== STEP 4: Done ===== */}
-        {step === 4 && (
+        {/* ===== DONE ===== */}
+        {finished && (
           <div className="anim-in">
             <div className="reg-empty" style={{ borderStyle:'solid', color:'#111827' }}>
               ✅ Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.
@@ -1120,6 +1081,13 @@ export default function AttendeeRegisterPage() {
         socials={footerData.socials}
         actions={footerData.actions}
         bottomLinks={footerData.bottomLinks}
+      />
+
+      <SessionModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        session={modalSession}
+        counts={counts}
       />
     </>
   );

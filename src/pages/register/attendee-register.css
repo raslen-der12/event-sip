@@ -327,3 +327,11 @@
   display: flex;
   gap: 6px;
 }
+/* ---- Sessions compact extras (GITS) ---- */
+.att-session-card-v2 { padding:10px; gap:8px }
+.att-session-title-v2 { font-size:16px }
+.att-session-meta-v2 { font-size:12px }
+.session-summary-v2 { font-size:12px }
+.session-chipline-v2 .chip, .session-chipline-v2 .badge { font-size:11px; padding:2px 6px }
+.cap-mini-line { height:6px }
+.session-actions-v2 .btn, .session-actions-v2 .btn-line { padding:8px 10px }
