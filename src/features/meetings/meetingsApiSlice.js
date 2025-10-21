@@ -14,7 +14,7 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
         }),
         getSuggestedList: builder.query({
             query: (ActorId) => ({
-                url: 'actors/meetings/suggest',
+                url: '/meets/suggested',
                 method: 'GET',
             }),
             transformResponse: (res) => {
@@ -23,10 +23,19 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
             providesTags: (result) =>
                 result ? [{ type: 'SuggestedMeetings', id: result.id }] : []
         }),
+        makeMeetingAction: builder.mutation({
+            query: ({ meetingId, action, actorId, proposedNewAt }) => ({
+                url: "/meets/action",
+                method: "POST",
+                body: { meetingId, action, actorId, proposedNewAt },
+            }),
+            invalidatesTags: ["Meetings"],
+        }),
     })
 })
 
 export const {
     useGetMeetingsQuery,
     useGetSuggestedListQuery,
+    useMakeMeetingActionMutation
 } = toolsApiSlice

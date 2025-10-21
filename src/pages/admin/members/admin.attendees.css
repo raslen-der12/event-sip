@@ -111,3 +111,50 @@
 .evt-meta{display:grid;gap:4px;min-width:0;}
 .evt-name{font-weight:900;overflow-wrap:anywhere;}
 .evt-cap{font-size:12px;color:#4b5563;}
+/* Modal */
+.req-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 60;
+}
+.req-modal {
+  width: 880px; max-width: calc(100% - 32px);
+  max-height: calc(100% - 32px);
+  overflow: auto; border-radius: 12px; padding: 16px;
+}
+.req-modal-head {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.req-modal-title {
+  font-weight: 800; font-size: 16px; color: #0f172a;
+}
+.req-modal-body { padding-top: 8px; }
+.req-ev.tiny { color: #64748b; font-size: 11px; margin-top: 2px; }
+/* ====== APPENDS: make create panel roomier + compact sessions ====== */
+.att-create { border: 1px dashed #e5e7eb; padding: 14px; border-radius: 12px; background:#fff; }
+.att-create .att-create-grid { grid-template-columns: 1.2fr 1.2fr 1fr 1fr; }
+@media (max-width: 1200px){ .att-create .att-create-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px){ .att-create .att-create-grid { grid-template-columns: 1fr; } }
+
+.sess-wrap { display:grid; gap:10px; margin-top: 8px; }
+.sess-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sess-grid { 
+  display:grid; gap:8px; 
+  grid-template-columns: repeat(3, minmax(0,1fr));
+}
+@media (max-width: 1100px){ .sess-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 640px){ .sess-grid { grid-template-columns: 1fr; } }
+
+.sess-item {
+  display:grid; gap:6px; padding:10px; border:1px solid #e5e7eb; border-radius:10px; background:#fff;
+}
+.sess-top { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.sess-tag { font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:#eef2f7; color:#0f172a; }
+.sess-when { font-size:11px; color:#475569; }
+.sess-title { font-weight:800; }
+.sess-check { display:flex; align-items:center; gap:8px; margin-top:4px; font-size:12px; }
+.sess-check input { width:16px; height:16px; }
+
+.flag-inline { display:inline-flex; align-items:center; gap:6px; }
+.opt-flag { margin-right:6px; }

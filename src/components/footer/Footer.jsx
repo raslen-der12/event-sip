@@ -80,7 +80,7 @@ export default function Footer({
         {/* bottom bar */}
         <div className="ft-bottom">
           <div className="ft-copy">
-            © {year} {brand?.name || "GITS"}. All rights reserved.
+            © All rights reserved to Seketak Solutions
           </div>
           {bottomLinks?.length ? (
             <nav className="ft-bl" aria-label="Legal links">

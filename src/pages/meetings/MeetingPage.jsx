@@ -7,7 +7,7 @@ import {
 } from "react-icons/fi";
 import "./meeting-page.css";
 
-/* API hooks (logic unchanged) */
+/* API hooks */
 import {
   useGetMeetingExistQuery,
   useGetActorPPQuery,
@@ -27,7 +27,7 @@ import useAuth from "../../lib/hooks/useAuth";
 /* --------------------------------- tiny utils --------------------------------- */
 const pad2 = (n) => String(n).padStart(2, "0");
 
-// UTC-safe pretty for a YYYY-MM-DD
+// UTC-safe pretty for a YYYY-MM-DD (keep UTC just for the day label in the select)
 const fmtYMDLongUTC = (ymd) => {
   if (!ymd) return "";
   const [y, m, d] = String(ymd).split("-").map(Number);
@@ -40,20 +40,19 @@ const fmtYMDLongUTC = (ymd) => {
   });
 };
 
-const fmtISODateUTC = (iso) =>
+// LOCAL timezone formatters (✓ changed from UTC)
+const fmtISODateLocal = (iso) =>
   new Date(iso).toLocaleDateString(undefined, {
     month: "long",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",
   });
 
-const fmtISOTimeUTC = (iso) =>
+const fmtISOTimeLocal = (iso) =>
   new Date(iso).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "UTC",
   });
 
 /* ---------------------- redesigned (scoped) status banner ---------------------- */
@@ -139,8 +138,8 @@ function StatusBanner({ variant, details, onBack, onGoMeetings }) {
           ) : null}
           {dtISO ? (
             <>
-              <span className="chip"><FiCalendar/>{fmtISODateUTC(dtISO)}</span>
-              <span className="chip"><FiClock/>{fmtISOTimeUTC(dtISO)}</span>
+              <span className="chip"><FiCalendar/>{fmtISODateLocal(dtISO)}</span>
+              <span className="chip"><FiClock/>{fmtISOTimeLocal(dtISO)}</span>
             </>
           ) : null}
         </div>
@@ -202,7 +201,7 @@ export default function MeetingPage() {
   }, [actor]);
 
   /* header */
-  const navItems = nav; // keep your global nav
+  const navItems = nav;
 
   /* summary card content */
   const summary = useMemo(() => {
@@ -239,12 +238,10 @@ export default function MeetingPage() {
     };
   }, [actor, role]);
 
-  /* preferences (expanded fallbacks) */
-const { data: prefsResp } = useGetMeetingPrefsQuery(id, { skip: !id });
-console.log(prefsResp);
+  /* preferences */
+  const { data: prefsResp } = useGetMeetingPrefsQuery(id, { skip: !id });
   const prefs = useMemo(() => {
     const s = prefsResp?.data || {};
-    // Fill the card even if something is missing
     const fallback = pickPreferences(role, actor) || {};
     return {
       language:   s.language   || fallback.language   || "",
@@ -253,7 +250,8 @@ console.log(prefsResp);
       lookingFor: s.lookingFor || fallback.lookingFor || "",
     };
   }, [prefsResp, role, actor]);
-  /* purpose options normalize (unchanged) */
+
+  /* purpose options normalize */
   const purposes = useMemo(() => {
     const [d] = purposeData ?? [];
     if (!d) return [];
@@ -294,11 +292,10 @@ console.log(prefsResp);
   const [dateStr, setDateStr] = useState(lastDay);
 
   useEffect(() => {
-    // Always force to last day if event changes
     if (eventDays.length) setDateStr(eventDays[eventDays.length - 1]);
   }, [eventDays]);
 
-  /* --------- slots (filter to ≥ 09:00 local) --------- */
+  /* --------- slots from backend (shown in LOCAL time) --------- */
   const { data: slotsRaw, isFetching: slotsLoading } =
     useGetAvailableSlotsQuery(
       { eventId, actorId: id, date: dateStr },
@@ -306,32 +303,32 @@ console.log(prefsResp);
     );
 
   const slots = useMemo(() => {
-    const arr =
+    // Accept a variety of shapes; prefer { iso, isCap }
+    const raw =
       (Array.isArray(slotsRaw?.data) && slotsRaw.data) ||
       (Array.isArray(slotsRaw) && slotsRaw) ||
       [];
 
-    // pick iso string from various shapes
-    const isoList = arr
-      .map((item) =>
-        typeof item === "string"
-          ? item
-          : item?.iso || item?.slotISO || item?.startISO || item?.start || ""
-      )
+    // normalize to { iso, isCap }
+    const normalized = raw
+      .map((r) => {
+        if (!r) return null;
+        if (typeof r === "string") return { iso: r, isCap: true };
+        const iso = r.iso || r.slotISO || r.startISO || r.start || r.key || "";
+        const isCap = r.isCap !== undefined ? !!r.isCap : true;
+        return iso ? { iso, isCap } : null;
+      })
       .filter(Boolean);
 
-    // enforce >= 09:00 (local time)
-    const filtered = isoList.filter((iso) => {
-      const d = new Date(iso);
-      const h = d.getHours();
-      const m = d.getMinutes();
-      return h > 9 || (h === 9 && m >= 0);
-    });
-
-    return filtered.map((iso) => ({
-      key: iso,
-      label: `${fmtISODateUTC(iso)} • ${fmtISOTimeUTC(iso)}`,
-    }));
+    // No extra window filter; show exactly what backend declares available.
+    return normalized
+      .sort((a,b) => new Date(a.iso) - new Date(b.iso))
+      .map(({ iso, isCap }) => ({
+        key: iso,
+        isCap,
+        label: `${fmtISODateLocal(iso)} • ${fmtISOTimeLocal(iso)}${isCap ? "" : "  [FULL]"}`,
+        timeLabel: fmtISOTimeLocal(iso),
+      }));
   }, [slotsRaw]);
 
   /* existence */
@@ -365,15 +362,16 @@ console.log(prefsResp);
   const onBlur = (key) => () => setTouched((t) => ({ ...t, [key]: true }));
   const fieldErr = (k) => (touched[k] && errors[k]) || "";
 
+  const { search: urlSearch } = useLocation();
   const returnTo = useMemo(() => {
     try {
-      const sp = new URLSearchParams(search);
+      const sp = new URLSearchParams(urlSearch);
       const r = sp.get("returnTo");
       return r && decodeURIComponent(r);
     } catch {
       return null;
     }
-  }, [search]);
+  }, [urlSearch]);
 
   const redirectBackWithCreated = () => {
     if (returnTo) {
@@ -413,7 +411,7 @@ console.log(prefsResp);
       eventId,
       receiverId: id,
       receiverRole: role,
-      dateTimeISO: form.slotKey,
+      dateTimeISO: form.slotKey, // ISO is UTC from backend; server handles it
       subject,
       message: form.message?.trim() || "",
     };
@@ -494,6 +492,9 @@ console.log(prefsResp);
   }
 
   /* ----------------------- normal flow ----------------------- */
+  const disabledCount = slots.filter(s => !s.isCap).length;
+  const allDisabled = slots.length > 0 && disabledCount === slots.length;
+
   return (
     <>
       <HeaderShell top={topbar} nav={navItems} cta={cta} />
@@ -506,11 +507,11 @@ console.log(prefsResp);
         </header>
 
         <div className="mp-grid">
-          {/* LEFT — keep as-is */}
+          {/* LEFT */}
           <div className="mp-col">
             <ActorCard summary={summary} role={role} />
 
-            {/* Preferences (fixed mapping & arrays) */}
+            {/* Preferences */}
             <section className="mp-card">
               <div className="mp-card-head">
                 <h3 className="mp-card-title">Preferences</h3>
@@ -532,29 +533,17 @@ console.log(prefsResp);
                 <div className="mp-par-label">Looking for</div>
                 <p>{prefs.lookingFor || "—"}</p>
               </div>
-              {"investmentSeeking" in prefs ? (
-                <div className="mp-kv">
-                  <span className="mp-k">Investment seeking</span>
-                  <span className="mp-v">{fmtBool(prefs.investmentSeeking)}</span>
-                </div>
-              ) : null}
-              {prefs.investmentRange ? (
-                <div className="mp-kv">
-                  <span className="mp-k">Investment range</span>
-                  <span className="mp-v">{prefs.investmentRange}</span>
-                </div>
-              ) : null}
             </section>
           </div>
 
-          {/* RIGHT — form (same, with last-day & >=09:00 slot rules) */}
+          {/* RIGHT — form */}
           <div className="mp-col">
             <form className="mp-card mp-form" onSubmit={onSubmit} noValidate>
               <div className="mp-card-head">
                 <h3 className="mp-card-title">Schedule</h3>
               </div>
 
-              {/* Date — always the last day only */}
+              {/* Date — fixed to last day */}
               <label className="mp-field">
                 <span className="mp-label">
                   <FiCalendar /> Date
@@ -576,27 +565,52 @@ console.log(prefsResp);
                 ) : null}
               </label>
 
-              {/* Slot selector — filtered to ≥ 09:00 */}
+              {/* Slot selector — with capacity indicator (local time) */}
               <label className="mp-field">
                 <span className="mp-label">
                   <FiCalendar /> Available time
                 </span>
+
+                {/* Inline scoped legend for FULL badge */}
+                <style>{`
+                  .mp-full-legend{display:flex;gap:8px;align-items:center;margin-top:6px;color:#64748b;font-size:.9rem}
+                  .mp-badge-full{display:inline-block;border:1px solid #fecaca;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem}
+                `}</style>
+
                 <select
                   className={`mp-select ${fieldErr("slotKey") ? "is-invalid" : ""}`}
                   value={form.slotKey}
                   onChange={onChange("slotKey")}
                   onBlur={onBlur("slotKey")}
                   required
-                  disabled={isSending || slotsLoading || !eventId || !id || !dateStr}
+                  disabled={isSending || slotsLoading || !eventId || !id || !dateStr || allDisabled}
+                  title={allDisabled ? "All B2B rooms are full for this date" : undefined}
                 >
                   <option value="">{slotsLoading ? "Loading…" : "Select a slot…"}</option>
                   {slots.map((s) => (
-                    <option key={s.key} value={s.key}>{s.label}</option>
+                    <option
+                      key={s.key}
+                      value={s.key}
+                      disabled={!s.isCap}
+                      aria-disabled={!s.isCap}
+                      title={!s.isCap ? "B2B room is full for this slot" : undefined}
+                    >
+                      {s.label}
+                    </option>
                   ))}
                 </select>
+
                 {fieldErr("slotKey") ? <div className="mp-error">{fieldErr("slotKey")}</div> : null}
+
                 {!slotsLoading && !slots.length ? (
-                  <div className="mp-help">No free slots (≥ 09:00) for this date.</div>
+                  <div className="mp-help">No free slots returned by the event for this date.</div>
+                ) : null}
+
+                {!slotsLoading && slots.length ? (
+                  <div className="mp-full-legend">
+                    <span className="mp-badge-full">FULL</span>
+                    <span>Times are shown in <strong>your timezone</strong>. Full slots are disabled.</span>
+                  </div>
                 ) : null}
               </label>
 
@@ -667,7 +681,7 @@ console.log(prefsResp);
               <div className="mp-actions">
                 <button
                   type="submit"
-                  className={`mp-btn mp-primary ${!canSubmit ? "is-disabled" : ""}`}
+                  className={`mp-btn mp-primary pph-btn  ${!canSubmit ? "is-disabled" : ""}`}
                   disabled={!canSubmit}
                   title={!canSubmit ? "Complete required fields" : "Send request"}
                 >
@@ -710,7 +724,6 @@ function fmtBool(v) {
   return "—";
 }
 
-/* More tolerant mapper so prefs actually show up */
 function pickPreferences(role, a = {}) {
   const j = (v) => (Array.isArray(v) ? v.filter(Boolean).join(", ") : v || "");
   const r = (role || "").toLowerCase();
@@ -781,8 +794,6 @@ function pickPreferences(role, a = {}) {
       "",
     offering: mi.offering || pref.offering || "",
     lookingFor: looking,
-    // most attendees won’t have these:
-    // undefined = don’t render the row at all
   };
 }
 

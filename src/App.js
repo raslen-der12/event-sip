@@ -122,7 +122,7 @@ function App() {
         <Route path="/communities/students" element={<SingleCommunity/>} />
         <Route path="/logistics/freight-calculator" element={<FreightCalculator />} />
         <Route path="/logistics/load-calculator" element={<LoadCalculator />} />
-        <Route element={<RequireAuth allowedRoles={['attendee', 'speaker', 'exhibitor', 'admin', 'super']} />}>
+        <Route element={<RequireAuth allowedRoles={['attendee', 'speaker', 'exhibitor']} />}>
           <Route path="/messages" element={<ActorsMessagesPage />} />
           <Route path="/sessions" element={<SessionsPage />} />
           <Route path="/meetings" element={<MeetingsPage />} />

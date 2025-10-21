@@ -15,7 +15,10 @@
   gap:14px;
   align-items:start;
 }
-
+.pph-btn:hover,
+.pph-btn:focus{
+  color: #000;
+}
 .pph-avatar{
   width:72px; height:72px; border-radius:14px; overflow:hidden; flex:0 0 72px;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
