@@ -25,7 +25,7 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
         }),
         makeMeetingAction: builder.mutation({
             query: ({ meetingId, action, actorId, proposedNewAt }) => ({
-                url: "/meets/action",
+                url: "/meets/actions",
                 method: "POST",
                 body: { meetingId, action, actorId, proposedNewAt },
             }),

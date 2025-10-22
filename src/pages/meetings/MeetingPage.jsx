@@ -40,7 +40,7 @@ const fmtYMDLongUTC = (ymd) => {
   });
 };
 
-// LOCAL timezone formatters (✓ changed from UTC)
+// LOCAL timezone formatters (for display only)
 const fmtISODateLocal = (iso) =>
   new Date(iso).toLocaleDateString(undefined, {
     month: "long",
@@ -54,6 +54,16 @@ const fmtISOTimeLocal = (iso) =>
     minute: "2-digit",
     hour12: false,
   });
+
+// Get YYYY-MM-DD (UTC) from an ISO
+const ymdUTC = (iso) => {
+  const d = new Date(iso);
+  return [
+    d.getUTCFullYear(),
+    pad2(d.getUTCMonth() + 1),
+    pad2(d.getUTCDate())
+  ].join("-");
+};
 
 /* ---------------------- redesigned (scoped) status banner ---------------------- */
 function StatusBanner({ variant, details, onBack, onGoMeetings }) {
@@ -101,7 +111,6 @@ function StatusBanner({ variant, details, onBack, onGoMeetings }) {
 
   return (
     <section className="mp-status2">
-      {/* scoped styles; won't affect your main CSS */}
       <style>{`
         .mp-status2{--bd:#e2e8f0;--bg:#f8fafc;--ink:#0f172a;--muted:#64748b;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;border:1px solid var(--bd);border-radius:16px;background:#fff;overflow:hidden;margin:16px 0;}
         .mp-status2 .top{display:flex;gap:12px;align-items:flex-start;padding:16px 16px 8px 16px;background:var(--bg);}
@@ -320,7 +329,7 @@ export default function MeetingPage() {
       })
       .filter(Boolean);
 
-    // No extra window filter; show exactly what backend declares available.
+    // Show exactly what backend declares available (no local filtering)
     return normalized
       .sort((a,b) => new Date(a.iso) - new Date(b.iso))
       .map(({ iso, isCap }) => ({
@@ -330,6 +339,9 @@ export default function MeetingPage() {
         timeLabel: fmtISOTimeLocal(iso),
       }));
   }, [slotsRaw]);
+
+  // Fast lookup set for validation
+  const slotKeysSet = useMemo(() => new Set(slots.map(s => s.key)), [slots]);
 
   /* existence */
   const exist = (existData?.exist || "").toLowerCase(); // yes | pending | refused | no | ""
@@ -347,7 +359,22 @@ export default function MeetingPage() {
     message: "",
   });
 
+  // Clear selected slot when day changes (avoid stale value)
+  useEffect(() => {
+    setForm((f) => ({ ...f, slotKey: "" }));
+  }, [dateStr]);
+
+  // Auto-select first available (capacity) slot when list loads
+  useEffect(() => {
+    if (!slotsLoading && slots.length) {
+      const firstCap = slots.find(s => s.isCap);
+      setForm((f) => (f.slotKey ? f : { ...f, slotKey: firstCap?.key || "" }));
+    }
+  }, [slotsLoading, slots]);
+
   const [touched, setTouched] = useState({});
+  const [submitError, setSubmitError] = useState(""); // UI error for invalid/missing slot
+
   const errors = useMemo(() => {
     const e = {};
     if (!form.slotKey) e.slotKey = "Please select a meeting slot";
@@ -399,8 +426,35 @@ export default function MeetingPage() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
     setTouched({ slotKey: true, purposeId: true, model: true });
     if (!canSubmit) return;
+
+    // Defensive validation: the chosen ISO must exist in server-provided slots
+    const iso = form.slotKey;
+    if (!slotKeysSet.has(iso)) {
+      setSubmitError("Selected time is no longer available. Please choose another slot.");
+      return;
+    }
+    // Ensure day match (UTC) with the selected event day
+    if (ymdUTC(iso) !== dateStr) {
+      setSubmitError("Selected time does not belong to the selected date. Please re-select.");
+      return;
+    }
+    // Optional bounds check if event carries dates
+    try {
+      if (event?.startDate && event?.endDate) {
+        const t = new Date(iso).getTime();
+        const a = new Date(event.startDate).getTime();
+        const b = new Date(event.endDate).getTime();
+        if (Number.isFinite(t) && Number.isFinite(a) && Number.isFinite(b)) {
+          if (t < a || t > b) {
+            setSubmitError("Selected time is outside the event dates.");
+            return;
+          }
+        }
+      }
+    } catch {}
 
     const purposeLabel =
       purposes.find((p) => String(p.id) === String(form.purposeId))?.label ||
@@ -411,7 +465,7 @@ export default function MeetingPage() {
       eventId,
       receiverId: id,
       receiverRole: role,
-      dateTimeISO: form.slotKey, // ISO is UTC from backend; server handles it
+      dateTimeISO: iso, // ← exact ISO from backend (never transformed)
       subject,
       message: form.message?.trim() || "",
     };
@@ -421,6 +475,7 @@ export default function MeetingPage() {
       redirectBackWithCreated();
     } catch (err) {
       console.error("requestMeeting error:", err);
+      setSubmitError(err?.data?.message || "Couldn’t send the request. Please try again.");
     }
   };
 
@@ -571,7 +626,6 @@ export default function MeetingPage() {
                   <FiCalendar /> Available time
                 </span>
 
-                {/* Inline scoped legend for FULL badge */}
                 <style>{`
                   .mp-full-legend{display:flex;gap:8px;align-items:center;margin-top:6px;color:#64748b;font-size:.9rem}
                   .mp-badge-full{display:inline-block;border:1px solid #fecaca;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem}
@@ -671,10 +725,10 @@ export default function MeetingPage() {
                 <div className="mp-help">Keep it concise (max ~1,000 chars).</div>
               </label>
 
-              {sendErr ? (
+              {(sendErr || submitError) ? (
                 <div className="mp-inline-err">
                   <FiAlertTriangle />
-                  {extractErr(sendError) || "Couldn’t send the request. Please try again."}
+                  {submitError || extractErr(sendError) || "Couldn’t send the request. Please try again."}
                 </div>
               ) : null}
 
