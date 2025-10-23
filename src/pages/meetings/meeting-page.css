@@ -45,11 +45,23 @@
 
 /* Key-value */
 .mp-kv{
-  display:flex; align-items:center; gap:8px; padding:10px; border:1px solid rgba(0,0,0,.06);
-  border-radius:12px; background:#fff; box-shadow: 0 8px 18px rgba(0,0,0,.05);
+  display:grid;
+  grid-template-columns: 180px 1fr; /* label width / value fills */
+  column-gap:12px;
+  row-gap:6px;
+  align-items:start;               /* top-align when value wraps */
+  width:100%;
+  max-width:var(--mp-kv-max, 900px);
 }
-.mp-k{ flex:0 0 180px; color:#5f6b85; font-weight:800; font-size:13px; }
-.mp-v{ flex:1 1 auto; font-weight:800; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width: 640px){
+  .mp-kv{ grid-template-columns: 140px 1fr; }
+}
+.mp-k{ flex:0 0 180px; color:#5f6b85; font-weight:600; font-size:13px; }
+.mp-v{ min-width:0;                     /* allow grid to shrink the cell */
+  overflow-wrap:anywhere;          /* break long tokens if needed */
+  word-break:break-word;           /* safety for very long strings */
+  hyphens:auto;                    /* nicer breaks for hyphenable words */
+  line-height:1.35; max-width:100%; }
 
 /* Paragraph */
 .mp-par{ display:grid; gap:6px; padding:10px; border:1px solid rgba(0,0,0,.06); border-radius:12px; background:#fff; box-shadow: 0 8px 18px rgba(0,0,0,.05); }
