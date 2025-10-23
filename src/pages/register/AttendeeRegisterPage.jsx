@@ -325,6 +325,9 @@ const normSession = (s) => {
     roomName: s.room?.name || s.roomName || '',
     roomLocation: s.room?.location || '',
     roomCapacity: s.room?.capacity || 0,
+    seatsTaken: typeof s.seatsTaken === 'number'
+      ? s.seatsTaken
+      : (typeof s.seats_taken === 'number' ? s.seats_taken : 0),
     startISO,
     endISO: end ? new Date(end).toISOString() : '',
     dayISO,
@@ -388,9 +391,10 @@ function SessionModal({ open, onClose, session, counts }) {
 
   if (!open || !session) return null;
 
-  const reg = counts?.[session._id]?.registered || 0;
-  const wait = counts?.[session._id]?.waitlisted || 0;
-  const cap  = session.roomCapacity || 0;
+  const regFromSession = typeof session?.seatsTaken === 'number' ? session.seatsTaken : NaN;
+  const reg = Number.isFinite(regFromSession) ? regFromSession : Number(counts?.[session?._id]?.registered || 0);
+  const wait = Number(counts?.[session?._id]?.waitlisted || 0);
+  const cap  = session?.roomCapacity || 0;
   const pct  = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
   const title = session.title || session.sessionTitle || 'Session';
 
@@ -975,11 +979,15 @@ const trackSections = useMemo(() => {
                   <div key={section.track} className="att-track-section-v2">
                     <div className="att-track-sep-v2">{section.track}</div>
 
-                    {section.items.map(s => {
+                    {section.items?.map(s => {
                       const compositeKey = compositeKeyFor(s);
                       const isSelected = selectedBySlot[compositeKey]?._id === s._id;
-                      const c = counts?.[s._id] || {};
-                      const reg = c.registered || 0;
+                      const c   = counts?.[s._id] || {};
+                      const reg = Number(
+                        (typeof s.seatsTaken === 'number' ? s.seatsTaken : NaN)
+                      );
+                      const regSafe = Number.isFinite(reg) ? reg : Number(c.registered || 0);
+                      console.log("reg:", regSafe, "s:", s);
                       const cap = s.roomCapacity || 0;
                       const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
                       const title = s.title || s.sessionTitle || 'Session';
@@ -1019,7 +1027,7 @@ const trackSections = useMemo(() => {
                             <div className="cap-mini-v2">
                               <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
                               <div className="cap-mini-meta">
-                                <span><b>{reg}</b> inscrits</span>
+                                <span><b>{regSafe}</b> inscrits</span>
                                 {cap ? <span>• <b>{cap}</b> capacité</span> : null}
                                 {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
                               </div>

@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ReactCountryFlag from "react-country-flag";
 import "./admin.attendees.css";
-
+import SessionPicker from "../../../components/admin/SessionPicker";
 import {
   useGetActorsListAdminQuery,
   useGetAdminActorQuery,
@@ -55,9 +55,30 @@ function flagChip(code) {
     </span>
   );
 }
+function isDefaultPhoto(src) {
+  if (!src) return false;
+  try {
+    return String(src).includes("/uploads/default/photodef.png") ||
+           String(src).endsWith(": /default/photodef.png") || // safety for odd prefixes
+           String(src).endsWith("/default/photodef.png");
+  } catch { return false; }
+}
 
+function fmtUrl(u) {
+  if (!u) return null;
+  const s = String(u).trim();
+  if (!s) return null;
+  // ensure it’s clickable
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+}
 function getId(x) {
-  return x?._id || x?.id || String(x?.email || "") + String(x?.createdAt || "");
+  return (
+    x?.data?._id || // when response is { success, data: {...} }
+    x?._id ||
+    x?.id ||
+    x?.personal?._id ||
+    String(x?.email || "") + String(x?.createdAt || "")
+  );
 }
 function bool(v) {
   return v == null ? "—" : v ? "Yes" : "No";
@@ -166,7 +187,24 @@ export default function AdminAttendees() {
       (s) => String(s?.track || "").trim().toLowerCase() !== "formation"
     );
   }, [sessionsPack]);
-
+  const pickerSessions = React.useMemo(() => {
+  return cleanSessions.map((s) => {
+    const start = s.startAt || s.startTime || s.start || s.startsAt || null;
+    const end   = s.endAt   || s.endTime   || s.end   || s.endsAt   || null;
+    return {
+      _id: s._id || s.id,
+      title: s.title || s.sessionTitle || "Session",
+      track: s.track || "Session",
+      startAt: start ? new Date(start).toISOString() : null,
+      endAt:   end   ? new Date(end).toISOString()   : null,
+      room: {
+        name: s?.room?.name || s?.roomName || "",
+        capacity: Number(s?.room?.capacity || 0),
+      },
+      seatsTaken: Number(s?.seatsTaken || 0),
+    };
+  });
+}, [cleanSessions]);
   const toggleSess = (id) => {
     setCreateDraft((prev) => {
       const has = prev.sessionIds.includes(id);
@@ -392,43 +430,31 @@ export default function AdminAttendees() {
               <div className="att-col">
                 <div className="att-lbl">Assign sessions * (at least 1)</div>
                 {!createDraft.eventId ? (
-                  <div className="muted">Select an event to load sessions.</div>
-                ) : fetchingSessions ? (
-                  <div className="muted">Loading sessions…</div>
-                ) : !cleanSessions.length ? (
-                  <div className="muted">No sessions for this event.</div>
-                ) : (
-                  <div className="sess-list">
-                    {cleanSessions.map((s) => {
-                      const id = s?._id || s?.id;
-                      const track = s?.track || "Session";
-                      const st = s?.startAt || s?.startTime || s?.start || s?.startsAt;
-                      const en = s?.endAt || s?.endTime || s?.end || s?.endsAt;
-                      const checked = createDraft.sessionIds.includes(id);
-                      return (
-                        <label key={id} className={`sess-item ${checked ? "active" : ""}`}>
-                          <input type="checkbox" checked={checked} onChange={() => toggleSess(id)} />
-                          <div className="sess-meta">
-                            <div className="sess-title line-1">{s?.title || "Untitled"}</div>
-                            <div className="sess-sub tiny">
-                              <span className="tag">{track}</span>
-                              <span className="sep">•</span>
-                              <span>
-                                {dateYMD(st)} {timeHM(st)}–{timeHM(en)}
-                              </span>
-                              {s?.room?.name ? (
-                                <>
-                                  <span className="sep">•</span>
-                                  <span>{s.room.name}</span>
-                                </>
-                              ) : null}
-                            </div>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
+  <div className="muted">Select an event to load sessions.</div>
+) : fetchingSessions ? (
+  <div className="muted">Loading sessions…</div>
+) : !pickerSessions.length ? (
+  <div className="muted">No sessions for this event.</div>
+) : (
+  <SessionPicker
+    sessions={pickerSessions}
+    selectedIds={createDraft.sessionIds.map(String)}
+    onToggle={(s) => {
+      const id = String(s._id || s.id);
+      setCreateDraft((prev) => {
+        const has = prev.sessionIds.map(String).includes(id);
+        return {
+          ...prev,
+          sessionIds: has
+            ? prev.sessionIds.filter((x) => String(x) !== id)
+            : [...prev.sessionIds, id],
+        };
+      });
+    }}
+  />
+)}
+
+
               </div>
             </div>
 
@@ -496,14 +522,14 @@ function AttendeeRow({ item, onOpen }) {
   return (
     <button className="att-row" onClick={onOpen} title="Open">
       <div className="att-avatar">
-        {pic ? (
-          <img className="att-img" src={imageLink(pic)} alt={name} />
-        ) : (
-          <span className="att-fallback">
-            {(name || email || "?").slice(0, 1).toUpperCase()}
-          </span>
-        )}
-      </div>
+  {pic && !isDefaultPhoto(pic) ? (
+    <img className="att-img" src={imageLink(pic)} alt={name} />
+  ) : (
+    <span className="att-fallback">
+      {(name || email || "?").slice(0, 1).toUpperCase()}
+    </span>
+  )}
+</div>
       <div className="att-meta">
         <div className="att-name line-1">{name}</div>
         <div className="att-sub line-1">{email}</div>
@@ -547,28 +573,34 @@ function Modal({ children, onClose }) {
 
 function ActorDetails({ actor }) {
   const navigate = useNavigate();
-  const id = getId(actor);
 
-  // Shape from backend getActorFullById:
-  // { success, role: 'attendee', roleKind, data: <doc>, roles: [...], sessions: [...], event: {...} }
-  const base = actor?.data || actor || {};
+  // The backend response you shared:
+  // { success, role, roleKind, data: {...}, sessions: [...], roles: [...] }
+  const id = actor?.data?._id || actor?._id || getId(actor);
+
+  const base = actor?.data || {};
   const A = base.personal || {};
   const B = base.organization || {};
   const C = base.businessProfile || {};
   const D = base.matchingIntent || {};
-  const photo = A.profilePic;
 
-  const sess = actor?.sessions || []; // normalized sessions array from backend
+  const photo = A.profilePic;
+  const hasRealPhoto = photo && !isDefaultPhoto(photo);
+
+  const sess = Array.isArray(actor?.sessions) ? actor.sessions : [];
   const eid = base?.id_event || actor?.event?._id || null;
 
   const goProfile = () => navigate(`/admin/members/attendee/${id}`);
   const goMessage = () => navigate(`/admin/messages?actor=${id}&role=attendee`);
 
+  const websiteUrl = fmtUrl(base?.links?.website);
+  const linkedinUrl = fmtUrl(base?.links?.linkedin);
+
   return (
     <div className="att-detail">
       <div className="att-d-head">
         <button className="att-d-avatar" onClick={goProfile} title="Open full profile">
-          {photo ? (
+          {hasRealPhoto ? (
             <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
           ) : (
             <span className="att-fallback">
@@ -581,25 +613,54 @@ function ActorDetails({ actor }) {
             <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
               {A.fullName || "—"}
             </button>
+
             <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
               {base.verified ? "Email verified" : "Unverified"}
             </span>
+
             <span className={`pill-status big ${base.adminVerified || "pending"}`}>
               {base.adminVerified || "pending"}
             </span>
           </div>
+
           <div className="att-d-sub">
             <span className="muted">{A.email || "—"}</span>
             <span className="muted">
               {flagChip(A.country)} {A.city ? `, ${A.city}` : ""}
             </span>
           </div>
+
           <div className="att-d-sub">
             <span className="muted">
               Event: <EventName id={eid} fallback="—" />
             </span>
             {actor?.roleKind ? <span className="muted ml-10">Role-like: {actor.roleKind}</span> : null}
           </div>
+
+          <div className="att-d-sub">
+            <span className="muted">Created: {dateYMD(base.createdAt)}</span>
+          </div>
+
+          <div className="att-d-links">
+            {websiteUrl ? (
+              <a className="linklike mr-8" href={websiteUrl} target="_blank" rel="noreferrer">
+                Website
+              </a>
+            ) : null}
+            {linkedinUrl ? (
+              <a className="linklike" href={linkedinUrl} target="_blank" rel="noreferrer">
+                LinkedIn
+              </a>
+            ) : null}
+          </div>
+
+          {!!(A.preferredLanguages || []).length && (
+            <div className="att-lang-row">
+              {(A.preferredLanguages || []).map((l) => (
+                <span key={l} className="pill tiny">{l}</span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -607,7 +668,9 @@ function ActorDetails({ actor }) {
         <AttSection title="Organization & Role">
           <KV k="Organization" v={B.orgName} />
           <KV k="Job Title" v={B.jobTitle} />
-          <KV k="Business Role" v={B.businessRole} />
+          <KV k="Actor Type" v={base.actorType} />
+          <KV k="Role-like" v={actor?.roleKind} />
+          <KV k="Headline" v={base.actorHeadline} />
         </AttSection>
 
         <AttSection title="Business Profile">
@@ -650,13 +713,12 @@ function ActorDetails({ actor }) {
       </div>
 
       <div className="att-d-actions">
-        <button className="btn" onClick={goMessage}>
-          Message
-        </button>
+        <button className="btn" onClick={goMessage}>Message</button>
       </div>
     </div>
   );
 }
+
 
 /* ───────────────────────── Shared UI ───────────────────────── */
 

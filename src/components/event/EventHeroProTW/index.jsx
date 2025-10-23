@@ -184,7 +184,7 @@ export default function HeroEvent({
                 </motion.a>
 
                 <a
-                  href={id ? `/event/${id}#schedule` : "#schedule"}
+                  href={id ? `/event/${id}/schedule` : "#schedule"}
                   className="flex-1 text-center px-5 py-3 rounded-full bg-white/10 text-white border border-white/20"
                 >
                   Voir le programme

@@ -112,10 +112,10 @@
   mix-blend-mode: overlay; opacity:.35; pointer-events:none;
 }
 .org-logo{
-  max-height:42px; max-width:90%; object-fit:contain; z-index:1; filter:grayscale(100%); opacity:.9;
+  max-height:42px; max-width:90%; object-fit:contain; z-index:1;  opacity:.9;
   transition: filter .12s ease, opacity .12s ease, transform .12s ease;
 }
-.org-card:hover .org-logo{ filter:grayscale(0%); opacity:1; transform: scale(1.02); }
+.org-card:hover .org-logo{  opacity:1; transform: scale(1.02); }
 
 .org-initial{
   z-index:1; font-weight:900; color:#fff;

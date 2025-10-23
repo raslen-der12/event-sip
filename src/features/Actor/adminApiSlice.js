@@ -41,9 +41,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
                 url: `/actors/${id}`,
                 method: 'GET'
             }),
-            transformResponse: (res) => {
-                return res?.data?.data || res?.data
-            },
+
             providesTags: (result, error, arg) =>
                 result ? [{ type: 'AdminActor', id: result.id }] : []
         }),

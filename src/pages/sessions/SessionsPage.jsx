@@ -225,7 +225,7 @@ export default function MySessions() {
                         title={`${s.title} • ${fmtDate(s.start)} ${fmtTime(s.start)}`}
                       >
                         <div className="ses-top">
-                          <h4 className="ses-name">{s.title}</h4>
+                          <h4 className="ses-name">{clampWords(s.title,7)}</h4>
                           <div className="ses-badges">
                             <span className={regCls}>{row.status}</span>
                             <span className={`ses-badge -att ${attCls}`}>
@@ -270,7 +270,7 @@ export default function MySessions() {
             <div className="ses-card" onClick={(e) => e.stopPropagation()}>
               <button className="ses-x" onClick={close} aria-label="Close"><FiX /></button>
 
-              <h3 className="ses-title">{active.session.title}</h3>
+              <h3 className="ses-title">{clampWords(active.session.title, 15)}</h3>
 
               <div className="ses-meta">
                 <span><FiCalendar /> {fmtDate(active.session.start)}</span>

@@ -150,7 +150,6 @@ export default function EventOrganizers({
                     ) : (
                       <InitialLogo text={o.name} />
                     )}
-                    <span className="org-type">{o.typeLabel}</span>
                   </div>
                 </div>
               );

@@ -88,6 +88,7 @@ const normSession = (s) => {
       : null,
     cover: s?.cover || null,
     capacity: typeof s?.room?.capacity === "number" ? s.room.capacity : null,
+    seatsTaken: Number(s?.seatsTaken ?? s?.seats_taken ?? 0),
     rolesAllowed: Array.isArray(s?.rolesAllowed) ? s.rolesAllowed : null,
   };
 };
@@ -188,7 +189,23 @@ export default function SchedulePage({ mySessionsHref = "/me/sessions" }) {
       .map((s) => ({ ...s, room: s.room || roomsById.get(String(s.roomId)) || s.roomId }));
   }, [dayRes, day, roomsById]);
 
-  const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
+const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
+
+ // Merge API counts with per-session seatsTaken fallback
+ const mergedCounts = React.useMemo(() => {
+   const base = counts || {};
+   const out = {};
+   daySessions.forEach((s) => {
+     const id = s.id;
+     console.log("s",s);
+     const reg = (base?.[id]?.seatsTaken != null)
+       ? base[id].seatsTaken
+       : (typeof s.seatsTaken === "number" ? s.seatsTaken : 0);
+     const waitlisted = base?.[id]?.seatsTaken ?? 0;
+     out[id] = { seatsTaken: reg, waitlisted };
+   });
+   return out;
+ }, [counts, daySessions]);
 
   /* My sessions map */
   const { data: myRes, refetch: refetchMine } = useGetMySessionsQuery({ eventId: currentEventId }, { skip: !currentEventId });
@@ -244,7 +261,7 @@ export default function SchedulePage({ mySessionsHref = "/me/sessions" }) {
     }
 
     const cap = s.capacity;
-    const reg = counts?.[s.id]?.registered || 0;
+    const reg = mergedCounts?.[s.id]?.registered || 0;
     if (cap != null && reg >= cap) return <span className="ag__chip -full">full</span>;
     return null;
   };
@@ -371,9 +388,11 @@ export default function SchedulePage({ mySessionsHref = "/me/sessions" }) {
               )}
 
               {(() => {
-                const c = counts?.[open.id] || {};
+                const c = mergedCounts?.[open.id] || {};
                 const cap = open.capacity;
-                const reg = c.registered || 0;
+                console.log("c",c)
+                console.log("mergedCounts",mergedCounts)
+                const reg = c.seatsTaken || 0;
                 const myStatus = myMap.get(String(open.id)) || null;
                 const eligible = roleAllowed(open.rolesAllowed, myRole);
                 const full = cap != null && reg >= cap;
