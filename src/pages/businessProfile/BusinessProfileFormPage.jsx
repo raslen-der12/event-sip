@@ -355,7 +355,7 @@ const navigate = useNavigate();
         };
         localStorage.setItem("popup", JSON.stringify(popup));
       } catch {}
-      navigate("/");
+      navigate("/BusinessProfile/dashboard");
     } catch (e) {
       setMsgErr(e?.data?.message || e?.message || "Upload failed");
     } finally { setBusy(false); }

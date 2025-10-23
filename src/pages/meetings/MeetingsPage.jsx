@@ -164,7 +164,7 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
               )}
 
               <div className="flex items-center gap-4">
-                <div className="avatar">
+                <div className="sugg-avatar">
                   {s.photo ? <img src={s.photo} alt="" /> : <span>{initials(s.name)}</span>}
                 </div>
                 <div>

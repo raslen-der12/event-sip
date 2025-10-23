@@ -338,3 +338,46 @@
 .notif-title { font-weight:800; color:#0f172a; }
 .notif-body { color:#475569; margin-top:2px; font-weight:600; }
 .notif-time { color:#94a3b8; font-size:12px; margin-top:6px; }
+
+
+.nav-pill.-meet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  font-weight: 800;
+  border: 1px solid #10b98155;         /* emerald-500 @ ~34% */
+  background: rgba(16,185,129,0.12);   /* emerald-500 @ 12% */
+  color: #065f46;                      /* emerald-900 */
+  line-height: 1;
+}
+.nav-pill.-meet:hover {
+  background: rgba(16,185,129,0.18);
+  border-color: #10b981;
+}
+.nav-pill.-meet svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Special link — mobile */
+.mobile-cta.-meet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-top: 6px;
+  border-radius: 12px;
+  font-weight: 800;
+  border: 1px solid #d1fae5;           /* emerald-100 */
+  background: #ecfdf5;                 /* emerald-50 */
+  color: #065f46;                       /* emerald-900 */
+}
+.mobile-cta.-meet:active {
+  filter: brightness(0.97);
+}
+.mobile-cta.-meet svg {
+  width: 18px;
+  height: 18px;
+}

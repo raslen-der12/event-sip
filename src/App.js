@@ -66,6 +66,8 @@ import PopupHost from './components/PopupHost';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import RestoreEmail from './pages/auth/RestoreEmail';
+import OpenToMeetAttendeesPage from "./pages/attendees/OpenToMeetAttendeesPage";
+
 function SocketBootstrap() {
   const s = useStore();
   useEffect(() => {
@@ -87,7 +89,7 @@ function App() {
       {/* Public route - NO LOGIN REQUIRED */}
       <Route element={<PersistLogin />}>
         <Route path="/" element={<Main />} />
-
+        <Route path="/attendees/open-to-meet" element={<OpenToMeetAttendeesPage />} />
         <Route path="/register" element={<RegisterLanding  />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />

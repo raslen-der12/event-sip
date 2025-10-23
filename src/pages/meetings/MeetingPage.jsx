@@ -348,7 +348,7 @@ export default function MeetingPage() {
 
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
-    else navigate("/");
+    else navigate("/meetings");
   };
 
   /* ----------------------- form state ----------------------- */

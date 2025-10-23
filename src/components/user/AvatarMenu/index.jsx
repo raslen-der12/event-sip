@@ -116,10 +116,10 @@ export default function AvatarMenu() {
           className="avatar-item"
           onClick={() => {
             setOpen(false);
-            nav("/BusinessProfile");
+            nav("/BusinessProfile/dashboard");
           }}
         >
-          View business profile
+          Edit business profile
         </button>
 
         <button
