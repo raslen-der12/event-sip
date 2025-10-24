@@ -521,6 +521,7 @@ export default function AttendeeRegisterPage() {
     gender: '', 
     pwd: '',
     pwd2: '',
+    virtualMeet: '',
     openToMeetings: true,
     subRoles: [],
   });
@@ -653,6 +654,7 @@ const trackSections = useMemo(() => {
       if (!required(form.orgName)) e2.orgName = 'Requis';
       if (!required(form.jobTitle)) e2.jobTitle = 'Requis';
     }
+    if (form.virtualMeet !== true && form.virtualMeet !== false) e2.virtualMeet = 'Requis';
     setErrs(e2);
     if (Object.keys(e2).length) return;
 
@@ -692,7 +694,7 @@ const trackSections = useMemo(() => {
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
     fd.append('links.website', form.website);
     fd.append('links.linkedin', form.linkedin);
-
+    fd.append('virtualMeet', String(form.virtualMeet === true));
     if (Array.isArray(form.subRoles)) {
       form.subRoles.forEach(v => fd.append('subRole[]', v));
     }
@@ -908,15 +910,47 @@ const trackSections = useMemo(() => {
                   onChange={(v) => setField('objective', v)}
                 />
               </div>
-
               <div className="att-field full" style={{ alignItems:'flex-start' }}>
                 <label>Disponible pour des rendez-vous ?</label>
-                <label className="chk-inline">
-                  <input type="checkbox" checked={!!form.openToMeetings} onChange={e=>setField('openToMeetings', e.target.checked)} />
-                  Oui, autoriser les demandes B2B
+                <label className="chk-inline as-switch">
+                  <input
+                    type="checkbox"
+                    checked={!!form.openToMeetings}
+                    onChange={e=>setField('openToMeetings', e.target.checked)}
+                  />
+                  <span className="sw" aria-hidden="true"><span className="knob" /></span>
+                  <span className="txt">Oui, autoriser les demandes B2B</span>
                 </label>
               </div>
+              <div className="att-field full">
+                <label>Mode des rendez-vous <span className="req">*</span></label>
+                <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
+                  <label className={`lang-item ${form.virtualMeet === false ? 'active' : ''}`} style={{ cursor:'pointer' }}>
+                    <input
+                      type="radio"
+                      name="virtualMeet"
+                      value="physical"
+                      checked={form.virtualMeet === false}
+                      onChange={() => setField('virtualMeet', false)}
+                      style={{ display:'none' }}
+                    />
+                    <span>Présentiel (physique)</span>
+                  </label>
 
+                  <label className={`lang-item ${form.virtualMeet === true ? 'active' : ''}`} style={{ cursor:'pointer' }}>
+                    <input
+                      type="radio"
+                      name="virtualMeet"
+                      value="virtual"
+                      checked={form.virtualMeet === true}
+                      onChange={() => setField('virtualMeet', true)}
+                      style={{ display:'none' }}
+                    />
+                    <span>Virtuel</span>
+                  </label>
+                </div>
+                {errs.virtualMeet && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.virtualMeet}</div>}
+              </div>
               {/* Photo (OPTIONNELLE) */}
               <div className="att-field full">
                 <label>Photo de profil (optionnelle)</label>

@@ -515,7 +515,7 @@ function BasicDetails({ item, eventTitleMap }) {
     (evId || "—");
 
   const cc = getCountryCode(item);
-
+  console.log("item",item);
   return (
     <div className="req-sections">
       <Section title="Request">
@@ -528,17 +528,9 @@ function BasicDetails({ item, eventTitleMap }) {
         <KV k="Name" v={item.name} />
         <KV k="Email" v={item.email} />
         <div className="req-kv">
-          <div className="req-k">Country</div>
-          <div className="req-v country-flag">
-            {cc ? (
-              <>
-                <ReactCountryFlag
-                  svg
-                  countryCode={cc}
-                  style={{ fontSize: "1.1em", marginRight: 6 }}
-                />
-              </>
-            ) : (
+          <div className="req-k">Phone Number</div>
+          <div className="req-v ">
+            {cc ? item.country : (
               "—"
             )}
           </div>

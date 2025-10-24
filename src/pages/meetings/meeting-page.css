@@ -127,3 +127,32 @@
   animation: mp-sk 1.2s linear infinite;
 }
 @keyframes mp-sk { from{background-position:-200% 0;} to{background-position:200% 0;} }
+/* === Virtual attendee badge + note (append-only) === */
+.mp-virtual-note{
+  margin:10px 0 18px 0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.mp-virtual-badge{
+  align-self:flex-start;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:600;
+  color:#0ea5e9;
+  background:rgba(14,165,233,.12);
+  border:1px solid rgba(14,165,233,.30);
+  border-radius:999px;
+  padding:4px 8px;
+}
+.mp-virtual-badge::before{
+  content:"";
+  width:6px;height:6px;border-radius:50%;
+  background:#0ea5e9;
+}
+.mp-virtual-desc{
+  font-size:14px;line-height:1.4;
+  color:rgba(255,255,255,.82); /* swap to #374151 on light theme */
+}

@@ -124,11 +124,12 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
     const role = (p.role || a.role || "attendee").toLowerCase();
     const name = p.name || p.fullName || p.exhibitorName || p.orgName || "—";
     const rawPhoto = p.avatar || p.photo || p.profilePic || "";
-    const photo = imageLink(rawPhoto); // ✅ use helper like the last working version
+    const photo = imageLink(rawPhoto);
     const tag = String(p.tag || a.tag || a.purpose || "");
     const id = p.id || p._id || a.id || a._id;
     const matchPct = a.matchPct ?? p.matchPct ?? null;
-    return { id, role, name, photo, tag, matchPct };
+    const virtual = !!(p.virtualMeet ?? a.virtualMeet ?? a.virtual); // ← NEW
+    return { id, role, name, photo, tag, matchPct, virtual };
   };
 
   const list = useMemo(() => {
@@ -157,6 +158,7 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {list.map((s) => (
             <div key={s.id} className="card p-4 border rounded-lg shadow-sm bg-white relative">
+              {s.virtual && <div className="virt-pill">Virtual</div>}
               {s.matchPct != null && (
                 <div className="absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800">
                   {s.matchPct}% Match
@@ -326,7 +328,13 @@ function MeetingRow({
   const otherName  = m?.otherName  || (iAmSender ? m?.receiverName  : m?.senderName)  || "—";
   const otherPhoto = m?.otherPhoto || (iAmSender ? m?.receiverPhoto : m?.senderPhoto) || "";
   const otherRole  = iAmSender ? m?.receiverRole : m?.senderRole;
-
+  const senderVirtual   = !!m?.senderVirtual;
+  const receiverVirtual = !!m?.receiverVirtual;
+  const bothVirtual = senderVirtual && receiverVirtual;
+  const halfVirtual = senderVirtual !== receiverVirtual;
+  const modeLabel = bothVirtual ? "Online" : (halfVirtual ? "Hybrid" : "In-person");
+  const modeClass = bothVirtual ? "-online" : (halfVirtual ? "-hybrid" : "-inperson");
+  /* === PATCH END === */
   // prefer server-validated actions; fallback to local matrix when absent
   const actions = useMemo(() => {
     if (Array.isArray(m?.allowedActions)) return m.allowedActions;
@@ -374,6 +382,9 @@ function MeetingRow({
         <div className="mtg-row">
           <span className="mtg-chip"><FiUser/> {otherRole || "—"}</span>
           <span className="mtg-chip"><FiTag/> {compactB2X(m?.purpose || m?.subject || "—")}</span>
+          {(senderVirtual || receiverVirtual) && (
+            <span className={`mtg-chip mode ${modeClass}`}>{modeLabel}</span>
+          )}
         </div>
 
         <div className="mtg-row">

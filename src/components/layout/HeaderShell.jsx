@@ -90,6 +90,22 @@ const Icon = {
       <path d="M9 18a3 3 0 006 0" fill="currentColor"/>
     </svg>
   ),
+  b2b: () => (
+    <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true">
+    <rect x="3" y="3" width="58" height="58" rx="14" ry="14"
+          fill="none"  strokeWidth="5"/>
+    <text x="50%" y="50%"
+          fontFamily="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+          fontWeight="800"
+          fontSize="28"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="currentColor"
+          letterSpacing="-1">
+      B2B
+    </text>
+  </svg>
+  ),
 };
 
 /* ── Disable rules (robust) ───────────────────────── */
@@ -369,6 +385,17 @@ export default function HeaderShell({ top, nav, cta }) {
 
           {/* right: Avatar + Notifications + burger */}
           <div className="right" style={{ display:"flex", alignItems:"center", gap:12 }}>
+            {/* B2B icon (programmatic nav, tooltip desktop-only) */}
+            <button
+              type="button"
+              className="icon-btn b2b-btn d-none d-lg-inline-flex"
+              aria-label="see attendees"
+              onClick={() => { window.location.href = "/attendees/open-to-meet"; }}
+            >
+              <Icon.b2b />
+              <span className="tt">Open-to-Meet</span>
+            </button>
+
             {isAuthed && <NotificationBell actorId={ActorId} />}
             {isAuthed ? (
               <AvatarMenu />
@@ -470,6 +497,12 @@ export default function HeaderShell({ top, nav, cta }) {
         </div>
 
         <div className="section actions">
+           <button
+            className="btn-brand alt"
+            onClick={() => { window.location.href = "/attendees/open-to-meet"; drawer.close(); }}
+          >
+            Open-to-Meet
+          </button>
           {cta?.href && (
             <a className="btn-brand cta" href={cta.href} onClick={drawer.close}>
               {cta.label || "Buy Ticket"}

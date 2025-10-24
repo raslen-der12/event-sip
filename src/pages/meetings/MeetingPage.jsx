@@ -172,7 +172,7 @@ function StatusBanner({ variant, details, onBack, onGoMeetings }) {
 
 /* --------------------------------- page --------------------------------- */
 export default function MeetingPage() {
-  const { ActorId } = useAuth();
+  const { ActorId ,user} = useAuth();
   const navigate = useNavigate();
   const { actorId } = useParams();
   const { search } = useLocation();
@@ -259,6 +259,15 @@ export default function MeetingPage() {
       lookingFor: s.lookingFor || fallback.lookingFor || "",
     };
   }, [prefsResp, role, actor]);
+  const receiverVirtual = Boolean(actor?.virtualMeet);
+  // prefer token payload if present; fallback to potential flattened field
+  const meVirtual = Boolean(user?.raw?.virtualMeet ?? user?.virtualMeet);
+
+  const modeNote = useMemo(() => {
+    if (!receiverVirtual) return "";
+    if (meVirtual) return "This meeting will be virtual for both of you.";
+    return "This meeting will be physical from your side and virtual for the receiver.";
+  }, [receiverVirtual, meVirtual]);
 
   /* purpose options normalize */
   const purposes = useMemo(() => {
@@ -527,9 +536,14 @@ export default function MeetingPage() {
           </button>
           <h1 className="mp-title">Request a Meeting</h1>
         </header>
-
+        {receiverVirtual && (
+          <div className="mp-virtual-note">
+            <span className="mp-virtual-badge">Virtual attendee</span>
+            {modeNote && <p className="mp-virtual-desc">{modeNote}</p>}
+          </div>
+        )}
         <ActorCard summary={summary} role={role} />
-
+      
         <StatusBanner
           variant={exist}
           details={existData || {}}
@@ -565,7 +579,12 @@ export default function MeetingPage() {
           {/* LEFT */}
           <div className="mp-col">
             <ActorCard summary={summary} role={role} />
-
+            {receiverVirtual && (
+              <div className="mp-virtual-note">
+                <span className="mp-virtual-badge">Virtual attendee</span>
+                {modeNote && <p className="mp-virtual-desc">{modeNote}</p>}
+              </div>
+            )}
             {/* Preferences */}
             <section className="mp-card">
               <div className="mp-card-head">

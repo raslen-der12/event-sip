@@ -340,44 +340,75 @@
 .notif-time { color:#94a3b8; font-size:12px; margin-top:6px; }
 
 
-.nav-pill.-meet {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 9999px;
-  font-weight: 800;
-  border: 1px solid #10b98155;         /* emerald-500 @ ~34% */
-  background: rgba(16,185,129,0.12);   /* emerald-500 @ 12% */
-  color: #065f46;                      /* emerald-900 */
-  line-height: 1;
+/* === B2B icon button with desktop-only tooltip === */
+.icon-btn.b2b-btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:36px; height:36px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.18);
+  transition:transform .12s ease, background .12s ease, border-color .12s ease;
 }
-.nav-pill.-meet:hover {
-  background: rgba(16,185,129,0.18);
-  border-color: #10b981;
-}
-.nav-pill.-meet svg {
-  width: 18px;
-  height: 18px;
+.icon-btn.b2b-btn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,0.12);
+  border-color:rgba(255,255,255,0.28);
 }
 
-/* Special link — mobile */
-.mobile-cta.-meet {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  margin-top: 6px;
-  border-radius: 12px;
-  font-weight: 800;
-  border: 1px solid #d1fae5;           /* emerald-100 */
-  background: #ecfdf5;                 /* emerald-50 */
-  color: #065f46;                       /* emerald-900 */
+/* tooltip (hidden by default) */
+.icon-btn.b2b-btn .tt{
+  position:absolute;
+  left:50%;
+  bottom:110%;
+  transform:translate(-50%, 2px);
+  background:#111827;            /* dark slate */
+  color:#fff;
+  font-size:12px;
+  line-height:1;
+  padding:8px 10px;
+  border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease, transform .12s ease;
 }
-.mobile-cta.-meet:active {
-  filter: brightness(0.97);
+
+/* desktop-only: show tooltip on hover with a little arrow */
+@media (hover:hover) and (pointer:fine){
+  .icon-btn.b2b-btn:hover .tt{
+    opacity:1;
+    transform:translate(-50%, 0);
+  }
+  .icon-btn.b2b-btn .tt::after{
+    content:"";
+    position:absolute;
+    top:100%;
+    left:50%;
+    transform:translateX(-50%);
+    width:0; height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-top:6px solid #111827;
+  }
 }
-.mobile-cta.-meet svg {
-  width: 18px;
-  height: 18px;
+
+/* respect your existing utility classes: ensure visibility only on lg+ */
+.d-none{ display:none !important; }
+@media (min-width: 992px){
+  .d-lg-inline-flex{ display:inline-flex !important; }
+  .d-lg-none{ display:none !important; }
+}
+
+/* optional: alternate style button for drawer */
+.btn-brand.alt{
+  background:transparent;
+  color:inherit;
+  border:1px solid currentColor;
+}
+.btn-brand.alt:hover{
+  background:rgba(255,255,255,0.06);
 }

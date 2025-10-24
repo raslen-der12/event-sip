@@ -18,7 +18,7 @@ const useAuth = () => {
   let email = '';
   let role = '';
   let ActorId = '';
-
+  let virtualMeet = false;
   // new-but-non-breaking extras (safe defaults)
   let userId = '';
   let subRole = [];
@@ -33,7 +33,7 @@ const useAuth = () => {
       email = info.email || '';
       role = info.role ?? '';
       ActorId = info.ActorId || '';
-
+      virtualMeet = info.virtualMeet;
       // optional extras if you added them to the token
       userId = info.userId || info.id || info._id || '';
       subRole = Array.isArray(info.subRole) ? info.subRole : (info.subRole ? [info.subRole] : []);
@@ -63,6 +63,7 @@ const useAuth = () => {
         isSpeaker,
         isExhibitor,
         isAttendee,
+        virtualMeet,
         ActorId,
         token, // <-- NEW: convenient access for Authorization headers
         user: { // <-- NEW: grouped decoded info (non-breaking addition)
@@ -73,6 +74,7 @@ const useAuth = () => {
           subRole,
           actorType,
           actorHeadline,
+          virtualMeet,
           // include raw for future needs without extra decodes
           raw: info
         }
@@ -92,6 +94,7 @@ const useAuth = () => {
     isExhibitor,
     isAttendee,
     status,
+    virtualMeet,
     ActorId,
     token: '',   // NEW but harmless
     user: null,  // NEW but harmless
