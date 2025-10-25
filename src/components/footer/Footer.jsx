@@ -23,7 +23,7 @@ export default function Footer({
               <a className="brand" href="/" aria-label={brand?.name || "Home"}>
                 <img
                   width={130}
-                  src={ imageLink("default/LOGO GITS COLOR.png")}
+                  src={ imageLink("https://gits.seketak-eg.com/wp-content/uploads/2025/10/Group-40947.png")}
                   alt={brand?.name || "Brand logo"}
                 />
               </a>
@@ -32,7 +32,7 @@ export default function Footer({
             )}
 
             <div className="ft-bcopy">
-              <div className="ft-name">{brand?.name || "GITS"}</div>
+              <div className="ft-name">{brand?.name || "Eventra"}</div>
               {brand?.tagline ? <p className="ft-tag">{brand.tagline}</p> : null}
 
               {socials?.length ? (

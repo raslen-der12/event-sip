@@ -49,6 +49,11 @@ import BusinessProfilePage from './pages/businessProfile/BusinessProfilePage';
 import BusinessProfileFormPage from './pages/businessProfile/BusinessProfileFormPage';
 import BusnessProfileEditor from './pages/businessProfile/BusnessProfileEditor';
 
+import TermsConditions from './pages/landing/TermsConditions';
+import RefundPolicy from './pages/landing/RefundPolicy';
+import PrivacyPolicy from './pages/landing/PrivacyPolicy'
+import ContactUs from './pages/landing/ContactUs'
+import AboutUs from "./pages/landing/AboutUs"
 import AIMatchmaking from './pages/landing/AIMatchmaking'
 import EventManagementPlatform from './pages/landing/EventManagementPlatform'
 import ExportConsultancy from './pages/landing/ExportConsultancy'
@@ -124,6 +129,11 @@ function App() {
         <Route path="/communities/students" element={<SingleCommunity/>} />
         <Route path="/logistics/freight-calculator" element={<FreightCalculator />} />
         <Route path="/logistics/load-calculator" element={<LoadCalculator />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path='/support' element={<ContactUs />} />
+        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+        <Route path='/refund-policy' element={<RefundPolicy />} />
+        <Route path='/terms' element={<TermsConditions/>} />
         <Route element={<RequireAuth allowedRoles={['attendee', 'speaker', 'exhibitor']} />}>
           <Route path="/messages" element={<ActorsMessagesPage />} />
           <Route path="/sessions" element={<SessionsPage />} />

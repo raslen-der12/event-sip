@@ -74,7 +74,7 @@ export default function PlatformPillarsSplit({
       icon: <I.network />,
       title: "Premium B2B environment",
       desc: "Verified matchmaking, hosted meeting points, and deal rooms that move conversations into contracts.",
-      img: "https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_5316-1.png",
+      img: "https://gits.seketak-eg.com/wp-content/uploads/2025/10/d6b7dc86-0885-4c9a-8a4a-222cf7974fe4-1.png",
     },
     {
       id: "profiles",

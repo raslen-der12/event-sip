@@ -16,6 +16,7 @@
     radial-gradient(1200px 520px at 10% 10%, #243A66, transparent 60%),
     linear-gradient(135deg, #EB5434 0%, #243A66 45%, #EB5434 100%);
   border-bottom: 1px solid rgba(255,255,255,.08);
+  height: 40rem;
 }
 
 /* animated gradient wash */
@@ -30,6 +31,57 @@
   will-change: transform, opacity;
   contain: paint;                  /* don’t leak overflow calculations */
 }
+/* container must be positioned so absolute video sits behind content */
+.hero-v2.hero-b2b {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* video wrapper */
+.hero-video-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none; /* let clicks pass through */
+}
+
+/* make iframe cover the section responsively */
+.hero-video-bg iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 177.78vh;   /* 16:9 ratio trick */
+  height: 100vh;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  border: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Stronger overlay for readability (adjust opacities to taste) */
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* layered: two soft colored radials + stronger dark tint */
+  background:
+    radial-gradient(600px 260px at 85% 15%, rgba(59,130,246,0.32), transparent 60%),
+    radial-gradient(700px 280px at 15% 35%, rgba(111,66,193,0.32), transparent 60%),
+    rgba(0,0,0,0.60);    /* stronger dark tint for excellent contrast */
+  transition: opacity 260ms ease;
+}
+
+/* ensure content sits above video and overlay */
+.hero-b2b-wrap {
+  position: relative;
+  z-index: 2;
+}
+
 @keyframes bgPulse {
   0%   { transform: translate3d(0, 0, 0);      opacity:.85; }
   100% { transform: translate3d(0,-12px, 0);   opacity:.95; }
