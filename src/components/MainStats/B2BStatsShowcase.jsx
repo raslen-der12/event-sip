@@ -8,28 +8,28 @@ export default function B2BStatsShowcase({ items = [] }) {
       id:"A",
       subject:"Meetings",
       desc:"Verified B2B meetings hosted across summits and expos, matching buyers with the right solutions.",
-      statNum:"12,540",
+      statNum:"441",
       bgUrl:"https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_2502-1.png"
     },
     {
       id:"B",
       subject:"Attendees",
       desc:"Professionals who joined our events to network, learn, and close real deals.",
-      statNum:"85,210",
+      statNum:"1380",
       bgUrl:"https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_2708.png"
     },
     {
       id:"C",
       subject:"Events",
       desc:"Conferences and expos delivered with curated matchmaking and hands-on demos.",
-      statNum:"132",
+      statNum:"6",
       bgUrl:"https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_2321.png"
     },
     {
       id:"D",
       subject:"Connections",
       desc:"Introductions that became lasting commercial relationships and partnerships.",
-      statNum:"47,800",
+      statNum:"6850",
       bgUrl:"https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_2046.png"
     },
   ];

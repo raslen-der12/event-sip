@@ -509,7 +509,7 @@ export const speakers = {
 export const footerData = {
   brand: {
     logoSrc: "/assets/logo.svg",
-    name: "GITS",
+    name: "Eventra",
     tagline: "Events for builders, teams, and communities.",
   },
   socials: [
@@ -526,16 +526,14 @@ export const footerData = {
       { label: "Gallery", href: "/gallery" },
     ]},
     { id: "company", heading: "Company", items: [
-      { label: "About", href: "/about" },
-      { label: "Partners", href: "/partners" },
-      { label: "Careers", href: "/careers" },
-      { label: "Press", href: "/press" },
+      { label: "About Eventra", href: "/about-us" },
+      { label: "Build your business profile", href: "/BusinessProfile/dashboard" },
+      { label: "Book your B2B meeting", href: "/attendees/open-to-meet" }
     ]},
     { id: "support", heading: "Support", items: [
       { label: "Contact", href: "/support" },
-      { label: "Refund policy", href: "/policy/refunds" },
-      { label: "Accessibility", href: "/accessibility" },
-      { label: "Status", href: "/status" },
+      { label: "Privacy policy", href: "/privacy-policy" },
+      { label: "Refund Policy", href: "/refund-policy" }
     ]},
   ],
   actions: [
@@ -544,8 +542,7 @@ export const footerData = {
     { id: "a3", label: "Download media kit",href: "/press/kit",      icon: "kit" },
   ],
   bottomLinks: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
+    { label: "Terms & Conditions", href: "/terms" },
     { label: "Cookies", href: "/cookies" },
   ],
 };

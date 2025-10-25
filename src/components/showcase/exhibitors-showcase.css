@@ -42,7 +42,7 @@
   border:1px solid rgba(0,0,0,.06);
   background:
     radial-gradient(520px 240px at 85% 18%, rgba(255,255,255,.06), transparent 60%),
-    linear-gradient(180deg, color-mix(in oklab, #82CBD2 88%, #000 6%), #82CBD2);
+    linear-gradient(180deg, color-mix(in oklab, #3b4ca1 88%, #000 6%), #0e1718);
   color:#fff;
 }
 .ex-panel-body{ padding:18px; display:grid; gap:12px; }
@@ -222,4 +222,45 @@
 @media (max-width: 720px){
   .ex-left{ display:none; }
   .ex-grid{ grid-template-columns: 1fr; }
+}
+/* ensure container uses full width for the single panel */
+.ex-grid--single {
+  display: block;
+}
+
+/* make the panel occupy full available width */
+.ex-panel--full {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* optional: keep the existing look of the xp-spotlight card */
+.xp-card.xp-spotlight {
+  display: block;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  padding: 1.25rem;
+  min-height: 260px;
+}
+
+/* background image layer */
+.xp-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  filter: saturate(0.95) contrast(0.95) brightness(0.7);
+}
+
+/* text on top */
+.xp-title, .xp-sub, .xp-pill {
+  position: relative;
+  z-index: 2;
 }

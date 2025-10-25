@@ -64,10 +64,10 @@ export default function HeroB2B({
 
   /* ---------- Actions ---------- */
   const DEFAULT_ACTIONS = [
-    { label: "Find Buyers",    sub: "Source qualified demand",    href: "/buyers" },
-    { label: "Find Suppliers", sub: "Verified solution vendors",  href: "/exhibitors" },
-    { label: "Book Meetings",  sub: "Instant scheduling & rooms", href: "/meetings" },
-    { label: "Browse Events",  sub: "All upcoming & past",        href: "/events" },
+    { label: "Freight Calculator",    sub: "Instantly estimate your shipping costs and optimize your logistics",    href: "/logistics/freight-calculator" },
+    { label: "Book a B2B", sub: "Discover participants, view profiles, and start booking your business meetings",  href: "/attendees/open-to-meets" },
+    { label: "Build a Business Profile",  sub: "Present your company, products, and services to attract new partners", href: "/BusinessProfile/dashboard" },
+    { label: "Browse Events",  sub: "Discover upcoming events, connect with participants, and join opportunities",        href: "/events" },
   ];
   const acts = Array.isArray(actions) && actions.length ? actions : DEFAULT_ACTIONS;
 
@@ -156,6 +156,17 @@ export default function HeroB2B({
 
   return (
     <section className="hero-v2 hero-b2b">
+    <div className="hero-video-bg" aria-hidden="true">
+      <iframe
+    src="https://www.youtube.com/embed/Xg59b3ZuBwM?autoplay=1&mute=1&loop=1&playlist=Xg59b3ZuBwM&controls=0&modestbranding=1&rel=0"
+        title="GITS background video"
+        frameBorder="0"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+      />
+      <div className="hero-video-overlay" aria-hidden="true" />
+    </div>
+
       <div className="hero2-bg" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
 

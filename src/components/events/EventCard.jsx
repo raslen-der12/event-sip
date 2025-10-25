@@ -1,6 +1,7 @@
 // EventCard.jsx
 import React from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import "./events.css";
 
 /* ---------------- utils ---------------- */
@@ -38,7 +39,7 @@ function normalizeEventProps(props) {
     ev.endISO ?? ev.endDate ?? ev.endAt ?? ev.endsAt ?? null;
 
   const location =
-    ev.location ?? ev.venue ??  "";
+    ev.location ?? ev.venue ?? "";
 
   const cover =
     resolveUrl(ev.cover ?? ev.coverUrl ?? ev.image ?? ev.imageUrl ?? ev.banner ?? "");
@@ -51,14 +52,15 @@ function normalizeEventProps(props) {
 
   const href = ev.href ?? undefined;
   const registerHref = ev.registerHref ?? ev.registrationUrl ?? undefined;
+  const id = ev.id ?? ev._id ?? null;
 
   return {
-    title, startISO, endISO, location, cover,
+    id, title, startISO, endISO, location, cover,
     capacityTotal, seatsTaken, href, registerHref
   };
 }
 
-/* ---------------- icons (keep design) ---------------- */
+/* ---------------- icons ---------------- */
 const IconCal = () => (
   <svg width="16" height="16" viewBox="0 0 24 24">
     <path fill="currentColor" d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm12 6H5v12h14V8Z" />
@@ -77,8 +79,9 @@ const IconUsers = () => (
 
 /* ---------------- component ---------------- */
 export default function EventCard(incomingProps) {
+  const navigate = useNavigate();
   const {
-    title, startISO, endISO, location, cover,
+    id, title, startISO, endISO, location, cover,
     capacityTotal, seatsTaken, href, registerHref
   } = normalizeEventProps(incomingProps);
 
@@ -89,9 +92,8 @@ export default function EventCard(incomingProps) {
 
   const now = Date.now();
   const startMs = startISO ? new Date(startISO).getTime() : undefined;
-  const endMs   = endISO   ? new Date(endISO).getTime()   : undefined;
+  const endMs = endISO ? new Date(endISO).getTime() : undefined;
 
-  // "passed" = event ended (prefer end date; fallback to start)
   const passed = Number.isFinite(endMs)
     ? endMs < now
     : Number.isFinite(startMs)
@@ -106,27 +108,32 @@ export default function EventCard(incomingProps) {
 
   const soldOut = Number.isFinite(total) && Number.isFinite(taken) && taken >= total;
 
-  // Badge text + class (keep CSS classes: open/soldout/ended)
   const badgeClass = passed ? "ended" : soldOut ? "soldout" : "open";
-  const badgeText  = passed ? "FINISHED" : soldOut ? "SOLD OUT" : "OPEN";
+  const badgeText = passed ? "FINISHED" : soldOut ? "SOLD OUT" : "OPEN";
 
-  // CTAs
   const showRegister = inFuture && !soldOut && !!registerHref;
-  const showSeeMore  = !!href; // always allow "See more" when a link exists
+  const showSeeMore = !!href || !!id;
 
-  // Capacity bar only if numbers provided
   const pct = (Number.isFinite(total) && Number.isFinite(taken) && total > 0)
     ? Math.round((Math.min(total, taken) / total) * 100)
     : undefined;
 
-  const goSeeMore = () => { if (href) window.location.assign(href); };
+  const goSeeMore = (e) => {
+    e.stopPropagation();
+    if (href) {
+      window.location.assign(href);
+    } else if (id) {
+      navigate(`/event/${id}`);
+    }
+  };
+
   const goRegister = (e) => {
     e.stopPropagation();
     if (showRegister) window.location.assign(registerHref);
   };
 
   return (
-    <article className="ev-card" onClick={goSeeMore}>
+    <article className="ev-card" onClick={goSeeMore} role="button" tabIndex={0}>
       <div className="ev-hero">
         {cover ? (
           <img src={cover} alt={title} className="ev-img" loading="lazy" />
@@ -151,21 +158,6 @@ export default function EventCard(incomingProps) {
           )}
         </div>
 
-        {(Number.isFinite(total) && Number.isFinite(taken)) && (
-          <div className="ev-cap">
-            <span className="ev-icon"><IconUsers /></span>
-            <div
-              className="ev-capbar"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={pct ?? 0}
-            >
-              <span style={{ width: `${pct ?? 0}%` }} />
-            </div>
-            <span className="ev-captxt">{pct ?? 0}%</span>
-          </div>
-        )}
 
         <div className="ev-ctas">
           {showRegister && (
@@ -188,7 +180,6 @@ export default function EventCard(incomingProps) {
 }
 
 EventCard.propTypes = {
-  // Compatible keys (you can pass any of these; we normalize internally)
   title: PropTypes.string,
   startISO: PropTypes.string,
   startDate: PropTypes.string,
@@ -214,4 +205,6 @@ EventCard.propTypes = {
   href: PropTypes.string,
   registerHref: PropTypes.string,
   registrationUrl: PropTypes.string,
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
