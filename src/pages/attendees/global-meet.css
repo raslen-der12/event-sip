@@ -34,7 +34,7 @@
 @media (max-width: 980px) { .gma-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 640px) { .gma-grid { grid-template-columns: 1fr; } }
 
-.gma-card { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.gma-card { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative;}
 .gma-card-head { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
 .gma-avatar { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; background: #f1f5f9; display:flex; align-items:center; justify-content:center; font-weight:900; color:#334155; }
 .gma-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -47,7 +47,11 @@
 
 .gma-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .gma-chip { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 8px; font-size: 12px; font-weight: 800; }
-
+.gma-match{
+    position: absolute;
+    top: 5px;
+    right: 4px;
+}
 .gma-actions { margin-top: 6px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
 .gma-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border-radius: 10px; background: #111827; color: #fff; font-weight: 800; }
 .gma-btn.-outline { background: #fff; color: #0f172a; border: 1px solid #e5e7eb; }

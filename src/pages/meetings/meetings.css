@@ -474,3 +474,16 @@
   border-color:#bbf7d0;
   color:#166534;
 }
+/* whitelist grid */
+.wl-grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px}
+@media (min-width:640px){.wl-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1024px){.wl-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.wl-hour{border:1px solid #e2e8f0;border-radius:14px;background:#fff}
+.wl-hour-head{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;font-size:12px;color:#0f172a}
+.wl-hour-body{display:flex;flex-wrap:wrap;gap:6px;padding:10px}
+
+/* slot chip */
+.wl-chip{border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;user-select:none}
+.wl-chip:hover{background:#f8fafc}
+.wl-chip.is-on{background:#0284c7;color:#fff;border-color:#0284c7}

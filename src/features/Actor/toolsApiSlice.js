@@ -164,11 +164,10 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
         result ? [{ type: "actorsToChat", id: arg?.id }] : [],
     }),
     getAvailableSlots: builder.query({
-      query: ({ eventId, actorId, date }) => ({
-        url: `meets/events/${eventId}/available-slots${qs({ actorId, date })}`,
+      query: ({ eventId, actorId, date ,ignoreWhitelist }) => ({
+        url: `meets/events/${eventId}/available-slots${qs({ actorId, date , ignoreWhitelist : ignoreWhitelist ? 1 : undefined  })}`,
         method: "GET",
       }),
-      transformResponse: unwrap,
     }),
     listActorNotifications: builder.query({
       query: () => ({

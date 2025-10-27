@@ -106,6 +106,7 @@ export const actorsChatApi = apiSlice.injectEndpoints(
         if (args.eventId) p.set("eventId", args.eventId);
         if (args.country) p.set("country", args.country);
         if (args.q) p.set("q", args.q);
+        if (args.meId) p.set("meId", args.meId);
         // default to open=true so page loads “only open to meet”
         p.set("onlyOpen", String(args.onlyOpen ?? true));
         return { url: `/actors/attendees/for-meeting?${p.toString()}` };
@@ -133,6 +134,7 @@ export const actorsChatApi = apiSlice.injectEndpoints(
             objectives: Array.isArray(M.objectives) ? M.objectives : [],
             links: a?.links || {},
             verified: !!a?.verified,
+            matchPct : typeof a?.matchPct === 'number' ? a.matchPct : 0,
           };
         });
       },

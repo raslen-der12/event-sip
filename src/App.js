@@ -72,6 +72,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import RestoreEmail from './pages/auth/RestoreEmail';
 import OpenToMeetAttendeesPage from "./pages/attendees/OpenToMeetAttendeesPage";
+import B2BMeetingsDashboard from './pages/admin/B2BMeetingsDashboard';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -158,7 +159,7 @@ function App() {
             <Route path="members/speakers" element={<AdminSpeakers />} />
             <Route path="messages" element={<AdminMessages />} />
             <Route path="tools/selects" element={<AdminSelects />} />
-
+            <Route path="/admin/b2b" element={<B2BMeetingsDashboard/>} />
           </Route>
         </Route>
         

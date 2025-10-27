@@ -23,7 +23,8 @@ import { topbar, cta, footerData, nav } from "../main.mock";
 import Footer from "../../components/footer/Footer";
 import imageLink from "../../utils/imageLink";
 import useAuth from "../../lib/hooks/useAuth";
-
+import WhitelistModal from "./WhitelistModal";
+const wlKey = (eventId, meId) => `wl:onboard:${eventId}:${meId}`;
 /* --------------------------------- tiny utils --------------------------------- */
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -201,6 +202,8 @@ export default function MeetingPage() {
   const [requestMeeting, { isLoading: isSending, isError: sendErr, error: sendError }] =
     useRequestMeetingMutation();
 
+
+  
   /* derive role */
   const role = useMemo(() => {
     const a = actor || {};
@@ -314,12 +317,13 @@ export default function MeetingPage() {
   }, [eventDays]);
 
   /* --------- slots from backend (shown in LOCAL time) --------- */
-  const { data: slotsRaw, isFetching: slotsLoading } =
+  const { data: slotsRaw, isFetching: slotsLoading ,refetch } =
     useGetAvailableSlotsQuery(
-      { eventId, actorId: id, date: dateStr },
+      { eventId, actorId: id, date: dateStr ,ignoreWhitelist: false},
       { skip: !eventId || !id || !dateStr }
     );
-
+   const mustSetupWhitelist = slotsRaw && !slotsRaw.actorHasWhitelist;
+   console.log(slotsRaw);
   const slots = useMemo(() => {
     // Accept a variety of shapes; prefer { iso, isCap }
     const raw =
@@ -329,26 +333,32 @@ export default function MeetingPage() {
 
     // normalize to { iso, isCap }
     const normalized = raw
-      .map((r) => {
-        if (!r) return null;
-        if (typeof r === "string") return { iso: r, isCap: true };
-        const iso = r.iso || r.slotISO || r.startISO || r.start || r.key || "";
-        const isCap = r.isCap !== undefined ? !!r.isCap : true;
-        return iso ? { iso, isCap } : null;
-      })
-      .filter(Boolean);
+    .map((r) => {
+      if (!r) return null;
+      if (typeof r === "string") return { iso: r, isCap: true, blockedOther: false };
+      const iso = r.iso || r.slotISO || r.startISO || r.start || r.key || "";
+      const isCap = r.isCap !== undefined ? !!r.isCap : true;
+      const blockedOther = !!r.blockedOther; // ← NEW
+      return iso ? { iso, isCap, blockedOther } : null;
+    })
+    .filter(Boolean);
 
-    // Show exactly what backend declares available (no local filtering)
-    return normalized
-      .sort((a,b) => new Date(a.iso) - new Date(b.iso))
-      .map(({ iso, isCap }) => ({
-        key: iso,
-        isCap,
-        label: `${fmtISODateLocal(iso)} • ${fmtISOTimeLocal(iso)}${isCap ? "" : "  [FULL]"}`,
-        timeLabel: fmtISOTimeLocal(iso),
-      }));
-  }, [slotsRaw]);
+  return normalized
+    .sort((a,b) => new Date(a.iso) - new Date(b.iso))
+    .map(({ iso, isCap, blockedOther }) => ({
+      key: iso,
+      isCap,
+      blockedOther, // ← carry through
+      label: `${fmtISODateLocal(iso)} • ${fmtISOTimeLocal(iso)}${!isCap ? "  [FULL]" : (blockedOther ? "  [LOCKED]" : "")}`,
+      timeLabel: fmtISOTimeLocal(iso),
+    }));
+}, [slotsRaw]);
 
+const [wlOpen, setWlOpen] = useState(false);
+const openWLEdit = () => setWlOpen(true);
+useEffect(()=>{
+  if (slotsRaw && !slotsRaw.actorHasWhitelist) setWlOpen(true);
+},[slotsRaw]);
   // Fast lookup set for validation
   const slotKeysSet = useMemo(() => new Set(slots.map(s => s.key)), [slots]);
 
@@ -376,7 +386,7 @@ export default function MeetingPage() {
   // Auto-select first available (capacity) slot when list loads
   useEffect(() => {
     if (!slotsLoading && slots.length) {
-      const firstCap = slots.find(s => s.isCap);
+      const firstCap = slots.find(s => s.isCap && !s.blockedOther); // ← skip locked
       setForm((f) => (f.slotKey ? f : { ...f, slotKey: firstCap?.key || "" }));
     }
   }, [slotsLoading, slots]);
@@ -464,6 +474,11 @@ export default function MeetingPage() {
         }
       }
     } catch {}
+    const sel = slots.find(s => s.key === iso);
+    if (!sel || sel.blockedOther) {
+      setSubmitError("This time isn’t whitelisted by the other participant. Please pick another slot.");
+      return;
+    }
 
     const purposeLabel =
       purposes.find((p) => String(p.id) === String(form.purposeId))?.label ||
@@ -561,11 +576,19 @@ export default function MeetingPage() {
   }
 
   /* ----------------------- normal flow ----------------------- */
-  const disabledCount = slots.filter(s => !s.isCap).length;
+  const disabledCount = slots.filter(s => !s.isCap || s.blockedOther).length;
   const allDisabled = slots.length > 0 && disabledCount === slots.length;
 
   return (
     <>
+      <WhitelistModal
+  open={wlOpen}
+  onClose={(ok)=>{ setWlOpen(false); if (ok) refetch(); }}
+  eventId={eventId}
+  receiverId={actorId}
+  date={dateStr}
+  mode="edit"
+/>
       <HeaderShell top={topbar} nav={navItems} cta={cta} />
       <section className="mp-wrap container">
         <header className="mp-head">
@@ -616,7 +639,15 @@ export default function MeetingPage() {
               <div className="mp-card-head">
                 <h3 className="mp-card-title">Schedule</h3>
               </div>
-
+              <div style={{marginTop: 8, display: "flex", gap: 8}}>
+  <button
+    type="button"
+    className="mp-btn"
+    onClick={openWLEdit}
+  >
+    Edit my availability
+  </button>
+</div>
               {/* Date — fixed to last day */}
               <label className="mp-field">
                 <span className="mp-label">
@@ -648,6 +679,7 @@ export default function MeetingPage() {
                 <style>{`
                   .mp-full-legend{display:flex;gap:8px;align-items:center;margin-top:6px;color:#64748b;font-size:.9rem}
                   .mp-badge-full{display:inline-block;border:1px solid #fecaca;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem}
+                  .mp-badge-locked{display:inline-block;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem} /* NEW */
                 `}</style>
 
                 <select
@@ -664,9 +696,15 @@ export default function MeetingPage() {
                     <option
                       key={s.key}
                       value={s.key}
-                      disabled={!s.isCap}
-                      aria-disabled={!s.isCap}
-                      title={!s.isCap ? "B2B room is full for this slot" : undefined}
+                      disabled={!s.isCap || s.blockedOther}               // ← NEW
+                      aria-disabled={!s.isCap || s.blockedOther}
+                      title={
+                        !s.isCap
+                          ? "B2B room is full for this slot"
+                          : s.blockedOther
+                            ? "The other participant did not whitelist this time"
+                            : undefined
+                      }
                     >
                       {s.label}
                     </option>
@@ -682,7 +720,8 @@ export default function MeetingPage() {
                 {!slotsLoading && slots.length ? (
                   <div className="mp-full-legend">
                     <span className="mp-badge-full">FULL</span>
-                    <span>Times are shown in <strong>your timezone</strong>. Full slots are disabled.</span>
+                    <span className="mp-badge-locked">LOCKED</span>
+                    <span>Times are shown in <strong>your timezone</strong>. Full or locked slots are disabled.</span>
                   </div>
                 ) : null}
               </label>

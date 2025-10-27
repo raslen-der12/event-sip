@@ -1,6 +1,7 @@
 // src/pages/attendees/OpenToMeetAttendeesPage.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import useAuth from "../../lib/hooks/useAuth";
 import {
   FiSearch, FiX, FiFilter, FiChevronDown, FiChevronUp, FiRefreshCw, FiMessageSquare, FiUser, FiCalendar,
 } from "react-icons/fi";
@@ -26,6 +27,18 @@ function EventBadge({ id }) {
 
 /* --------------------------- Page --------------------------- */
 export default function OpenToMeetAttendeesPage() {
+  const {ActorId} = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const meId = ActorId || null;
+
+  // redirect if not logged in
+  React.useEffect(() => {
+    if (!meId) {
+      const next = encodeURIComponent(location.pathname + location.search);
+      navigate(`/login?next=${next}`, { replace: true });
+    }
+  }, [meId, navigate, location.pathname, location.search]);
   // toolbar state
   const [q, setQ] = React.useState("");
   const [expanded, setExpanded] = React.useState(true);
@@ -36,11 +49,22 @@ export default function OpenToMeetAttendeesPage() {
   // events for filters
   const { data: eventsRes } = useGetEventsQuery();
   const events = React.useMemo(() => {
+
     if (Array.isArray(eventsRes?.data)) return eventsRes.data;
     if (Array.isArray(eventsRes)) return eventsRes;
     return [];
   }, [eventsRes]);
+  const firstEventId = React.useMemo(() => {
+    const ev = Array.isArray(events) && events.length ? events[0] : null;
+    return ev?._id || ev?.id || null;
+  }, [events]);
 
+  React.useEffect(() => {
+    // if no selection yet (or still "all"), pick the first event
+    if (firstEventId && (eventId === "all" || !eventId)) {
+      setEventId(firstEventId);
+    }
+  }, [firstEventId]);
   // query args
   const args = React.useMemo(() => {
     return {
@@ -48,10 +72,33 @@ export default function OpenToMeetAttendeesPage() {
       q: q.trim() || undefined,
       eventId: eventId !== "all" ? eventId : undefined,
       country: country !== "all" ? country : undefined,
+      meId
     };
   }, [q, onlyOpen, eventId, country]);
 
-  const { data: attendees = [], isFetching } = useGetAttendeesForMeetingQuery(args);
+  const { data: rawRes, isFetching } = useGetAttendeesForMeetingQuery(args, { skip: !meId });
+      console.log("rawRes",rawRes);
+
+  // normalize payload from backend (handles {success,data:[]} or [] directly)
+  const attendees = React.useMemo(() => {
+    const arr = Array.isArray(rawRes?.data) ? rawRes.data
+              : Array.isArray(rawRes)      ? rawRes
+              : [];
+    // flatten keys we use in UI
+    return arr.map(r => ({
+      _id: r._id || r.id || "",
+      id_event: r.id_event || r.eventId || "",
+      profilePic: r.personal?.profilePic || r.profilePic || "",
+      fullName: r.personal?.fullName || r.fullName || "",
+      email: r.personal?.email || r.email || "",
+      country: r.personal?.country || r.country || "",
+      city: r.personal?.city || r.city || "",
+      jobTitle: r.organization?.jobTitle || r.jobTitle || "",
+      orgName: r.organization?.orgName || r.orgName || "",
+      objectives: r.matchingIntent?.objectives || r.objectives || [],
+      matchPct: typeof r.matchPct === "number" ? r.matchPct : undefined,
+    }));
+  }, [rawRes]);
 
   // Build country options from data (attendees’ countries, not event countries)
   const countryOpts = React.useMemo(() => {
@@ -61,21 +108,37 @@ export default function OpenToMeetAttendeesPage() {
   }, [attendees]);
 
   // Group by event
-  const groups = React.useMemo(() => {
+ const groups = React.useMemo(() => {
+    // sort whole list once by matchPct desc, then by name
+    const sorted = [...attendees].sort((a, b) => {
+      const am = typeof a.matchPct === 'number' ? a.matchPct : -1;
+      const bm = typeof b.matchPct === 'number' ? b.matchPct : -1;
+      if (bm !== am) return bm - am;
+      return String(a.fullName || '').localeCompare(String(b.fullName || ''));
+    });
+
     const by = new Map();
-    attendees.forEach((a) => {
+    sorted.forEach((a) => {
       if (!a.id_event) return;
       if (!by.has(a.id_event)) by.set(a.id_event, []);
       by.get(a.id_event).push(a);
     });
-    return Array.from(by.entries()).map(([id, list]) => ({ eventId: id, list }));
+
+    // if you also want groups in order of their top match
+    return Array.from(by.entries())
+      .map(([id, list]) => ({ eventId: id, list }))
+      .sort((A, B) => {
+        const aTop = typeof A.list[0]?.matchPct === 'number' ? A.list[0].matchPct : -1;
+        const bTop = typeof B.list[0]?.matchPct === 'number' ? B.list[0].matchPct : -1;
+        return bTop - aTop;
+      });
   }, [attendees]);
 
   const onReset = () => {
     setQ("");
-    setEventId("all");
     setCountry("all");
     setOnlyOpen(true);
+    setEventId(firstEventId || "all"); // prefer first event if available
   };
 
   return (
@@ -187,6 +250,7 @@ export default function OpenToMeetAttendeesPage() {
               <div className="gma-evbar">
                 <EventBadge id={g.eventId} />
                 <span className="gma-count">{g.list.length} attendee{g.list.length > 1 ? "s" : ""}</span>
+                <span className="gma-hint">sorted by match</span>
               </div>
 
               <div className="gma-grid">
@@ -206,6 +270,11 @@ export default function OpenToMeetAttendeesPage() {
                           {flag(a.country)}{a.country || "—"}{a.city ? ` • ${a.city}` : ""}
                         </div>
                         <div className="gma-sub tiny">{a.jobTitle || "—"} {a.orgName ? `@ ${a.orgName}` : ""}</div>
+                        {!!(typeof a.matchPct === 'number') && (
+                          <div className="gma-tags">
+                            <span className="gma-chip gma-match" title="Match score">⭐ {a.matchPct}%</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

@@ -1,0 +1,11 @@
+/* Modal shell reused */
+.gm-help{font-size:.9rem;color:#475569;margin:0 0 1rem}
+.gm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem}
+
+.gm-slot-btn{
+  border:1px solid #e2e8f0;border-radius:.6rem;padding:.5rem .6rem;background:#fff;
+  font-size:.9rem;line-height:1;cursor:pointer;transition:transform .05s ease, background .2s ease;
+}
+.gm-slot-btn:hover{background:#f8fafc}
+.gm-slot-btn.is-selected{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.gm-slot-btn.is-disabled{opacity:.5;cursor:not-allowed}

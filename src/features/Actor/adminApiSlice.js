@@ -45,6 +45,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
             providesTags: (result, error, arg) =>
                 result ? [{ type: 'AdminActor', id: result.id }] : []
         }),
+        
         createActor: builder.mutation({
             query: (data) => ({
                 url: `/actors/create`,
@@ -54,6 +55,20 @@ export const adminApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: (result, error, arg) =>
                 result ? [{ type: 'ActorsListAdmin' }] : []
         }),
+        setWhitelist: builder.mutation({
+    query: ({ eventId, slots, actorId }) => ({
+      url: `/meets/whitelist`,
+      method: 'PUT',
+      body: { eventId, slots, actorId }
+    })
+  }),
+  adminSetWhitelist: builder.mutation({
+    query: ({ eventId, actorId, slots }) => ({
+      url: `meets/admin/whitelist`,
+      method: 'PUT',
+      body: { eventId, actorId, slots }
+    })
+  }),
 
     })
 })
@@ -64,4 +79,6 @@ useUpdateAdminRegisterRequestMutation,
 useGetActorsListAdminQuery,
   useGetAdminActorQuery,
   useCreateActorMutation,
+  useSetWhitelistMutation,
+  useAdminSetWhitelistMutation,
 } = adminApiSlice
