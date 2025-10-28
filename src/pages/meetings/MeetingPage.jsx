@@ -324,31 +324,31 @@ export default function MeetingPage() {
     );
    const mustSetupWhitelist = slotsRaw && !slotsRaw.actorHasWhitelist;
    console.log(slotsRaw);
-  const slots = useMemo(() => {
-    // Accept a variety of shapes; prefer { iso, isCap }
-    const raw =
-      (Array.isArray(slotsRaw?.data) && slotsRaw.data) ||
-      (Array.isArray(slotsRaw) && slotsRaw) ||
-      [];
+ const slots = useMemo(() => {
+  // Accept a variety of shapes; prefer { iso, isCap, blockedOther }
+  const raw =
+    (Array.isArray(slotsRaw?.data) && slotsRaw.data) ||
+    (Array.isArray(slotsRaw) && slotsRaw) ||
+    [];
 
-    // normalize to { iso, isCap }
-    const normalized = raw
+  // Keep every slot; never filter out FULL/LOCKED
+  const normalized = raw
     .map((r) => {
       if (!r) return null;
       if (typeof r === "string") return { iso: r, isCap: true, blockedOther: false };
       const iso = r.iso || r.slotISO || r.startISO || r.start || r.key || "";
       const isCap = r.isCap !== undefined ? !!r.isCap : true;
-      const blockedOther = !!r.blockedOther; // ← NEW
+      const blockedOther = !!r.blockedOther; // dynamic from API
       return iso ? { iso, isCap, blockedOther } : null;
     })
     .filter(Boolean);
 
   return normalized
-    .sort((a,b) => new Date(a.iso) - new Date(b.iso))
+    .sort((a, b) => new Date(a.iso) - new Date(b.iso))
     .map(({ iso, isCap, blockedOther }) => ({
       key: iso,
       isCap,
-      blockedOther, // ← carry through
+      blockedOther,
       label: `${fmtISODateLocal(iso)} • ${fmtISOTimeLocal(iso)}${!isCap ? "  [FULL]" : (blockedOther ? "  [LOCKED]" : "")}`,
       timeLabel: fmtISOTimeLocal(iso),
     }));
@@ -422,7 +422,7 @@ useEffect(()=>{
   const redirectBackWithCreated = () => {
     if (returnTo) {
       try {
-        const u = new URL(returnTo, window.location.origin);
+        const u = new URL(returnTo, "/attendees/open-to-meet");
         u.searchParams.set("created", "true");
         window.location.assign(u.toString());
         return;
@@ -440,7 +440,7 @@ useEffect(()=>{
         }
       } catch {}
     }
-    navigate("/?created=true", { replace: true });
+    navigate("/attendees/open-to-meet", { replace: true });
   };
 
   const onSubmit = async (e) => {
@@ -679,7 +679,7 @@ useEffect(()=>{
                 <style>{`
                   .mp-full-legend{display:flex;gap:8px;align-items:center;margin-top:6px;color:#64748b;font-size:.9rem}
                   .mp-badge-full{display:inline-block;border:1px solid #fecaca;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem}
-                  .mp-badge-locked{display:inline-block;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem} /* NEW */
+                  .mp-badge-locked{display:inline-block;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-weight:600;font-size:.75rem}
                 `}</style>
 
                 <select
@@ -688,38 +688,38 @@ useEffect(()=>{
                   onChange={onChange("slotKey")}
                   onBlur={onBlur("slotKey")}
                   required
-                  disabled={isSending || slotsLoading || !eventId || !id || !dateStr || allDisabled}
-                  title={allDisabled ? "All B2B rooms are full for this date" : undefined}
+                  // keep select enabled even if every option is disabled
+                  disabled={isSending || slotsLoading || !eventId || !id || !dateStr}
                 >
                   <option value="">{slotsLoading ? "Loading…" : "Select a slot…"}</option>
                   {slots.map((s) => (
-                    <option
-                      key={s.key}
-                      value={s.key}
-                      disabled={!s.isCap || s.blockedOther}               // ← NEW
-                      aria-disabled={!s.isCap || s.blockedOther}
-                      title={
-                        !s.isCap
-                          ? "B2B room is full for this slot"
-                          : s.blockedOther
-                            ? "The other participant did not whitelist this time"
-                            : undefined
-                      }
-                    >
-                      {s.label}
-                    </option>
-                  ))}
+                      <option
+                        key={s.key}
+                        value={s.key}
+                        disabled={!s.isCap || s.blockedOther}
+                        aria-disabled={!s.isCap || s.blockedOther}
+                        title={
+                          !s.isCap
+                            ? "B2B room is full for this slot"
+                            : s.blockedOther
+                              ? "The other participant did not whitelist this time"
+                              : undefined
+                        }
+                      >
+                        {s.label}
+                      </option>
+                    ))}
                 </select>
 
                 {fieldErr("slotKey") ? <div className="mp-error">{fieldErr("slotKey")}</div> : null}
 
-                {!slotsLoading && !slots.length ? (
-                  <div className="mp-help">No free slots returned by the event for this date.</div>
-                ) : null}
+                
 
-                {!slotsLoading && slots.length ? (
+                {!slotsLoading && !slots.length ? (
                   <div className="mp-full-legend">
-                    
+                    <span className="mp-badge-full">FULL</span>
+                    <span className="mp-badge-locked">LOCKED</span>
+                    <span>Times are shown in <strong>your timezone</strong>. Full or locked slots are disabled.</span>
                   </div>
                 ) : null}
               </label>

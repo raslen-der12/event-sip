@@ -36,6 +36,7 @@ export default function EventAttendeesGrid({
   const safe = Array.isArray(items) ? items : [];
   const hrefOf = (s) =>`/profile/${s?._id || s?.id || ""}`;
   const hrefOfMeet = (s) =>`/meeting/${s?._id || s?.id || ""}`;
+  const hrefOfMess = (s) =>`/messages?member=${s?._id || s?.id || ""}`;
 
   if (isLoading) {
     return (
@@ -171,7 +172,7 @@ export default function EventAttendeesGrid({
                         <button
                           type="button"
                           className="esg-btn"
-                          onClick={() => alert("Message: TODO")}
+                          onClick={() => navigate(hrefOfMess(s))}
                         >
                           <FiMessageSquare />
                           Message

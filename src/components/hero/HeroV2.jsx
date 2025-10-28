@@ -65,7 +65,7 @@ export default function HeroB2B({
   /* ---------- Actions ---------- */
   const DEFAULT_ACTIONS = [
     { label: "Freight Calculator",    sub: "Instantly estimate your shipping costs and optimize your logistics",    href: "/logistics/freight-calculator" },
-    { label: "Book a B2B", sub: "Discover participants, view profiles, and start booking your business meetings",  href: "/attendees/open-to-meets" },
+    { label: "Book a B2B", sub: "Discover participants, view profiles, and start booking your business meetings",  href: "/attendees/open-to-meet" },
     { label: "Build a Business Profile",  sub: "Present your company, products, and services to attract new partners", href: "/BusinessProfile/dashboard" },
     { label: "Browse Events",  sub: "Discover upcoming events, connect with participants, and join opportunities",        href: "/events" },
   ];

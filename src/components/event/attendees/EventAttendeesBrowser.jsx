@@ -369,7 +369,10 @@ export default function EventAttendeesBrowser({
           if (href && href !== "#") window.location.assign(href);
         }}
         onBook={onBook}
-        onMessage={() => alert("Message: TODO wire action")}
+        onMessage={(id) => {
+          const href = `/messages?member=${id}`;;
+          window.location.assign(href);
+        }}
         isLoggedIn={isLoggedIn}
       />
 

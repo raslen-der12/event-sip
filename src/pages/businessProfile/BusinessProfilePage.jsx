@@ -14,17 +14,16 @@ import HeaderShell from "../../components/layout/HeaderShell";
 import Footer from "../../components/footer/Footer";
 import { cta, footerData, nav, topbar } from "../main.mock";
 import imageLink from "../../utils/imageLink";
-
+import { useTranslation } from "react-i18next";
 import {
   useGetMyBPQuery,
-  useGetProfileBySlugQuery,
   useGetProfileByIdQuery,
   useListProfileItemsQuery,
   useGetProfileOverviewQuery,
   useGetPublicTeamQuery,
 } from "../../features/bp/BPApiSlice";
 
-/* tiny inline icons */
+/* ===== tiny inline icons ===== */
 const I = {
   pin: () => (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -53,11 +52,11 @@ const TABS = [
 ];
 
 const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
-const safeArray = (v) => (Array.isArray(v) ? v : []);
+const safeArray = (v) => (Array.isArray(v) ? v : []); // keep order as-is
 const safeObj = (v) => (isObj(v) ? v : {});
 const lower = (s) => String(s || "").toLowerCase();
 
-/* tab via hash */
+/* ===== hash-tab helper ===== */
 function useHashTab(defaultKey = "overview") {
   const [tab, setTab] = React.useState(() => {
     const h = (typeof window !== "undefined" && window.location.hash.replace("#", "")) || "";
@@ -79,7 +78,7 @@ function useHashTab(defaultKey = "overview") {
   return [tab, go];
 }
 
-/* group items -> sectors for BusinessSectors */
+/* ===== group flat items to sectors/subsectors ===== */
 function groupItemsToSectors(items) {
   const map = new Map();
   for (const it of safeArray(items)) {
@@ -94,7 +93,6 @@ function groupItemsToSectors(items) {
       title: it.title,
       summary: it.summary,
       tags: it.tags || [],
-      pricingNote: it.pricingNote,
       images: it.images || [],
       thumbnailUpload: it.thumbnailUpload,
     });
@@ -115,33 +113,25 @@ function groupItemsToSectors(items) {
   return sectors;
 }
 
+/* ===== MAIN PAGE ===== */
 export default function BusinessProfilePage({ profile, onMessage, onRequestMeet }) {
+  const t = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
   const { search } = useLocation();
   const qs = new URLSearchParams(search);
 
-  const slugParam = params?.slug || qs.get("slug") || "";
+  // Only ID is considered per requirement
   const idParam = params?.id || qs.get("id") || "";
 
-  /** KEY FIX:
-   * If there is an explicit slug/id in URL, we DO NOT fall back to the owner's profile.
-   * We show "not found / invalid" state when the backend doesn't return a profile.
-   */
-  const hasExplicitTarget = !!(slugParam || idParam);
-
-  // 1) Owner summary (only when NO explicit target is requested)
-  const { data: mySummary, isFetching: myFetching } = useGetMyBPQuery(undefined, {
-    skip: hasExplicitTarget,
-  });
-
-  // 2) Public lookups (only when explicit)
+  // If there is NO id in params -> check my profile; if missing -> redirect
   const {
-    data: bySlugData,
-    isFetching: slugFetching,
-    isError: slugErr,
-  } = useGetProfileBySlugQuery(slugParam, { skip: !slugParam });
+    data: mySummary,
+    isFetching: myFetching,
+    isSuccess: myOk,
+  } = useGetMyBPQuery(undefined, { skip: !!idParam });
 
+  // If there IS id in params -> fetch that profile
   const {
     data: byIdData,
     isFetching: idFetching,
@@ -150,21 +140,28 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
   // Normalize responses
   const ownerProf = mySummary?.data || mySummary?.profile || null;
-  const slugProf = bySlugData?.data || bySlugData?.profile || (isObj(bySlugData) ? bySlugData : null);
-  const idProf   = byIdData?.data || byIdData?.profile || (isObj(byIdData) ? byIdData : null);
+  const idProf = byIdData?.data || byIdData?.profile || (isObj(byIdData) ? byIdData : null);
 
-  // Decide which profile to present (NO owner fallback if explicit target exists)
-  const apiProfileRaw = hasExplicitTarget
-    ? (slugProf || idProf || null)
-    : (ownerProf || null);
+  // Redirect path as specified
+  const BP_FORM_PATH = "/businessprofile/from";
 
+  // Redirect: no id + no owner profile
+  React.useEffect(() => {
+    if (!idParam && !myFetching) {
+      if (!ownerProf) {
+        navigate(BP_FORM_PATH, { replace: true });
+      }
+    }
+  }, [idParam, myFetching, ownerProf, navigate]);
+
+  // Select active profile to show
+  const apiProfileRaw = idParam ? (idProf || null) : (ownerProf || null);
   const profileId = apiProfileRaw?._id || apiProfileRaw?.id || null;
 
-  // 3) Items / Overview / Team are loaded only if we actually have a profile id
+  // Items / overview / team (only if we have a profile id)
   const {
     data: itemsResp,
     isFetching: itemsFetching,
-    isError: itemsErr,
   } = useListProfileItemsQuery(profileId, { skip: !profileId });
 
   const flatItems = itemsResp?.data || (Array.isArray(itemsResp) ? itemsResp : []) || [];
@@ -176,19 +173,12 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
     skip: !profileId,
   });
 
-  // 4) Aggregate loading & error
-  const loading =
-    (hasExplicitTarget ? (slugFetching || idFetching) : myFetching) || itemsFetching;
+  // Loading & not-found states
+  const loading = (!!idParam ? idFetching : myFetching) || itemsFetching;
+  const notFoundExplicit =
+    !!idParam && !loading && !apiProfileRaw && !teamFetching && (idErr || !idProf);
 
-  const notFound =
-    hasExplicitTarget &&
-    !loading &&
-    !apiProfileRaw && // nothing came back
-    !teamFetching &&
-    // either error flags or simply no data:
-    (slugErr || idErr || (!slugProf && !idProf));
-
-  // 5) Presentable profile fields
+  // Presentable fields
   const baseRaw = isObj(profile) ? profile : {};
   const p = apiProfileRaw
     ? {
@@ -218,7 +208,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
       }
     : null;
 
-  // derive product/service lists from items
+  // derive lists
   const products = flatItems
     .filter((x) => x.kind === "product")
     .map((x) => ({
@@ -245,11 +235,9 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
   const gallery =
     Array.isArray(apiProfileRaw?.gallery) ? apiProfileRaw.gallery
-    : Array.isArray(ownerProf?.gallery) ? ownerProf.gallery
-    : [];
+      : [];
 
-  /* tabs */
-  const [tab, setTab] = useHashTab("overview");
+  const [tab] = useHashTab("overview");
 
   const fallbackLogo = (name = "BP") =>
     `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(
@@ -271,63 +259,39 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
     else alert("Owner not found yet.");
   };
   const onMeet = () => {
-    setTab("team");
     const el = document.querySelector(".bp-body");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (peerId) navigate(`/team?prefill=${peerId}`);
   };
 
-  const teamMembers = React.useMemo(() => {
-    return (teamResp || []).map((m) => {
-      const fullName =
-        m.name ||
-        [m.firstName, m.lastName].filter(Boolean).join(" ") ||
-        "—";
-      const avatar =
-        imageLink(m.avatarUpload) ||
-        `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(fullName.slice(0, 24))}`;
-      return {
-        id: `${m.entityType}-${m.entityId}`,
-        fullName,
-        title: m.title || m.role || "",
-        dept: m.dept || "",
-        city: m.city || "",
-        country: m.country || "",
-        avatar,
-        open: !!m.open,
-        skills: Array.isArray(m.skills) ? m.skills : [],
-        entityType: m.entityType,
-        entityId: m.entityId,
-      };
-    });
-  }, [teamResp]);
-
+  // ===== render =====
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
-
       <main className="bp">
-        {/* ======= NOT FOUND (explicit target only) ======= */}
-        {notFound && (
-          <div className="container" style={{ padding: "48px 0" }}>
-            <div className="reg-empty" style={{ borderStyle: "solid" }}>
-              ❌ No or invalid Business Profile for this user.
-              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                <button className="btn" onClick={() => navigate("/exhibitors")}>Browse Exhibitors</button>
-                <button className="btn btn-line" onClick={() => navigate("/")}>Back to Home</button>
+        {/* ===== explicit id but no profile: replace all page content with message ===== */}
+        {notFoundExplicit && (
+          <div className="container" style={{ padding: "56px 0" }}>
+            <div className="reg-empty" style={{ borderStyle: "solid", textAlign: "center" }}>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
+                {t("Profile Not Found")}
+              </div>
+              <div style={{ color: "#60708a" }}>
+                The requested profile could not be found.
               </div>
             </div>
           </div>
         )}
 
-        {/* ======= LOADING SKELETON ======= */}
-        {loading && !notFound && (
+        {/* ===== loading skeleton ===== */}
+        {loading && !notFoundExplicit && (
           <div className="container" style={{ padding: "48px 0" }}>
             <div className="reg-skel" />
           </div>
         )}
 
-        {/* ======= MAIN VIEW (only when we have a profile) ======= */}
-        {!loading && !notFound && p && (
+        {/* ===== main view (only when we have a profile) ===== */}
+        {!loading && !notFoundExplicit && p && (
           <>
             {/* HERO */}
             <header className="bp-hero">
@@ -344,9 +308,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                   </div>
 
                   <div className="bp-id">
-                    <h1 className="bpp-name align-items-start">
-                      {p.name}
-                    </h1>
+                    <h1 className="bpp-name align-items-start">{p.name}</h1>
                     {p.tagline ? <p className="bp-tag">{p.tagline}</p> : null}
                     {apiProfileRaw?.about ? <p className="bp-about">{apiProfileRaw.about}</p> : null}
                     <div className="bp-meta">
@@ -359,7 +321,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                       {p.website ? (
                         <a className="chip link" href={p.website} target="_blank" rel="noreferrer">
                           <I.link />
-                          Website
+                          {t("Website")}
                         </a>
                       ) : null}
                       {p.verified ? (
@@ -408,7 +370,6 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
             {/* CONTENT */}
             <section className="container bp-body">
-              {/* manage tabs via hook */}
               <TabContent
                 p={p}
                 apiProfileRaw={apiProfileRaw}
@@ -417,7 +378,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                 services={services}
                 sectors={sectors}
                 gallery={gallery}
-                teamMembers={teamMembers}
+                teamResp={teamResp}
                 navigate={navigate}
               />
             </section>
@@ -436,7 +397,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   );
 }
 
-/* separate component so we can use the same tab state logic cleanly */
+/* ===== content by tab ===== */
 function TabContent({
   p,
   apiProfileRaw,
@@ -445,15 +406,35 @@ function TabContent({
   services,
   sectors,
   gallery,
-  teamMembers,
+  teamResp,
   navigate,
 }) {
-  const [tab, setTab] = useHashTab("overview");
+  const [tab] = useHashTab("overview");
 
-  React.useEffect(() => {
-    // keep .is-active in sync for buttons above
-    // handled by hash; nothing else needed
-  }, [tab]);
+  const teamMembers = React.useMemo(() => {
+    return (teamResp || []).map((m) => {
+      const fullName =
+        m.name ||
+        [m.firstName, m.lastName].filter(Boolean).join(" ") ||
+        "—";
+      const avatar =
+        imageLink(m.avatarUpload) ||
+        `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(fullName.slice(0, 24))}`;
+      return {
+        id: `${m.entityType}-${m.entityId}`,
+        fullName,
+        title: m.title || m.role || "",
+        dept: m.dept || "",
+        city: m.city || "",
+        country: m.country || "",
+        avatar,
+        open: !!m.open,
+        skills: Array.isArray(m.skills) ? m.skills : [],
+        entityType: m.entityType,
+        entityId: m.entityId,
+      };
+    });
+  }, [teamResp]);
 
   return (
     <>

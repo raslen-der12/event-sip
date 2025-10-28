@@ -97,16 +97,16 @@ export default function WhitelistModal({ open, onClose, eventId, receiverId, dat
       <div className="wlm-sheet" data-testid="whitelist-modal">
         {/* Header */}
         <div className="wlm-header">
-          <div className="wlm-title">
+          <div className="wlm-title fs-4">
             Choose your availability
-            <span className="wlm-sub">for {date}</span>
+            <span className="wlm-sub fs-5">for {date}</span>
           </div>
           <button className="wlm-close" onClick={() => onClose(false)} aria-label="Close">✕</button>
         </div>
 
         {/* Body (scrollable) */}
         <div className="wlm-body" ref={wrapRef}>
-          <p className="wlm-help">
+          <p className="wlm-help fs-5">
             Tap to select 30-min slots. Drag to select a range. You can edit this later.
           </p>
 

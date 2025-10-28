@@ -142,7 +142,7 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
   }, [data]);
 
   return (
-    <section className={`sugg-section ${isFetching ? "is-dim" : ""}`}>
+    <section className={`sugg-section mt-4 ${isFetching ? "is-dim" : ""}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Suggested Matches</h2>
         <button className="btn -pri" onClick={() => refetch()}>
@@ -517,10 +517,10 @@ export default function MeetingsPage() {
   const [filterSectors, setFilterSectors] = useState([]);
   const [filterDate, setFilterDate] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [viewMode, setViewMode] = useState("calendar"); // calendar by default
+  const [viewMode, setViewMode] = useState("list");
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [toasts, setToasts] = useState([]);
-  const [currentDate, setCurrentDate] = useState(new Date()); // anchors the week
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [showSectorDropdown, setShowSectorDropdown] = useState(false);
   const didInitWeek = useRef(false);
 
@@ -820,13 +820,7 @@ export default function MeetingsPage() {
 
           <div className="main-col">
             {/* Suggestions */}
-            <SuggestionsList
-              myId={myId}
-              onOpen={(id) => navigate(`/profile/${id}`)}
-              onBook={handleBook}
-              onFav={() => pushToast("Added to favorites.")}
-              onMessage={handleMessage}
-            />
+            
 
             {/* View Toggle */}
             <div className="view-toggle clean-toggle" role="tablist" aria-label="View mode" style={{ marginBottom: 16 }}>
@@ -946,7 +940,13 @@ export default function MeetingsPage() {
               </div>
             )}
           </div>
-
+          <SuggestionsList
+              myId={myId}
+              onOpen={(id) => navigate(`/profile/${id}`)}
+              onBook={handleBook}
+              onFav={() => pushToast("Added to favorites.")}
+              onMessage={handleMessage}
+            />
           {/* Modals */}
           {selectedMeeting ? <MeetingModal meeting={selectedMeeting} onClose={closeMeetingModal} /> : null}
           {reschedMeeting ? (

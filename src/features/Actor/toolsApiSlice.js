@@ -220,6 +220,14 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       transformResponse: (resp) => resp?.tags ?? [],
       keepUnusedDataFor: 300,
     }),
+    resolveShareLink: builder.query({
+      query: ({ actorId, eventId }) => ({
+        url: `/share/${actorId}/${eventId}`,
+        method: "GET",
+      }),
+      transformResponse: (res) => res?.data || res,
+      providesTags: (_res, _err, args) => [{ type: "Share", id: `${args.actorId}_${args.eventId}` }],
+    }),
   }),
 });
 
@@ -241,4 +249,5 @@ export const {
   useListActorNotificationsQuery,
   useAckActorNotificationMutation,
   useGetMeetingPrefsQuery,
+  useResolveShareLinkQuery,
 } = toolsApiSlice;

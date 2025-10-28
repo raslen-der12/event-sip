@@ -73,6 +73,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import RestoreEmail from './pages/auth/RestoreEmail';
 import OpenToMeetAttendeesPage from "./pages/attendees/OpenToMeetAttendeesPage";
 import B2BMeetingsDashboard from './pages/admin/B2BMeetingsDashboard';
+import ShareLinkPage from './pages/share/ShareLinkPage';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -94,6 +95,7 @@ function App() {
       
       {/* Public route - NO LOGIN REQUIRED */}
       <Route element={<PersistLogin />}>
+        <Route path="/s/:actorId/:eventId" element={<ShareLinkPage />} />
         <Route path="/" element={<Main />} />
         <Route path="/attendees/open-to-meet" element={<OpenToMeetAttendeesPage />} />
         <Route path="/register" element={<RegisterLanding  />} />

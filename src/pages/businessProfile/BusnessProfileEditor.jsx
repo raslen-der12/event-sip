@@ -1,5 +1,6 @@
 // src/pages/businessProfile/BusnessProfileEditor.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   // Profile (mine)
   useGetMyBPQuery,
@@ -427,6 +428,7 @@ function PersonCard({ person, onAdd, adding }) {
 
 /* =================== Business Profile Editor =================== */
 export default function BusnessProfileEditor() {
+    const navigate = useNavigate();
   const { data: facets } = useGetFacetsSelectsQuery();
   const countryOptions = Array.isArray(facets?.countries)
     ? facets.countries
@@ -520,12 +522,9 @@ export default function BusnessProfileEditor() {
     } catch (e) {
       const msg = String(e?.data?.error || e?.error || "");
       if (msg.includes("BP_NOT_FOUND")) {
-        // ensure your BP exists, then retry once
-        await ensureBP({ name: name || "Untitled" }).unwrap();
-        await addTeamMember({
-          entityId: pick.entityId,
-          role: pick.entityType,
-        }).unwrap();
+        // No profile -> send to create form
+        navigate("/businessprofile/form");
+        return;
       } else {
         throw e;
       }
@@ -550,6 +549,11 @@ export default function BusnessProfileEditor() {
     () => bpResp?.profile || bpResp?.data || bpResp || null,
     [bpResp]
   );
+  useEffect(() => {
+    if (!bpFetching && !profile) {
+      navigate("/businessprofile/form", { replace: true });
+    }
+  }, [bpFetching, profile, navigate]);
 
   /* ----------- Form state (Basics) ----------- */
   const [name, setName] = useState("");
@@ -648,7 +652,8 @@ export default function BusnessProfileEditor() {
       ...subsectors.filter(Boolean), // names
     ];
     if (!profile?._id) {
-      await ensureBP({ name: name || "Untitled" }).unwrap();
+      navigate("/businessprofile/form");
+      return;
     }
     // 2) generic PATCH to update basics
     await patchContacts({
@@ -885,7 +890,7 @@ export default function BusnessProfileEditor() {
     const row = sectorByKey.get(sec);
     return row ? row.subsectors : [];
   }, [editingItem?.sector, sectorByKey]);
-
+  if (!bpFetching && !profile) return null;
   /* =================== Render =================== */
   return (
     <>

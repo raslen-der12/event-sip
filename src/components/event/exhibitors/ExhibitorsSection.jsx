@@ -73,7 +73,10 @@ export default function ExhibitorsSection({
                 isLoggedIn={isLoggedIn}
                 onReadMore={() => onReadMore ? onReadMore(x) : setModalItem(x)}
                 onBook={() => onBook ? onBook(x) : alert("Book meeting: TODO")}
-                onMessage={() => onMessage ? onMessage(x) : alert("Message: TODO")}
+                onMessage={(id) => {
+          const href = `/messages?member=${id}`;;
+          window.location.assign(href);
+        }}
               />
             ))}
           </div>
@@ -88,7 +91,10 @@ export default function ExhibitorsSection({
         onClose={() => setModalItem(null)}
         isLoggedIn={isLoggedIn}
         onBook={() => modalItem && (onBook ? onBook(modalItem) : alert("Book meeting: TODO"))}
-        onMessage={() => modalItem && (onMessage ? onMessage(modalItem) : alert("Message: TODO"))}
+        onMessage={(id) => {
+          const href = `/chat/new?actorId=${encodeURIComponent(id)}`;
+          window.location.assign(href);
+        }}
       />
     </section>
   );
