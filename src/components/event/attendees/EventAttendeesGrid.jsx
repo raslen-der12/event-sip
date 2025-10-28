@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiUser,
   FiBriefcase,
@@ -32,10 +32,10 @@ export default function EventAttendeesGrid({
   onToggleSelect,          // (item) => void
   sentinelRef,             // for infinite scroll
 }) {
+  const navigate = useNavigate();
   const safe = Array.isArray(items) ? items : [];
-  const hrefOf = (s) =>
-    (typeof getReadMoreHref === "function" && getReadMoreHref(s)) ||
-    `/profile/${s?._id || s?.id || ""}`;
+  const hrefOf = (s) =>`/profile/${s?._id || s?.id || ""}`;
+  const hrefOfMeet = (s) =>`/meeting/${s?._id || s?.id || ""}`;
 
   if (isLoading) {
     return (
@@ -163,7 +163,7 @@ export default function EventAttendeesGrid({
                         <button
                           type="button"
                           className="esg-btn"
-                          onClick={() => alert("Book meeting: TODO")}
+                          onClick={() => navigate(hrefOfMeet(s))}
                         >
                           <FiUserPlus />
                           Book meeting

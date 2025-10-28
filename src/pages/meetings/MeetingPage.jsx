@@ -719,9 +719,7 @@ useEffect(()=>{
 
                 {!slotsLoading && slots.length ? (
                   <div className="mp-full-legend">
-                    <span className="mp-badge-full">FULL</span>
-                    <span className="mp-badge-locked">LOCKED</span>
-                    <span>Times are shown in <strong>your timezone</strong>. Full or locked slots are disabled.</span>
+                    
                   </div>
                 ) : null}
               </label>

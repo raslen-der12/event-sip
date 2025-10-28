@@ -365,7 +365,7 @@ export default function EventAttendeesBrowser({
         onPrev={onPrev}
         onNext={onNext}
         onReadMore={() => {
-          const href = current ? `/attendee/${current?._id || current?.id || ""}` : "#";
+          const href = current ? `/profile/${current?._id || current?.id || ""}` : "#";
           if (href && href !== "#") window.location.assign(href);
         }}
         onBook={onBook}
