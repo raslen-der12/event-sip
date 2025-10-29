@@ -38,9 +38,23 @@ function timeLabel(iso) {
   }
 }
 
+/* -------------------------------------------------
+   NEW: Filter to **exactly** 14:00 – 18:00 (8 slots)
+   ------------------------------------------------- */
+const ALLOWED_TIMES = [
+  "14:00", "14:30", "15:00", "15:30",
+  "16:00", "16:30", "17:00", "17:30", "18:00"
+];
+
+function isSlotAllowed(iso) {
+  const d = new Date(iso);                     // local date from ISO string
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return ALLOWED_TIMES.includes(`${h}:${m}`);
+}
 
 export default function WhitelistModal({
-  eventId ="68e6764bb4f9b08db3ccec04",
+  eventId = "68e6764bb4f9b08db3ccec04",
   date = "2025-11-13",
   open: openProp,
   onClose,
@@ -49,7 +63,7 @@ export default function WhitelistModal({
   const { ActorId } = useAuth();
   const sp = useMemo(() => new URLSearchParams(window.location.search), []);
   const qpOpen = readBoolQP(sp.get("open"));
-  const qpAuto = autoOpen
+  const qpAuto = autoOpen;
 
   const { data: slotsRaw, isFetching: slotsLoading } = useGetAvailableSlotsQuery(
     { eventId, date, actorId: ActorId, ignoreWhitelist: true },
@@ -63,13 +77,14 @@ export default function WhitelistModal({
 
   const actorHasWhitelist = !!myWl?.hasWhitelist;
   const resolvedOpen = useMemo(() => {
-    if (!actorHasWhitelist && qpAuto) return true;  // auto-open only when no whitelist
-    if (qpOpen) return true;                        // explicit open wins
-    return !!openProp;                              // fallback to prop
+    if (!actorHasWhitelist && qpAuto) return true;
+    if (qpOpen) return true;
+    return !!openProp;
   }, [actorHasWhitelist, qpAuto, qpOpen, openProp]);
 
   useBodyScrollLock(resolvedOpen);
 
+  // ---- Filter to ONLY the 8 allowed slots ----
   const freeGrid = useMemo(() => {
     const arr =
       (Array.isArray(slotsRaw?.data) && slotsRaw.data) ||
@@ -78,12 +93,12 @@ export default function WhitelistModal({
     return arr
       .map((r) => (typeof r === "string" ? r : r?.iso || r?.slotISO || r?.startISO))
       .filter(Boolean)
+      .filter(isSlotAllowed)               // <-- 14:00 … 18:00 only
       .sort((a, b) => new Date(a) - new Date(b));
   }, [slotsRaw]);
 
   // Local selection state
   const [picked, setPicked] = useState(() => new Set());
-
 
   useEffect(() => {
     if (!resolvedOpen) return;
@@ -93,13 +108,13 @@ export default function WhitelistModal({
       return;
     }
     if (actorHasWhitelist && Array.isArray(myWl?.data)) {
-      setPicked(new Set(myWl.data));
+      const validPrev = myWl.data.filter((s) => freeGrid.includes(s));
+      setPicked(new Set(validPrev));
       return;
     }
-    // otherwise leave empty
   }, [resolvedOpen, actorHasWhitelist, qpAuto, freeGrid, myWl?.data]);
 
-  // Drag-select (optional)
+  // Drag-select
   const wrapRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [dragAdd, setDragAdd] = useState(true);
@@ -138,9 +153,6 @@ export default function WhitelistModal({
   const [saveWhitelist, { isLoading: saving }] = useUpsertMyWhitelistMutation();
 
   const submit = async () => {
-    if (!picked.size) {
-
-    }
     try {
       await saveWhitelist({
         actorId: ActorId,
@@ -164,13 +176,16 @@ export default function WhitelistModal({
     <div className="wlm-root" role="dialog" aria-modal="true" aria-label="Edit availability">
       <div className="wlm-backdrop" onClick={() => onClose?.(false)} />
       <div className="wlm-sheet" data-testid="whitelist-modal">
-        {/* Header */}
+        {/* Header – larger date */}
         <div className="wlm-header">
           <div className="wlm-title">
-            Edit your availability <span className="wlm-sub">for {date}</span>
+            Edit your availability{" "}
+            <span className="wlm-sub" style={{ fontSize: "1.1em", fontWeight: "600" }}>
+              for {date}
+            </span>
           </div>
           <button className="wlm-close" onClick={() => onClose?.(false)} aria-label="Close">
-            ✕
+            X
           </button>
         </div>
 
@@ -183,7 +198,7 @@ export default function WhitelistModal({
           {slotsLoading ? (
             <div className="wlm-empty">Loading slots…</div>
           ) : !freeGrid.length ? (
-            <div className="wlm-empty">No free slots on this date.</div>
+            <div className="wlm-empty">No free slots between 14:00 and 18:00.</div>
           ) : (
             <div className="wlm-chip-grid">
               {freeGrid.map((iso) => {
@@ -196,6 +211,7 @@ export default function WhitelistModal({
                     title={iso}
                     onPointerDown={(e) => onPointerDown(iso, e)}
                     onPointerEnter={() => onPointerEnter(iso)}
+                    style={{ fontSize: "1.05em" }} 
                   >
                     <input type="checkbox" readOnly checked={on} />
                     <span>{timeLabel(iso)}</span>
@@ -212,9 +228,6 @@ export default function WhitelistModal({
             {saving ? "Saving…" : `Save (${picked.size})`}
           </button>
         </div>
-
-        {/* Scoped styles */}
-        
       </div>
     </div>
   );
@@ -224,8 +237,8 @@ export default function WhitelistModal({
 
 WhitelistModal.propTypes = {
   eventId: PropTypes.string.isRequired,
-  receiverId: PropTypes.string.isRequired, // other participant (for slot grid)
-  date: PropTypes.string.isRequired,       // YYYY-MM-DD (UTC day)
-  open: PropTypes.bool,                    // optional; URL params can still open
-  onClose: PropTypes.func.isRequired,      // (ok:boolean)=>void
+  receiverId: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  open: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
 };

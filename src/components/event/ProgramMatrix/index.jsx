@@ -33,7 +33,7 @@ export default function ProgramAgenda({ sessions, isLoading }) {
       sections: [
         {
           title: "PLÉNIÈRE",
-          moderator: "Modératrice : Mme Zeineb Melki - Journaliste et animatrice radio et télé",
+          moderator: "Modérateur : Mr. Wassim Laaribi - Journaliste et animateur Express FM",
           sessions: [
             { time: "09:00 - 09:30", title: "Mots d'ouverture", type: "panel" },
             { time: "09:30 - 10:30", title: "Panel 1 – Stratégie d’accès aux marchés internationaux : enjeux critiques et leviers opérationnels", type: "panel" },

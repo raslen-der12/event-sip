@@ -72,7 +72,8 @@ export default function HeroEvent({
   const marquee = highlights?.length
     ? highlights
     : ["Formation", "MasterClass", "EXPO", "Networking & B2B"];
-  const baseAPI  =process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
+  const baseAPI  = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
+
   return (
     <section
       className="relative text-white backdropFilter"
@@ -134,17 +135,7 @@ export default function HeroEvent({
             </div>
 
             {/* capacity & marquee */}
-            {typeof filled === "number" && (
-              <div className="mt-6 max-w-md">
-                <div className="bg-white/10 rounded-full h-2 w-full overflow-hidden">
-                  <div className="h-2 rounded-full bg-[#1C3664]" style={{ width: `${filled}%` }} />
-                </div>
-                <div className="flex justify-between text-sm text-gray-300 mt-1">
-                  <span>Capacité</span>
-                  <span>{seatsTaken ?? 0} / {capacity}</span>
-                </div>
-              </div>
-            )}
+            {/* {typeof filled === "number" && ( … )}   // <-- hidden for now */}
 
             {marquee?.length && (
               <div className="mt-8">
@@ -167,7 +158,7 @@ export default function HeroEvent({
           >
             <div className="w-full max-w-md mx-auto lg:mr-0 bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl">
               <h3 className="text-xl font-semibold text-white mb-2 text-center">
-                Rejoignez l’aventure <br></br>IPDAYS × GITS 2025
+                Rejoignez l’aventure <br />IPDAYS × GITS 2025
               </h3>
               <p className="text-sm text-gray-200 text-center mb-4">
                 Réservez votre place pour vivre l’expérience entrepreneuriale la plus inspirante de 2025.
@@ -196,7 +187,6 @@ export default function HeroEvent({
                 <button
                   type="button"
                   onClick={() => {
-                    // download ICS: keep simple — you can reuse your previous function if needed
                     const a = document.createElement("a");
                     a.href = regHref;
                     a.click();
@@ -207,7 +197,8 @@ export default function HeroEvent({
                 </button>
 
                 <div className="text-right">
-                  {typeof filled === "number" ? <span>{filled}% réservés</span> : <span>Places limitées</span>}
+                  {/* {typeof filled === "number" ? … : …}   // <-- hidden for now */}
+                  <span>Places limitées</span>
                 </div>
               </div>
             </div>
