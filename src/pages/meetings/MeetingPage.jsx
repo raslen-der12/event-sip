@@ -25,6 +25,7 @@ import imageLink from "../../utils/imageLink";
 import useAuth from "../../lib/hooks/useAuth";
 import WhitelistModal from "./WhitelistModal";
 const wlKey = (eventId, meId) => `wl:onboard:${eventId}:${meId}`;
+const asBool = (v) => /^(1|true|yes|y)$/i.test(String(v || ""));
 /* --------------------------------- tiny utils --------------------------------- */
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -322,8 +323,7 @@ export default function MeetingPage() {
       { eventId, actorId: id, date: dateStr ,ignoreWhitelist: false},
       { skip: !eventId || !id || !dateStr }
     );
-   const mustSetupWhitelist = slotsRaw && !slotsRaw.actorHasWhitelist;
-   console.log(slotsRaw);
+   const hasWhitelist = !!slotsRaw?.actorHasWhitelist;
  const slots = useMemo(() => {
   // Accept a variety of shapes; prefer { iso, isCap, blockedOther }
   const raw =
@@ -354,11 +354,17 @@ export default function MeetingPage() {
     }));
 }, [slotsRaw]);
 
-const [wlOpen, setWlOpen] = useState(false);
-const openWLEdit = () => setWlOpen(true);
-useEffect(()=>{
-  if (slotsRaw && !slotsRaw.actorHasWhitelist) setWlOpen(true);
-},[slotsRaw]);
+  const [wlOpen, setWlOpen] = useState(false);
+  const openWLEdit = () => setWlOpen(true);
+  // NEW: query-driven open logic:
+  // - open=true always opens (edit mode)
+  // - autoOpen=true opens only when user has NO whitelist
+  useEffect(() => {
+    const sp = new URLSearchParams(search);
+    const qOpen = asBool(sp.get("open"));
+    const qAuto = asBool(sp.get("autoOpen"));
+    setWlOpen(qOpen || (qAuto && !hasWhitelist));
+  }, [search, hasWhitelist]);
   // Fast lookup set for validation
   const slotKeysSet = useMemo(() => new Set(slots.map(s => s.key)), [slots]);
 
@@ -578,16 +584,16 @@ useEffect(()=>{
   /* ----------------------- normal flow ----------------------- */
   const disabledCount = slots.filter(s => !s.isCap || s.blockedOther).length;
   const allDisabled = slots.length > 0 && disabledCount === slots.length;
-
   return (
     <>
       <WhitelistModal
   open={wlOpen}
+  autoOpen={true}
   onClose={(ok)=>{ setWlOpen(false); if (ok) refetch(); }}
   eventId={eventId}
-  receiverId={actorId}
-  date={dateStr}
-  mode="edit"
+  ownerId={ActorId}
+    date={dateStr}
+  
 />
       <HeaderShell top={topbar} nav={navItems} cta={cta} />
       <section className="mp-wrap container">
@@ -640,13 +646,7 @@ useEffect(()=>{
                 <h3 className="mp-card-title">Schedule</h3>
               </div>
               <div style={{marginTop: 8, display: "flex", gap: 8}}>
-  <button
-    type="button"
-    className="mp-btn"
-    onClick={openWLEdit}
-  >
-    Edit my availability
-  </button>
+
 </div>
               {/* Date — fixed to last day */}
               <label className="mp-field">

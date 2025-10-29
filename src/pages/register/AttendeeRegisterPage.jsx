@@ -518,7 +518,7 @@ export default function AttendeeRegisterPage() {
     linkedin: '',
     languages: [],
     objective: [],
-    gender: '', 
+    gender: 'male', 
     pwd: '',
     pwd2: '',
     virtualMeet: '',
@@ -650,6 +650,7 @@ const trackSections = useMemo(() => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Email invalide';
     if (!required(form.country)) e2.country = 'Requis';
     if (!form.languages?.length) e2.languages = 'Choisissez au moins 1 langue';
+    if (!form.gender) e2.gender = 'Requis';
     if (shouldShowOrgFields) {
       if (!required(form.orgName)) e2.orgName = 'Requis';
       if (!required(form.jobTitle)) e2.jobTitle = 'Requis';
@@ -824,7 +825,7 @@ const trackSections = useMemo(() => {
                 <input value={form.city} onChange={e=>setField('city', e.target.value)} />
               </div>
               <div className="att-field">
-                <label>Genre</label>
+                <label>Genre<span className="req"> *</span></label>
                 <GenderSelect value={form.gender} onChange={v => setField('gender', v)} />
               </div>
                             {shouldShowOrgFields && (

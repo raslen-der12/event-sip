@@ -5,6 +5,7 @@ import { useGetProfileQuery } from "../../../features/Actor/toolsApiSlice";
 import "./avatar-menu.css";
 import { useSendLogoutMutation } from "../../../features/auth/authApiSlice";
 import imageLink from "../../../utils/imageLink";
+import WhitelistModal from "../../../pages/meetings/WhitelistModal";
 
 export default function AvatarMenu() {
      const [sendLogout, {
@@ -13,6 +14,7 @@ export default function AvatarMenu() {
   }] = useSendLogoutMutation()
   const nav = useNavigate();
   const { role, ActorId, status } = useAuth();
+  const [wlOpen, setWlOpen] = useState(false);
   const isAuthed = status !== "Guest" && !!ActorId;
 
   // Fetch light profile data (will be cached for /profile page)
@@ -53,7 +55,19 @@ export default function AvatarMenu() {
   if (!isAuthed) return null;
 
   return (
+    
     <div className={`avatar-menu ${open ? "open" : ""}`} ref={ref}>
+      {wlOpen && (
+         <WhitelistModal
+           open={true}
+           autoOpen={false}                 // force-open manually
+           onClose={(ok) => {
+            setWlOpen(false);
+            
+           }}
+           
+        />
+       )}
       <button
         className="avatar-btn"
         onClick={() => setOpen((o) => !o)}
@@ -93,6 +107,12 @@ export default function AvatarMenu() {
           }}
         >
           View meetings
+        </button>
+        <button
+          className="avatar-item"
+          onClick={() => setWlOpen(true)}
+        >
+          Edit availability
         </button>
         <button
           className="avatar-item"

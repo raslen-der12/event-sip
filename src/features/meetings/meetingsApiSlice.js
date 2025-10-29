@@ -135,6 +135,20 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
   adminSetTable: builder.mutation({
     query: ({ id, tableId }) => ({ url: `/meets/admin/meets/${id}/table`, method:'PUT', body:{ tableId } })
   }),
+  getMyWhitelist: builder.query({
+      query: ({ eventId, date, actorId }) =>
+        `/meets/${eventId}/my?date=${encodeURIComponent(date)}&actorId=${encodeURIComponent(actorId)}`,
+      providesTags: (r) => (r?.data ? [{ type: "Whitelist", id: "MY" }] : []),
+    }),
+    upsertMyWhitelist: builder.mutation({
+      query: ({ eventId, date, slots , actorId }) => { console.log(actorId); return (
+        {
+        url: `/meets/${eventId}/my`,
+        method: "POST",
+        body: { date, slots , actorId },
+      })},
+      invalidatesTags: [{ type: "Whitelist", id: "MY" }],
+    }),
     })
 })
 
@@ -154,4 +168,6 @@ export const {
     useAdminListSlotsQuery,
     useAdminRescheduleMeetMutation,
     useAdminSetTableMutation,
+    useGetMyWhitelistQuery,
+    useUpsertMyWhitelistMutation,
 } = toolsApiSlice
