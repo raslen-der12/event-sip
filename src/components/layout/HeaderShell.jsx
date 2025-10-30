@@ -311,7 +311,7 @@ export default function HeaderShell({ top, nav, cta }) {
       <div className={`nav ${elevated ? "elevated" : ""}`}>
         <div className="container" style={{height:"72px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
           {/* brand */}
-          <a className="brand" href="/"><img width={190} src={ imageLink('default/IPDAYXGITS.png')} alt="Brand" /></a>
+          <a className="brand" href="/"><img width={190} src="https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png" alt="Brand" /></a>
 
           {/* desktop links (click to open) */}
           <div className="menu">

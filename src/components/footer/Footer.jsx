@@ -23,7 +23,7 @@ export default function Footer({
               <a className="brand" href="/" aria-label={brand?.name || "Home"}>
                 <img
                   width={130}
-                  src={ imageLink("https://gits.seketak-eg.com/wp-content/uploads/2025/10/Group-40947.png")}
+                  src={ imageLink("https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png")}
                   alt={brand?.name || "Brand logo"}
                 />
               </a>
