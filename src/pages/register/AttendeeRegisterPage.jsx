@@ -518,7 +518,8 @@ export default function AttendeeRegisterPage() {
     linkedin: '',
     languages: [],
     objective: [],
-    gender: 'male', 
+    gender: 'male',
+    inviteCode: '',
     pwd: '',
     pwd2: '',
     virtualMeet: '',
@@ -695,6 +696,7 @@ const trackSections = useMemo(() => {
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
     fd.append('links.website', form.website);
     fd.append('links.linkedin', form.linkedin);
+    fd.append('inviteCode', form.inviteCode);
     fd.append('virtualMeet', String(form.virtualMeet === true));
     if (Array.isArray(form.subRoles)) {
       form.subRoles.forEach(v => fd.append('subRole[]', v));
@@ -884,6 +886,10 @@ const trackSections = useMemo(() => {
               <div className="att-field">
                 <label>LinkedIn</label>
                 <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
+              </div>
+              <div className="att-field">
+                <label>Invite code</label>
+                <input placeholder="optional if you had one" value={form.inviteCode} onChange={e=>setField('inviteCode', e.target.value)} />
               </div>
 
               <div className="att-field full">

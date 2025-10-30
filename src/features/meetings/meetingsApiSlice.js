@@ -149,6 +149,21 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       })},
       invalidatesTags: [{ type: "Whitelist", id: "MY" }],
     }),
+    adminScanActorAttend: builder.mutation({
+      query: (body) => ({ url: `meets/admin/scan/actor-attend`, method: 'POST', body }),
+    }),
+    adminScanSession: builder.mutation({
+      query: (body) => ({ url: `meets/admin/scan/session`, method: 'POST', body }),
+    }),
+    adminScanMeet: builder.mutation({
+      query: (body) => ({ url: `meets/admin/scan/meet`, method: 'POST', body }),
+    }),
+
+    // ───────────── Export ─────────────
+    exportConfirmedMeets: builder.query({
+      // returns a URL we can navigate to (download)
+      query: ({ eventId }) => `/admin/meets/export/confirmed?eventId=${encodeURIComponent(eventId)}`,
+    }),
     })
 })
 
@@ -170,4 +185,8 @@ export const {
     useAdminSetTableMutation,
     useGetMyWhitelistQuery,
     useUpsertMyWhitelistMutation,
+    useAdminScanActorAttendMutation,
+    useAdminScanSessionMutation,
+    useAdminScanMeetMutation,
+    useExportConfirmedMeetsQuery,
 } = toolsApiSlice

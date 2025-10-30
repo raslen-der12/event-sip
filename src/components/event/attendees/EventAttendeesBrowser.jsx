@@ -368,7 +368,10 @@ export default function EventAttendeesBrowser({
           const href = current ? `/profile/${current?._id || current?.id || ""}` : "#";
           if (href && href !== "#") window.location.assign(href);
         }}
-        onBook={onBook}
+        onBook={(id) => {
+          const href = `/meeting/${id}`;;
+          window.location.assign(href);
+        }}
         onMessage={(id) => {
           const href = `/messages?member=${id}`;;
           window.location.assign(href);

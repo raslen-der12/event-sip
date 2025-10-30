@@ -316,7 +316,7 @@ Cette édition vise à ouvrir les portes de l’écosystème tunisien vers l’e
       
       <FeaturesShowcase features={data?.features} />
         <PartnershipBlock
-          imageSrc={imageLink(`${base}/uploads/images/admin/gits-ipdays.png`)}
+          imageSrc={imageLink(`${base}/uploads/default/IPDAYXGITS.png`)}
         />
 <EventOrganizers
   heading="Event Partners"

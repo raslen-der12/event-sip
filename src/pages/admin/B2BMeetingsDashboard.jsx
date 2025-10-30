@@ -30,6 +30,47 @@ function Pill({ active, onClick, children }) {
     </button>
   );
 }
+async function exportConfirmedXLSX(rows=[], eventId=''){
+  const confirmed = rows.filter(r => String(r.status).toLowerCase() === 'confirmed');
+  if (!confirmed.length) {
+    alert('No confirmed meetings to export.');
+    return;
+  }
+  // prepare AoA for Excel
+  const header = ['Time','Subject','SenderName','SenderRole','ReceiverName','ReceiverRole','Mode','Table','VirtualLink','MeetingId'];
+  const fmtTime = (iso)=> iso ? `${new Date(iso).toLocaleDateString()} ${new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}` : '';
+  const aoa = [
+    header,
+    ...confirmed.map(r => [
+      fmtTime(r.slotISO),
+      r.subject || '',
+      r.senderName || '',
+      r.senderRole || '',
+      r.receiverName || '',
+      r.receiverRole || '',
+      r.mode || '',
+      r.tableId ? String(r.tableId).toUpperCase() : '',
+      r.virtualLink || '',
+      r._id || r.id || ''
+    ])
+  ];
+
+  try {
+    const mod = await import('xlsx');       // SheetJS
+    const XLSX = mod.default || mod;        // handle ESM/CJS
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Confirmed');
+    const fname = `B2B_confirmed_${eventId || 'all'}_${toISODate(new Date())}.xlsx`;
+    XLSX.writeFile(wb, fname);
+  } catch {
+    // fallback to CSV (Excel-friendly)
+    const a = document.createElement('a');
+    a.href = toCSV(confirmed);
+    a.download = `B2B_confirmed_${eventId || 'all'}_${toISODate(new Date())}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+}
 function StatCard({ label, value, sub }) {
   return (
     <div className="rounded-2xl shadow-sm border p-4 bg-white">
@@ -154,6 +195,8 @@ export default function B2BMeetingsDashboard(){
             <label className="text-xs text-slate-500 mb-1">To</label>
             <input type="date" className="border rounded-md px-3 py-2 text-sm" value={to} onChange={(e)=>setTo(e.target.value)} min={from || undefined} />
           </div>
+        </div>
+      </div>
           <div className="flex items-center justify-end gap-2 md:col-span-5 lg:col-span-1 md:mt-2">
             <Pill active={status === ''} onClick={()=>setStatus('')}>All ({statusCounts.total})</Pill>
             <Pill active={status === 'pending'} onClick={()=>setStatus('pending')}>Pending ({statusCounts.pending})</Pill>
@@ -162,11 +205,10 @@ export default function B2BMeetingsDashboard(){
             <Pill active={status === 'rejected'} onClick={()=>setStatus('rejected')}>Rejected ({statusCounts.rejected})</Pill>
             <Pill active={status === 'cancelled'} onClick={()=>setStatus('cancelled')}>Cancelled ({statusCounts.cancelled})</Pill>
           </div>
-        </div>
-      </div>
 
+        <div className="gm-card-head m-1">Slot capacity</div>
       {/* Top stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-2">
         <StatCard label="Total"    value={statusCounts.total} />
         <StatCard label="Physical" value={modeCounts.physical || 0} />
         <StatCard label="Hybrid"   value={modeCounts.hybrid   || 0} />
@@ -175,7 +217,6 @@ export default function B2BMeetingsDashboard(){
 
       {/* Slot capacity (adminListSlots) */}
       <div className="gm-card">
-        <div className="gm-card-head">Slot capacity</div>
         {slotsLoading ? <div className="gm-empty">Loading…</div> : (
           <div className="gm-slot-grid">
             {(slotData?.data || []).map(s => {
@@ -203,9 +244,23 @@ export default function B2BMeetingsDashboard(){
             })}
           </div>
         )}
-        <div className="gm-cap-legend"><span>Physical</span><span>Hybrid</span><span>Virtual</span></div>
       </div>
-
+        <div className="px-4 py-3 border-b text-sm font-semibold flex items-center justify-between">
+  <span>Meetings</span>
+  <div className="flex items-center gap-2">
+    <button
+      className="px-3 py-1.5 rounded-md bg-emerald-600 text-white text-xs"
+      onClick={()=>exportConfirmedXLSX(rows, eventId)}
+      disabled={!rows.some(r => String(r.status).toLowerCase() === 'confirmed')}
+      title="Export only confirmed meetings to Excel"
+    >
+      Export confirmed (Excel)
+    </button>
+    <span className="text-xs text-slate-500">
+      {rows.length} item{rows.length === 1 ? '' : 's'}
+    </span>
+  </div>
+</div>
       {/* Meetings table */}
       <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b text-sm font-semibold flex items-center justify-between">

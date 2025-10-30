@@ -74,6 +74,10 @@ import RestoreEmail from './pages/auth/RestoreEmail';
 import OpenToMeetAttendeesPage from "./pages/attendees/OpenToMeetAttendeesPage";
 import B2BMeetingsDashboard from './pages/admin/B2BMeetingsDashboard';
 import ShareLinkPage from './pages/share/ShareLinkPage';
+import AdminScanActor from './pages/admin/scan/AdminScanActor';
+import AdminScanMeet from './pages/admin/scan/AdminScanMeet';
+import AdminScanSession from './pages/admin/scan/AdminScanSession';
+import AdminActorInvitesPage from './pages/admin/AdminActorInvitesPage';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -162,6 +166,11 @@ function App() {
             <Route path="messages" element={<AdminMessages />} />
             <Route path="tools/selects" element={<AdminSelects />} />
             <Route path="/admin/b2b" element={<B2BMeetingsDashboard/>} />
+            <Route path="/admin/scanActor" element={<AdminScanActor/>} />
+            <Route path="/admin/scanMeet" element={<AdminScanMeet/>} />
+            <Route path="/admin/scanActor" element={<AdminScanActor/>} />
+            <Route path="/admin/scanSession" element={<AdminScanSession/>} />
+            <Route path="/admin/invites" element={<AdminActorInvitesPage />} />
           </Route>
         </Route>
         

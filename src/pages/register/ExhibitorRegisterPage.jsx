@@ -15,12 +15,12 @@ import { useGetEventSessionsQuery } from "../../features/events/scheduleApiSlice
 import { useExhibitorRegisterMutation } from "../../features/auth/authApiSlice";
 import imageLink from "../../utils/imageLink";
 
-/* ============ Small Helpers ============ */
+/* ================= Small helpers (same tone as attendee) ================= */
 const toISODate = (v) => (v ? new Date(v).toLocaleDateString() : "");
 const required = (v) => ((typeof v === "string" ? v.trim() : v) ? true : false);
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-/* Actor types (no Student/Expert here) */
+/* Actor types (no Student/Expert here, matches prior exhibitor scope) */
 const ROLE_TYPES = [
   { key: "BusinessOwner", title: "Business Owner", desc: "Owns or co-owns a company. Can later add sectors, products & services." },
   { key: "Consultant",    title: "Consultant",    desc: "Advises businesses. Good fit if you sell expertise/services." },
@@ -28,10 +28,11 @@ const ROLE_TYPES = [
   { key: "Investor",      title: "Investor",      desc: "Angel/VC/Corporate. Signal interests and match with startups/exhibitors." },
 ];
 
-/* SubRole options */
+/* SubRole options (kept lightweight) */
 const SUBROLE_OPTIONS = [
-  "coaches","Expert","Students","Employees","Researches","Media","Lawyers","Developers","Trainer",
-  "Audit & Accounting","Investement","Insurrance","Micro Finance","Marketing","Audio Visual","AI & IoT",
+  "Coaches & Trainers","Experts & Consultants","Students","Employees & Professionals","Researchers",
+  "Media & Journalists","Legal & Lawyers","Developers & Engineers","Audit & Accounting","Investment & Banking",
+  "Insurance & Microfinance","Marketing & Communication","Audiovisual & Creative Industries","AI, IoT & Emerging Tech",
 ];
 
 /* Countries (trimmed) */
@@ -50,33 +51,13 @@ const LANGS = [
   { code: "ar", label: "Arabic"  },
 ];
 
-/* Industries */
+/* Exhibitor industries (simple list) */
 const INDUSTRIES = [
   "AI & IoT","Logistics","Fintech","Marketing","Media","Insurance","Micro Finance",
   "Audit & Accounting","Audio Visual","Investment","Other",
 ];
 
-/* === Popup trigger (matches your NotificationsBridge) === */
-function triggerPopup({ title, body, type = "success", link }) {
-  try {
-    const item = {
-      type, status: type,
-      title: title || "Notification",
-      body: body || "",
-      message: body || "",
-      ts: Date.now(),
-      showOnce: true,
-      link: link ? { href: link.href, label: link.label || "Open" } : null,
-      _source: "local",
-    };
-    localStorage.setItem("popup", JSON.stringify([item]));
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new CustomEvent("app:popup:ready"));
-    });
-  } catch {}
-}
-
-/* ===== Small controls reused ===== */
+/* ==== Shared mini-controls (mirrors AttendeeRegisterPage look/feel) ==== */
 function CountrySelect({ value, onChange, placeholder = "Select country" }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -84,7 +65,6 @@ function CountrySelect({ value, onChange, placeholder = "Select country" }) {
     const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     return COUNTRIES.filter(c => rx.test(c.name) || rx.test(c.code));
   }, [q]);
-
   const selected = COUNTRIES.find(c => c.code === (value || "").toUpperCase()) || null;
 
   return (
@@ -139,9 +119,7 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
             </span>
           );
         })}
-        {value.length === 0 && (
-          <span style={{ color:"#94a3b8", fontWeight:700 }}>Pick up to 3</span>
-        )}
+        {value.length === 0 && <span style={{ color:"#94a3b8", fontWeight:700 }}>Pick up to 3</span>}
       </div>
       <div className="lang-grid">
         {LANGS.map(l => {
@@ -163,29 +141,57 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
   );
 }
 
-/* SubRole checkbox grid */
-function SubRoleSelect({ values = [], onChange, options = [] }) {
-  const toggle = (val) => {
-    const has = values.includes(val);
-    if (has) onChange(values.filter(v => v !== val));
-    else onChange([...values, val]);
-  };
+/* Same compact track picker as Attendee page */
+function TrackSelect({ options = [], value = "", onChange, placeholder = "All tracks" }) {
+  const [open, setOpen] = React.useState(false);
+  const wrapRef = React.useRef(null);
+  React.useEffect(() => {
+    const onDoc = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+  const label = value || placeholder;
   return (
-    <div className="subrole-grid">
-      {options.map(opt => {
-        const active = values.includes(opt);
-        return (
-          <label key={opt} className={`subrole-item ${active ? "active" : ""}`}>
-            <input type="checkbox" checked={active} onChange={() => toggle(opt)} />
-            <span>{opt}</span>
-          </label>
-        );
-      })}
+    <div className="sel-wrap" ref={wrapRef}>
+      <div className="sel-head" onClick={() => setOpen(v => !v)}>
+        <span className={value ? '' : 'ph'}>{label}</span>
+        <span style={{ fontWeight: 900, color: '#64748b' }}>{open ? '▲' : '▼'}</span>
+      </div>
+      {open && (
+        <div className="sel-pop">
+          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>All</div>
+          {options.map(opt => (
+            <div key={opt} className="sel-item" onClick={() => { onChange(opt); setOpen(false); }}>
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/* ===== Session helpers (normalize) ===== */
+/* Popup trigger (same bridge) */
+function triggerPopup({ title, body, type = "success", link }) {
+  try {
+    const item = {
+      type, status: type,
+      title: title || "Notification",
+      body: body || "",
+      message: body || "",
+      ts: Date.now(),
+      showOnce: true,
+      link: link ? { href: link.href, label: link.label || "Open" } : null,
+      _source: "local",
+    };
+    localStorage.setItem("popup", JSON.stringify([item]));
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("app:popup:ready"));
+    });
+  } catch {}
+}
+
+/* ================== Sessions helpers (normalize & sort) ================== */
 const normSession = (s) => {
   const start = s.startAt || s.startTime || s.start || s.timeStart || s.startsAt;
   const end   = s.endAt   || s.endTime   || s.end   || s.timeEnd   || s.endsAt;
@@ -202,14 +208,15 @@ const normSession = (s) => {
     roomName: s.room?.name || s.roomName || "",
     roomLocation: s.room?.location || "",
     roomCapacity: s.room?.capacity || 0,
+    seatsTaken: typeof s.seatsTaken === 'number' ? s.seatsTaken : 0,
     startISO,
     endISO: end ? new Date(end).toISOString() : "",
     dayISO,
   };
 };
 
-/* === Track ordering (B2B last) === */
 const isB2B = (name) => String(name || '').trim().toLowerCase() === 'b2b';
+
 function orderTracksWithEarliestFirst(groups) {
   const entries = Object.entries(groups).map(([track, items]) => {
     const earliest = items.reduce((min, s) => {
@@ -222,16 +229,15 @@ function orderTracksWithEarliestFirst(groups) {
   entries.sort((a, b) => {
     const aIsB2B = isB2B(a.track);
     const bIsB2B = isB2B(b.track);
-    if (aIsB2B && !bIsB2B) return 1;
+    if (aIsB2B && !bIsB2B) return 1;   // B2B last
     if (!aIsB2B && bIsB2B) return -1;
     if (a.earliest !== b.earliest) return a.earliest - b.earliest;
     return String(a.track || "").localeCompare(String(b.track || ""), undefined, { sensitivity: "base" });
   });
-
   return entries;
 }
 
-/* ===== Conflict bucket: Atelier vs Masterclass are separate ===== */
+/* Separate families like attendee logic (masterclass vs atelier vs other) */
 function conflictBucket(track) {
   const t = String(track || "").toLowerCase();
   if (t.includes("atelier")) return "atelier";
@@ -239,7 +245,7 @@ function conflictBucket(track) {
   return "other";
 }
 
-/* ===== Modal (same style as attendee) ===== */
+/* Session details modal (same style) */
 function SessionModal({ open, onClose, session, counts }) {
   useEffect(() => {
     if (open) {
@@ -248,11 +254,11 @@ function SessionModal({ open, onClose, session, counts }) {
       return () => { document.body.style.overflow = prev; };
     }
   }, [open]);
-
   if (!open || !session) return null;
 
-  const reg = counts?.[session._id]?.registered || 0;
-  const wait = counts?.[session._id]?.waitlisted || 0;
+  const regFromS = typeof session?.seatsTaken === 'number' ? session.seatsTaken : NaN;
+  const reg = Number.isFinite(regFromS) ? regFromS : Number(counts?.[session?._id]?.registered || 0);
+  const wait = Number(counts?.[session?._id]?.waitlisted || 0);
   const cap  = session.roomCapacity || 0;
   const pct  = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
   const title = session.title || session.sessionTitle || "Session";
@@ -288,7 +294,7 @@ function SessionModal({ open, onClose, session, counts }) {
               <div className="subt">Speakers</div>
               <div className="speakers-list">
                 {session.speakers.map((sp, i) => (
-                  <span key={i} className="chip">{sp.name || sp}</span>
+                  <span key={i} className="chip">{(sp && (sp.name || sp.fullName)) || sp}</span>
                 ))}
               </div>
             </div>
@@ -299,8 +305,6 @@ function SessionModal({ open, onClose, session, counts }) {
               {session.tags.map((t, i) => <span key={i} className="tag">{t}</span>)}
             </div>
           )}
-
-          {session.summary && <p className="descr">{session.summary}</p>}
 
           {(cap || reg || wait) ? (
             <div className="capacity-row">
@@ -317,22 +321,21 @@ function SessionModal({ open, onClose, session, counts }) {
       </div>
     </div>
   );
-
   return ReactDOM.createPortal(node, document.body);
 }
 
-/* =================== Main =================== */
+/* ============================== Main ============================== */
 export default function ExhibitorRegisterPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  /* Steps: 1 = pick role, 2 = form, 3 = sessions, 4 = done */
+  // progressive reveal like attendee (role → form → sessions → done)
   const [step, setStep] = useState(1);
 
   const eventId = params.get("eventId") || "68e6764bb4f9b08db3ccec04";
   const { data: event, isLoading: evLoading, isError: evErr } = useGetEventQuery(eventId, { skip: !eventId });
 
-  /* ---- Session filter (track only, to match attendee) ---- */
+  /* Track filter (compact selector to match attendee style) */
   const [track, setTrack] = useState("");
 
   const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQuery(
@@ -342,10 +345,15 @@ export default function ExhibitorRegisterPage() {
 
   const [exhibitorRegister, { isLoading: regLoading }] = useExhibitorRegisterMutation();
 
-  /* Logo (OPTIONAL now) */
-  const fileRef = useRef(null);
+  /* Files: logo (optional) + contact photo (optional) */
+  const logoRef = useRef(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
+
+  const photoRef = useRef(null);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState("");
+
   useEffect(() => {
     if (logoFile) {
       const u = URL.createObjectURL(logoFile);
@@ -355,10 +363,18 @@ export default function ExhibitorRegisterPage() {
     setLogoUrl("");
   }, [logoFile]);
 
-  /* Role extras */
+  useEffect(() => {
+    if (photoFile) {
+      const u = URL.createObjectURL(photoFile);
+      setPhotoUrl(u);
+      return () => URL.revokeObjectURL(u);
+    }
+    setPhotoUrl("");
+  }, [photoFile]);
+
+  /* Role + form */
   const [roleType, setRoleType] = useState("");
 
-  /* Form state */
   const [form, setForm] = useState({
     exhibitorName: "",
     contactName: "",
@@ -380,54 +396,50 @@ export default function ExhibitorRegisterPage() {
   const [errs, setErrs] = useState({});
   const [showPwd, setShowPwd] = useState(false);
 
-  /* Sub-roles shown for all except Business Owner */
+  // show sub-roles for all except BusinessOwner (aligns with attendee vibe)
   const showSubRoles = roleType && roleType !== "BusinessOwner";
-  useEffect(() => {
-    if (!showSubRoles && form.subRoles.length) {
-      setField("subRoles", []);
-    }
-  }, [showSubRoles]); // eslint-disable-line
+  useEffect(() => { if (!showSubRoles && form.subRoles.length) setField("subRoles", []); }, [showSubRoles]); // eslint-disable-line
 
-  /* Sessions selection + modal state */
+  /* Sessions & modal */
   const [selectedBySlot, setSelectedBySlot] = useState({});
   const [modalSession, setModalSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
   const counts = schedulePack?.counts || {};
 
-  /* Build flat sessions array (same as attendee) */
-  const sessions = useMemo(() => {
+  /* Normalize sessions */
+  const sessionsRaw = useMemo(() => {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return (Array.isArray(raw) ? raw : []).map(normSession).filter(x => x.startISO);
   }, [schedulePack]);
 
-  const firstDay = useMemo(() => {
-    const daySet = new Set(sessions.map(s => s.dayISO).filter(Boolean));
-    const dayList = Array.from(daySet).sort((a, b) => new Date(a) - new Date(b));
-    return dayList[0] || null;
-  }, [sessions]);
+  // Match attendee display: drop earliest day entirely + drop “Formation” track
+  const earliestDayISO = useMemo(() => {
+    const ds = Array.from(new Set((sessionsRaw || []).map(s => s.dayISO).filter(Boolean)));
+    ds.sort((a, b) => new Date(a) - new Date(b));
+    return ds[0] || null;
+  }, [sessionsRaw]);
 
-  /* Track options */
-  const uniqueTracks = useMemo(() => {
-    const t = new Set();
-    sessions.forEach(s => { if (s.track) t.add(s.track); });
-    return Array.from(t);
-  }, [sessions]);
-
-  /* Sections: group by track (B2B last), drop first day, allow filter */
-  const trackSections = useMemo(() => {
-    if (!sessions.length) return [];
-
-    // Drop firstDay entirely + apply track filter
-    const filtered = sessions.filter(s => {
-      if (firstDay && s.dayISO === firstDay) return false;   // remove Day 1
-      if (track && s.track !== track) return false;
+  const displaySessions = useMemo(() => {
+    const rxFormation = /^\s*formation\s*$/i;
+    return (sessionsRaw || []).filter(s => {
+      if (earliestDayISO && s.dayISO === earliestDayISO) return false;
+      if (rxFormation.test(s.track || '')) return false;
       return true;
     });
-    if (!filtered.length) return [];
+  }, [sessionsRaw, earliestDayISO]);
 
+  // Track options & sections (B2B last)
+  const uniqueTracks = useMemo(() => {
+    const t = new Set();
+    displaySessions.forEach(s => { if (s.track) t.add(s.track); });
+    return Array.from(t);
+  }, [displaySessions]);
+
+  const trackSections = useMemo(() => {
+    if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
     const group = {};
-    for (const s of filtered) {
+    for (const s of displaySessions) {
+      if (track && s.track !== track) continue;
       const key = (s.track || "Other").trim();
       if (!group[key]) group[key] = [];
       group[key].push(s);
@@ -435,39 +447,33 @@ export default function ExhibitorRegisterPage() {
     for (const t of Object.keys(group)) {
       group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
     }
-
     const ordered = orderTracksWithEarliestFirst(group);
     return ordered.map(({ track, items }) => ({ track, items }));
-  }, [sessions, track, firstDay]);
+  }, [displaySessions, track]);
 
-  // Close modal + clear selections when filter changes
   useEffect(() => {
     setModalOpen(false);
     setModalSession(null);
     setSelectedBySlot({});
   }, [track]);
 
-  /* === Select: one per time slot PER TRACK FAMILY (Atelier vs Masterclass are separate) === */
-  const toggleSession = (slotStartISO, session) => {
-    const bucket = conflictBucket(session.track);
-    const slotKey = `${slotStartISO}|${bucket}`;
+  // one per time slot per family
+  const toggleSession = (s) => {
+    const slotKey = `${s.startISO}|${conflictBucket(s.track)}`;
     setSelectedBySlot(prev => {
       const curr = prev[slotKey];
-      if (curr && curr._id === session._id) {
+      if (curr && curr._id === s._id) {
         const copy = { ...prev };
         delete copy[slotKey];
         return copy;
       }
-      return { ...prev, [slotKey]: session };
+      return { ...prev, [slotKey]: s };
     });
   };
 
-  const selectedSessionIds = useMemo(
-    () => Object.values(selectedBySlot).map(s => s._id),
-    [selectedBySlot]
-  );
+  const selectedSessionIds = useMemo(() => Object.values(selectedBySlot).map(s => s._id), [selectedBySlot]);
 
-  /* Step 1 → 2 */
+  /* Step: role → form */
   const goForm = () => {
     const e = {};
     if (!roleType) e.roleType = "Select your actor type";
@@ -477,7 +483,7 @@ export default function ExhibitorRegisterPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* Step 2 → 3 (Logo OPTIONAL now) */
+  /* Form → sessions (logo + photo optional; no gender) */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
@@ -486,12 +492,10 @@ export default function ExhibitorRegisterPage() {
     if (!required(form.email)) e2.email = "Required";
     if (!EMAIL_RX.test(form.email || "")) e2.email = "Invalid email";
     if (!required(form.country)) e2.country = "Required";
-    // LOGO no longer required: removed validation
     if (!form.languages?.length) e2.languages = "Pick at least 1 language";
     if (!required(form.pwd)) e2.pwd = "Required";
     else if ((form.pwd || "").length < 8) e2.pwd = "Min 8 characters";
     if (form.pwd2 !== form.pwd) e2.pwd2 = "Passwords do not match";
-
     setErrs(e2);
     if (Object.keys(e2).length) return;
 
@@ -502,20 +506,16 @@ export default function ExhibitorRegisterPage() {
   /* Final submit */
   const finishAll = async () => {
     if (!selectedSessionIds.length) {
-      alert("Please pick at least one session (one per time slot).");
+      alert("Please pick at least one session (one per time slot/family).");
       return;
     }
     const fd = new FormData();
     fd.append("eventId", eventId);
     fd.append("role", "exhibitor");
-
-    // role system (two lightweight fields)
     fd.append("actorType", roleType);
-
-    // password
     fd.append("pwd", form.pwd);
 
-    // Exhibitor identity
+    // identity/contact
     fd.append("identity.exhibitorName", form.exhibitorName);
     fd.append("identity.contactName", form.contactName);
     fd.append("identity.email", form.email);
@@ -524,35 +524,35 @@ export default function ExhibitorRegisterPage() {
     fd.append("identity.city", form.city);
     fd.append("identity.orgName", form.orgName || "");
 
-    // Minimal business/commercial
+    // business/commercial
     fd.append("business.industry", form.industry || "");
     fd.append("commercial.availableMeetings", String(!!form.availableMeetings));
 
-    // Links & languages
+    // links & languages
     fd.append("links.website", form.website || "");
     fd.append("links.linkedin", form.linkedin || "");
-    fd.append("identity.preferredLanguages", form.languages.join(",")); // limit 3 in BE
+    fd.append("identity.preferredLanguages", form.languages.join(",")); // limit enforced in BE
 
-    // SubRole[] (hide for BusinessOwner)
+    // sub-roles
     if (roleType !== "BusinessOwner" && Array.isArray(form.subRoles)) {
       form.subRoles.forEach(v => fd.append("subRole[]", v));
     }
 
-    // Sessions + optional logo
+    // sessions
     selectedSessionIds.forEach(id => fd.append("sessionIds[]", id));
-    if (logoFile) fd.append("logo", logoFile); // only if provided
+
+    // files (optional)
+    if (logoFile)  fd.append("logo",  logoFile);
+    if (photoFile) fd.append("photo", photoFile); // contact photo (optional)
 
     try {
       await exhibitorRegister(fd).unwrap();
-
-      // POPUP: success with a “Go to login” button
       triggerPopup({
         title: "Registration complete",
         body: "Start your B2B journey",
         type: "success",
         link: { href: "/login", label: "Go to login" }
       });
-
       setStep(4);
       setTimeout(() => navigate("/"), 1400);
     } catch (err) {
@@ -566,12 +566,12 @@ export default function ExhibitorRegisterPage() {
     }
   };
 
-  /* ===== UI ===== */
+  /* ============================== UI ============================== */
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
       <div className="reg-wrap">
-        {/* Header */}
+        {/* Event header (same layout as attendee) */}
         <header className="anim-in" style={{ display:"grid", gridTemplateColumns:"140px 1fr", gap:12, alignItems:"center" }}>
           {evLoading ? (
             <div className="reg-skel" />
@@ -595,23 +595,17 @@ export default function ExhibitorRegisterPage() {
                     </>
                   ) : null}
                 </div>
-                <div style={{ color:"#64748b", fontWeight:700, marginTop:4 }}>
-                  Registration closes {toISODate(event.registrationDeadline)}
-                </div>
+                {event.registrationDeadline && (
+                  <div style={{ color:"#64748b", fontWeight:700, marginTop:4 }}>
+                    Registration closes {toISODate(event.registrationDeadline)}
+                  </div>
+                )}
               </div>
             </>
           )}
         </header>
 
-        {/* Step dots */}
-        <div className="reg-steps">
-          <span className={`reg-step-dot ${step === 4 ? "active":""}`} />
-          <span className={`reg-step-dot ${step === 1 ? "active":""}`} />
-          <span className={`reg-step-dot ${step === 2 ? "active":""}`} />
-          <span className={`reg-step-dot ${step === 3 ? "active":""}`} />
-        </div>
-
-        {/* ===== STEP 1: Role Catalog ===== */}
+        {/* ===== STEP 1: Role catalog (cards like attendee) ===== */}
         {step === 1 && (
           <section className="anim-in">
             <div className="att-section-head">
@@ -623,7 +617,12 @@ export default function ExhibitorRegisterPage() {
               {ROLE_TYPES.map(r => {
                 const active = roleType === r.key;
                 return (
-                  <article key={r.key} onClick={() => setRoleType(r.key)} className={`role-card ${active ? "active" : ""}`}>
+                  <article
+                    key={r.key}
+                    onClick={() => setRoleType(r.key)}
+                    className={`role-card ${active ? "active" : ""}`}
+                    title={r.title}
+                  >
                     <div className="role-title">{r.title}</div>
                     <div className="role-desc">{r.desc}</div>
                   </article>
@@ -640,9 +639,9 @@ export default function ExhibitorRegisterPage() {
           </section>
         )}
 
-        {/* ===== STEP 2: Exhibitor form ===== */}
+        {/* ===== STEP 2: Exhibitor form (logo + contact photo both optional) ===== */}
         {step === 2 && (
-          <form className="anim-in" onSubmit={submitForm}>
+          <form className="anim-in reg-card" onSubmit={submitForm} style={{ marginTop: 14 }}>
             <div className="att-section-head">
               <div className="t">Exhibitor details</div>
               <div className="h">All fields marked <span className="req">*</span> are required</div>
@@ -654,12 +653,9 @@ export default function ExhibitorRegisterPage() {
                 <label>Company logo <span style={{ color:"#64748b", fontWeight:700 }}>(optional)</span></label>
                 <div
                   className="att-photo-drop"
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => logoRef.current?.click()}
                   onDragOver={e => e.preventDefault()}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (e.dataTransfer.files?.[0]) setLogoFile(e.dataTransfer.files[0]);
-                  }}
+                  onDrop={e => { e.preventDefault(); if (e.dataTransfer.files?.[0]) setLogoFile(e.dataTransfer.files[0]); }}
                 >
                   {!logoUrl ? (
                     <div className="att-photo-empty">
@@ -671,16 +667,44 @@ export default function ExhibitorRegisterPage() {
                     <div className="att-photo-prev">
                       <img src={logoUrl} alt="logo-preview" />
                       <div className="att-photo-actions">
-                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Change</button>
+                        <button type="button" className="btn-line" onClick={() => logoRef.current?.click()}>Change</button>
                         <button type="button" className="btn-line" onClick={() => setLogoFile(null)}>Remove</button>
                       </div>
                     </div>
                   )}
-                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setLogoFile(e.target.files?.[0] || null)} />
+                  <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => setLogoFile(e.target.files?.[0] || null)} />
                 </div>
-                {/* removed: errs.logo */}
               </div>
 
+              {/* Contact photo (OPTIONAL) — new */}
+              <div className="att-field full">
+                <label>Contact photo <span style={{ color:"#64748b", fontWeight:700 }}>(optional)</span></label>
+                <div
+                  className="att-photo-drop"
+                  onClick={() => photoRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]); }}
+                >
+                  {!photoUrl ? (
+                    <div className="att-photo-empty">
+                      <div className="ico">📷</div>
+                      <div className="t">Drop an image here, or click to choose</div>
+                      <div className="h">PNG/JPG, under 5MB</div>
+                    </div>
+                  ) : (
+                    <div className="att-photo-prev">
+                      <img src={photoUrl} alt="contact-preview" />
+                      <div className="att-photo-actions">
+                        <button type="button" className="btn-line" onClick={() => photoRef.current?.click()}>Change</button>
+                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Remove</button>
+                      </div>
+                    </div>
+                  )}
+                  <input ref={photoRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
+                </div>
+              </div>
+
+              {/* Identity fields */}
               <div className="att-field">
                 <label>Exhibitor / Brand name <span className="req">*</span></label>
                 <input value={form.exhibitorName} onChange={e => setField("exhibitorName", e.target.value)} />
@@ -704,7 +728,7 @@ export default function ExhibitorRegisterPage() {
                 <input value={form.phone} onChange={e => setField("phone", e.target.value)} />
               </div>
 
-              {/* Country */}
+              {/* Country / city */}
               <div className="att-field">
                 <label>Country <span className="req">*</span></label>
                 <CountrySelect value={form.country} onChange={code => setField("country", (code || "").toUpperCase())} />
@@ -729,7 +753,7 @@ export default function ExhibitorRegisterPage() {
                 </select>
               </div>
 
-              {/* Passwords */}
+              {/* Passwords (same show/hide button pattern) */}
               <div className="att-field">
                 <label>Password <span className="req">*</span></label>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:8 }}>
@@ -779,116 +803,124 @@ export default function ExhibitorRegisterPage() {
                 {errs.languages && <div style={{ color:"#ef4444", fontWeight:800 }}>{errs.languages}</div>}
               </div>
 
-              {/* Sub-roles (hidden for Business Owner) */}
+              {/* Sub-roles */}
               {showSubRoles && (
                 <div className="att-field full">
                   <label>Sub-roles (multi-select)</label>
-                  <SubRoleSelect values={form.subRoles} onChange={v => setField("subRoles", v)} options={SUBROLE_OPTIONS} />
+                  <div className="subrole-grid">
+                    {SUBROLE_OPTIONS.map(opt => {
+                      const active = form.subRoles.includes(opt);
+                      return (
+                        <label key={opt} className={`subrole-item ${active ? "active" : ""}`}>
+                          <input
+                            type="checkbox"
+                            checked={active}
+                            onChange={() => {
+                              const has = form.subRoles.includes(opt);
+                              setField("subRoles", has ? form.subRoles.filter(v => v !== opt) : [...form.subRoles, opt]);
+                            }}
+                          />
+                          <span>{opt}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                   <div className="hint">Choose any that apply. This is simple metadata saved on your actor profile.</div>
                 </div>
               )}
 
               <div className="att-field full" style={{ alignItems:"flex-start" }}>
                 <label>Open to meetings?</label>
-                <label className="chk-inline">
-                  <input type="checkbox" checked={!!form.availableMeetings} onChange={e => setField("availableMeetings", e.target.checked)} />
-                  Yes, allow B2B requests
+                <label className="chk-inline as-switch">
+                  <input
+                    type="checkbox"
+                    checked={!!form.availableMeetings}
+                    onChange={e => setField("availableMeetings", e.target.checked)}
+                  />
+                  <span className="sw" aria-hidden="true"><span className="knob" /></span>
+                  <span className="txt">Yes, allow B2B requests</span>
                 </label>
               </div>
             </div>
 
-            <div className="att-actions">
+            <div className="att-actions" style={{ justifyContent:"flex-end" }}>
               <button type="button" className="btn btn-line" onClick={() => setStep(1)}>Back</button>
               <button type="submit" className="btn">Continue</button>
             </div>
           </form>
         )}
 
-        {/* ===== STEP 3: Sessions (track groups, B2B last, one per slot family) ===== */}
+        {/* ===== STEP 3: Sessions (same compact design as attendee) ===== */}
         {step === 3 && (
-          <div className="anim-in">
+          <section className="anim-in" style={{ marginTop: 16 }}>
             <div className="att-section-head">
               <div className="t">Choose your sessions</div>
-              <div className="h">
-                Pick one session per time slot. <b>Atelier</b> and <b>Masterclass</b> are separate tracks — you may choose one in each at the same time.
-              </div>
+              <div className="h">Pick one session per time slot. <b>Masterclass</b> and <b>Atelier</b> are separate families — you can select one in each at the same time.</div>
             </div>
 
-            {/* Filter bar — track only */}
-            <div className="att-filter-bar-v2">
-              <div className="att-field">
-                <label>Track</label>
-                <select value={track} onChange={e => setTrack(e.target.value)}>
-                  <option value="">All tracks</option>
-                  {uniqueTracks
-                    .sort((a, b) => {
-                      const A = (a || "").toLowerCase(), B = (b || "").toLowerCase();
-                      const aB2B = A === 'b2b', bB2B = B === 'b2b';
-                      if (aB2B && !bB2B) return 1;
-                      if (!aB2B && bB2B) return -1;
-                      return A.localeCompare(B);
-                    })
-                    .map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
+            {/* Compact filter bar */}
+            <div className="filter-bar">
+              <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder="All tracks" />
             </div>
 
             {schedFetching ? (
-              <div className="reg-skel" />
+              <div className="reg-skel" style={{ height: 160 }} />
             ) : !trackSections.length ? (
               <div className="reg-empty">No sessions available yet.</div>
             ) : (
-              <>
-                <div className="att-session-list-v2">
-                  {trackSections.map(({ track: tname, items }) => (
-                    <div key={tname || 'Other'} className="att-track-section-v2">
-                      <h3 className="att-track-sep-v2">{tname || 'Other'}</h3>
+              <div className="att-session-list-v2">
+                {trackSections.map(({ track: tname, items }) => (
+                  <div key={tname || 'Other'} className="att-track-section-v2">
+                    <div className="att-track-sep-v2">{tname || 'Other'}</div>
 
-                      {items.map(s => {
-                        // key changed: include conflict bucket so Atelier vs Masterclass do not conflict
-                        const slotKey = `${s.startISO}|${conflictBucket(s.track)}`;
-                        const isSelected = selectedBySlot[slotKey]?._id === s._id;
-                        const c   = counts?.[s._id] || {};
-                        const reg = c.registered || 0;
-                        const cap = s.roomCapacity || 0;
-                        const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
-                        const title = s.title || s.sessionTitle || 'Session';
-                        const when  = new Date(s.startISO);
+                    {items.map(s => {
+                      const slotKey = `${s.startISO}|${conflictBucket(s.track)}`;
+                      const isSelected = selectedBySlot[slotKey]?._id === s._id;
+                      const c   = counts?.[s._id] || {};
+                      const regFromS = typeof s.seatsTaken === 'number' ? s.seatsTaken : NaN;
+                      const reg = Number.isFinite(regFromS) ? regFromS : Number(c.registered || 0);
+                      const cap = s.roomCapacity || 0;
+                      const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
+                      const title = s.title || s.sessionTitle || 'Session';
+                      const when  = new Date(s.startISO);
 
-                        return (
-                          <article
-                            key={s._id}
-                            className={`att-session-card-v2 ${isSelected ? 'is-selected' : ''} ${isB2B(tname) ? 'bg-new' : ''}`}
-                          >
-                            {s.cover ? (
-                              <img src={s.cover} alt={title} className="session-cover-v2" />
-                            ) : null}
+                      return (
+                        <article
+                          key={s._id}
+                          className={`att-session-card-v2 ${isSelected ? 'is-selected' : ''} ${isB2B(tname) ? 'bg-new' : ''}`}
+                          onClick={() => toggleSession(s)}
+                          title={title}
+                        >
+                          {s.cover ? (
+                            <img src={s.cover} alt={title} className="session-cover-v2" />
+                          ) : null}
 
-                            <div className="session-head-v2">
-                              <div className="session-chipline-v2">
-                                {s.track ? <span className="badge">{s.track}</span> : <span className="badge">Session</span>}
-                                {s.roomName && <span className="chip">Room: {s.roomName}</span>}
-                                {s.roomLocation && <span className="chip">Loc: {s.roomLocation}</span>}
-                                <span className="chip">
-                                  {when.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })} • {when.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
-                                </span>
-                              </div>
-
-                              <div className="att-session-title-v2">{title}</div>
-
-                              {!!s.speakers?.length && (
-                                <div className="att-session-meta-v2">
-                                  {s.speakers.map(x => x.name || x).join(', ')}
-                                </div>
-                              )}
+                          <div className="session-head-v2">
+                            <div className="session-chipline-v2">
+                              {s.track ? <span className="badge">{s.track}</span> : <span className="badge">Session</span>}
+                              {s.roomName && <span className="chip">Room: {s.roomName}</span>}
+                              {s.roomLocation && <span className="chip">Loc: {s.roomLocation}</span>}
+                              <span className="chip">
+                                {when.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })} • {when.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+                              </span>
                             </div>
 
-                            {s.summary && (
-                              <div className="session-summary-v2">
-                                {s.summary}
+                            <div className="att-session-title-v2">{title}</div>
+
+                            {!!s.speakers?.length && (
+                              <div className="att-session-meta-v2">
+                                {s.speakers.map(x => (x && (x.name || x.fullName)) || x).join(', ')}
                               </div>
                             )}
+                          </div>
 
+                          {s.summary ? (
+                            <div className="session-summary-v2">
+                              {s.summary.length > 220 ? `${s.summary.slice(0, 220)}…` : s.summary}
+                            </div>
+                          ) : null}
+
+                          {(cap || reg) ? (
                             <div className="cap-mini-v2">
                               <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
                               <div className="cap-mini-meta">
@@ -897,48 +929,47 @@ export default function ExhibitorRegisterPage() {
                                 {c.waitlisted ? <span>• <b>{c.waitlisted}</b> waitlisted</span> : null}
                               </div>
                             </div>
+                          ) : null}
 
-                            {!!s.tags?.length && (
-                              <div className="tag-row">
-                                {s.tags.slice(0,8).map(t => <span key={t} className="tag">{t}</span>)}
-                              </div>
-                            )}
-
-                            <div className="session-actions-v2">
-                              <button
-                                type="button"
-                                className="btn-line sm"
-                                onClick={() => { setModalSession(s); setModalOpen(true); }}
-                              >
-                                Info
-                              </button>
-                              <button
-                                type="button"
-                                className="btn sm"
-                                onClick={() => toggleSession(s.startISO, s)}
-                              >
-                                {isSelected ? 'Selected' : 'Select'}
-                              </button>
+                          {!!s.tags?.length && (
+                            <div className="tag-row">
+                              {s.tags.slice(0,8).map(t => <span key={t} className="tag">{t}</span>)}
                             </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+                          )}
 
-                <div className="att-actions" style={{ marginTop:16 }}>
-                  <button className="btn btn-line" onClick={() => setStep(2)}>Back</button>
-                  <button className="btn" disabled={regLoading} onClick={finishAll}>
-                    {regLoading ? "Submitting…" : "Finish registration"}
-                  </button>
-                </div>
-              </>
+                          <div className="session-actions-v2">
+                            <button
+                              type="button"
+                              className="btn-line sm"
+                              onClick={(e) => { e.stopPropagation(); setModalSession(s); setModalOpen(true); }}
+                            >
+                              Info
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn sm`}
+                              onClick={(e) => { e.stopPropagation(); toggleSession(s); }}
+                            >
+                              {isSelected ? 'Selected' : 'Select'}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             )}
 
-            {/* Modal */}
+            <div className="att-actions" style={{ marginTop:16 }}>
+              <button className="btn btn-line" onClick={() => setStep(2)}>Back</button>
+              <button className="btn" disabled={regLoading} onClick={finishAll}>
+                {regLoading ? "Submitting…" : "Finish registration"}
+              </button>
+            </div>
+
             <SessionModal open={modalOpen} onClose={() => setModalOpen(false)} session={modalSession} counts={counts} />
-          </div>
+          </section>
         )}
 
         {/* ===== STEP 4: Done ===== */}
@@ -953,6 +984,7 @@ export default function ExhibitorRegisterPage() {
           </div>
         )}
       </div>
+
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}

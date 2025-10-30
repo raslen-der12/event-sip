@@ -12,7 +12,7 @@ import {
   useGetSuggestedListQuery,
   useMakeMeetingActionMutation,
 } from "../../features/meetings/meetingsApiSlice";
-
+import "../attendees/global-meet.css";
 import { useGetEventQuery } from "../../features/events/eventsApiSlice";
 import { useGetAvailableSlotsQuery } from "../../features/Actor/toolsApiSlice";
 
@@ -115,35 +115,50 @@ function EventMini({ eventId, children }) {
 }
 
 /* ------------------------ SUGGESTIONS LIST (fixed) ------------------------ */
+/* ------------------------ SUGGESTIONS LIST (gma-style) ------------------------ */
 function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
   const { data, isFetching, refetch } =
     useGetSuggestedListQuery({ actorId: myId }, { skip: !myId });
-
-  const normalize = (a = {}) => {
-    const p = a.profile || a;
-    const role = (p.role || a.role || "attendee").toLowerCase();
-    const name = p.name || p.fullName || p.exhibitorName || p.orgName || "—";
-    const rawPhoto = p.avatar || p.photo || p.profilePic || "";
-    const photo = imageLink(rawPhoto);
-    const tag = String(p.tag || a.tag || a.purpose || "");
-    const id = p.id || p._id || a.id || a._id;
-    const matchPct = a.matchPct ?? p.matchPct ?? null;
-    const virtual = !!(p.virtualMeet ?? a.virtualMeet ?? a.virtual); // ← NEW
-    return { id, role, name, photo, tag, matchPct, virtual };
-  };
-
-  const list = useMemo(() => {
+  console.log("data",data);
+  // normalize payload flexibly (accepts {data:[]}, {items:[]}, or [] directly)
+  const list = React.useMemo(() => {
     const raw =
       (Array.isArray(data?.data) && data.data) ||
       (Array.isArray(data?.items) && data.items) ||
       (Array.isArray(data) && data) ||
       [];
-    return raw.map(normalize).filter((x) => x.id);
-  }, [data]);
 
+    return raw
+      .map((a) => {
+        const p = a.profile || a;
+
+        const id        = p.id || p._id || a.id || a._id || "";
+        const role      = (p.role || a.role || "attendee").toLowerCase();
+        const name      = p.name || p.fullName || p.exhibitorName || p.orgName || "—";
+        const photo     = imageLink(p.avatar || p.photo || p.profilePic || "");
+        const tag       = String(p.tag || a.tag || a.purpose || "");
+        const matchPct  = typeof (a.matchPct ?? p.matchPct) === "number" ? (a.matchPct ?? p.matchPct) : undefined;
+        const virtual   = !!(p.virtualMeet ?? a.virtualMeet ?? a.virtual);
+        const eventId   = a.id_event || a.eventId || p.eventId || "";
+        const country   = p.country || a.country || p.personal?.country || "";
+        const city      = p.city || a.city || p.personal?.city || "";
+        const jobTitle  = p.jobTitle || a.jobTitle || p.organization?.jobTitle || "";
+        const orgName   = p.orgName || a.orgName || p.organization?.orgName || "";
+        const objectives = Array.isArray(p.objectives || a.objectives || p.matchingIntent?.objectives)
+          ? (p.objectives || a.objectives || p.matchingIntent?.objectives)
+          : [];
+
+        return {
+          id, role, name, photo, tag, matchPct, virtual,
+          eventId, country, city, jobTitle, orgName, objectives,
+        };
+      })
+      .filter((x) => x.id);
+  }, [data]);
+  console.log("list",list);
   return (
-    <section className={`sugg-section mt-4 ${isFetching ? "is-dim" : ""}`}>
-      <div className="flex items-center justify-between mb-4">
+    <section className={`sugg-section mt-6 ${isFetching ? "is-dim" : ""}`}>
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl font-bold">Suggested Matches</h2>
         <button className="btn -pri" onClick={() => refetch()}>
           Generate AI Suggestions
@@ -155,40 +170,100 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
       ) : !list.length ? (
         <div className="muted">No suggestions right now.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="gma-grid">
           {list.map((s) => (
-            <div key={s.id} className="card p-4 border rounded-lg shadow-sm bg-white relative">
-              {s.virtual && <div className="virt-pill">Virtual</div>}
-              {s.matchPct != null && (
-                <div className="absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800">
-                  {s.matchPct}% Match
+            <article key={s.id} className="gma-card">
+              {/* head */}
+              <div className="gma-card-head">
+                <div className="gma-avatar">
+                  {s.photo ? (
+                    <img src={s.photo} alt={s.name} />
+                  ) : (
+                    <div className="gma-avatar-fallback">
+                      {(s.name || "?").slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="gma-meta">
+                  <div className="gma-name">{s.name}</div>
+                  <div className="gma-sub">
+                    {/* country • city */}
+                    {s.country ? <span className={`fi fi-${String(s.country).toLowerCase()}`} style={{ marginRight: 6 }} /> : null}
+                    {s.country || "—"}{s.city ? ` • ${s.city}` : ""}
+                    {s.virtual ? <span className="gma-chip" style={{ marginLeft: 8 }}>Virtual</span> : null}
+                  </div>
+                  <div className="gma-sub tiny">
+                    {s.jobTitle || "—"}{s.orgName ? ` @ ${s.orgName}` : ""} • {s.role}
+                  </div>
+
+                  {/* match chip */}
+                  {typeof s.matchPct === "number" && (
+                    <div className="gma-tags">
+                      <span className="gma-chip gma-match" title="Match score">⭐ {s.matchPct}%</span>
+                      {s.tag ? <span className="gma-chip">{s.tag}</span> : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* objectives/tags */}
+              {!!s.objectives?.length && (
+                <div className="gma-tags">
+                  {s.objectives.slice(0, 4).map((t, i) => (
+                    <span key={i} className="gma-chip">#{t}</span>
+                  ))}
+                  {s.objectives.length > 4
+                    ? <span className="gma-chip">+{s.objectives.length - 4}</span>
+                    : null}
                 </div>
               )}
 
-              <div className="flex items-center gap-4">
-                <div className="sugg-avatar">
-                  {s.photo ? <img src={s.photo} alt="" /> : <span>{initials(s.name)}</span>}
+              {/* event badge (re-use EventMini) */}
+              {s.eventId ? (
+                <div className="gma-tags" style={{ marginTop: 6 }}>
+                  <EventMini eventId={s.eventId}>
+                    {(ev) => (
+                      <span className="gma-evbadge">
+                        {ev?.title || ev?.name || `Event ${String(s.eventId).slice(-6)}`}
+                      </span>
+                    )}
+                  </EventMini>
                 </div>
-                <div>
-                  <div className="font-semibold">{s.name}</div>
-                  <div className="muted small">
-                    {compactB2X(s.tag)} • {s.role}
-                  </div>
-                </div>
-              </div>
+              ) : null}
 
-              <div className="mt-2 flex gap-2 flex-wrap">
-                <button className="btn -ghost" onClick={() => onMessage?.(s.id)}>Message</button>
-                <button className="btn -pri" onClick={() => onBook?.(s.id)}>Book</button>
-                <button className="btn -ghost" onClick={() => onFav?.(s.id)}>♥</button>
+              {/* actions */}
+              <div className="gma-actions">
+                <button
+                  className="gma-btn -outline"
+                  title="View profile"
+                  onClick={() => onOpen?.(s.id)}
+                >
+                  <FiUser /> Profile
+                </button>
+                <button
+                  className="gma-btn -outline"
+                  title="Message"
+                  onClick={() => onMessage?.(s.id)}
+                >
+                  <FiMessageSquare /> Message
+                </button>
+                <button
+                  className="gma-btn"
+                  title="Book meeting"
+                  onClick={() => onBook?.(s.id)}
+                >
+                  <FiCalendar /> Book
+                </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
     </section>
   );
 }
+
 
 /* ------------------------ Reschedule Modal ------------------------ */
 function RescheduleModal({ meId, meeting, onClose, onSubmit }) {

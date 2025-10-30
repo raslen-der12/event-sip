@@ -49,6 +49,7 @@ export default function EventAttendeeQuickView({
   }, [open]);
 
   if (!open) return null;
+  console.log(item);
 
   const s = item || {};
   const photo =
@@ -60,7 +61,7 @@ export default function EventAttendeeQuickView({
   const role = s.BusinessRole || s.businessRole || "";
   const place = s.city || s.country || "";
   const openMeet = !!s.openMeetings;
-
+  const id = s.id || s.actorId || s.attendeeId || "";
   return (
     <div className="esq-overlay" role="dialog" aria-modal="true" aria-label="Attendee preview">
       <div className="esq-dialog" ref={ref}>
@@ -118,7 +119,7 @@ export default function EventAttendeeQuickView({
 
               {isLoggedIn ? (
                 <>
-                  <button className="esq-btn" onClick={onBook}>
+                  <button className="esq-btn" onClick={() => onBook?.(id)}>
                     <FiUserPlus />
                     Book meeting
                   </button>

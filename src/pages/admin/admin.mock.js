@@ -25,6 +25,7 @@ export const adminNav = [
       { id: "speakers",   label: "Speakers",   href: "/admin/members/speakers" },
       { id: "exhibitors", label: "Exhibitors", href: "/admin/members/exhibitors" },
       { id: "attendees",  label: "attendees",  href: "/admin/members/attendees" },
+      { id: "invites",  label: "generate invites codes",  href: "/admin/invites" },
     ],
   },
   {
@@ -44,6 +45,17 @@ export const adminNav = [
     ],
   },
   {
+    id: "B2B managment",
+    label: "B2B",
+    icon: "dashboard",
+    children: [
+      { id: "stats",   label: "B2B stats",           href: "/admin/b2b" },
+      { id: "scanActor", label: "confirm attandee QR",         href: "/admin/scanActor" },
+      { id: "scanMeet", label: "confirm meet QR",  href: "/admin/scanMeet" },
+      { id: "scanSession", label: "confirm session",  href: "/admin/scanSession" },
+    ],
+  },
+  {
     id : "forms",
     label: "Forms & Content",
     icon: "forms",
@@ -57,7 +69,7 @@ export const adminNav = [
 ];
 
 export const adminUser = {
-  name: "Ayoub",
+  name: "Raslen",
   role: "Super Admin",
   avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=256",
 };
