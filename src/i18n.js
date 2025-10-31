@@ -17,6 +17,7 @@ i18n
     detection: {
       order: ["localStorage","querystring","navigator"],
       lookupQuerystring: "lang",
+      lookupLocalStorage: "i18nextLng",
       caches: ["localStorage"],
     },
     ns: ["common"],

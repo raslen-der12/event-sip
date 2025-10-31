@@ -112,17 +112,87 @@ function groupItemsToSectors(items) {
   }
   return sectors;
 }
+const toStr = (v) => (v == null ? "" : String(v));
 
+/** Replace old calcOverviewCompleteness with this */
+function computeLowData(p, apiProfileRaw, overviewData = {}, products = [], services = [], gallery = [], teamResp = []) {
+  if (!p) return { coreSignals: 0, auxSignals: 0, totalSignals: 0, tooLow: true };
+
+  // Core signals: must reflect real “substance”
+  const coreSignals = [
+    (p.offering || []).length,     // offerings
+    (p.seeking || []).length,      // looking for
+    (p.industries || []).length,   // industries
+    products.length,               // products count
+    services.length,               // services count
+  ].filter((n) => Number(n) > 0).length;
+
+  // Social/contacts presence
+  const contacts = safeObj(apiProfileRaw?.contacts);
+  const hasSocial = ["linkedin","facebook","twitter","x","instagram","youtube","tiktok"]
+    .some((k) => toStr(contacts[k]).trim().length > 0);
+
+  const aboutLen = toStr(apiProfileRaw?.about).trim().length;
+
+  // Aux signals: supporting info
+  const auxSignals =
+    (gallery.length > 0 ? 1 : 0) +
+    ((overviewData.locations || []).length > 0 ? 1 : 0) +
+    ((overviewData.certifications || []).length > 0 ? 1 : 0) +
+    (
+      Array.isArray(overviewData?.innovation?.highlights)
+        ? (overviewData.innovation.highlights.length > 0 ? 1 : 0)
+        : (Object.keys(overviewData?.innovation || {}).length > 0 ? 1 : 0)
+    ) +
+    (p.website ? 1 : 0) +
+    (hasSocial ? 1 : 0) +
+    ((teamResp || []).length > 0 ? 1 : 0) +
+    (aboutLen >= 40 ? 1 : 0); // only count about if it has some length
+
+  const totalSignals = coreSignals + auxSignals;
+
+  // Rules:
+  // - require >= 2 core signals (ex: only 1 tag is not enough)
+  // - and totalSignals >= 4 to show overview
+  const tooLow = (coreSignals < 2) || (totalSignals < 4);
+
+  return { coreSignals, auxSignals, totalSignals, tooLow };
+}
+
+function LowDataNotice({ isOwnerView, onEdit }) {
+  return (
+    <div className="reg-empty my-5" style={{ borderStyle: "solid", textAlign: "center", padding: 24 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
+        {isOwnerView ? "Your business profile has very little information" : "This business profile has very little information"}
+      </div>
+      <div style={{ color: "#60708a", marginBottom: isOwnerView ? 14 : 0 }}>
+        {isOwnerView
+          ? "We can’t show the Overview because it isn’t informative yet. Add more details to make your profile useful to others."
+          : "We can’t show the Overview because the owner hasn’t added enough information yet."}
+      </div>
+      {isOwnerView && (
+        <button
+          type="button"
+          className="btn"
+          onClick={onEdit}
+          style={{ marginTop: 4 }}
+        >
+          Edit your business profile
+        </button>
+      )}
+    </div>
+  );
+}
 /* ===== MAIN PAGE ===== */
 export default function BusinessProfilePage({ profile, onMessage, onRequestMeet }) {
-  const t = useTranslation();
+  const {t} = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
   const { search } = useLocation();
   const qs = new URLSearchParams(search);
 
   // Only ID is considered per requirement
-  const idParam = params?.id || qs.get("id") || "";
+  const idParam = params?.BPI || qs.get("id") || "";
 
   // If there is NO id in params -> check my profile; if missing -> redirect
   const {
@@ -143,7 +213,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   const idProf = byIdData?.data || byIdData?.profile || (isObj(byIdData) ? byIdData : null);
 
   // Redirect path as specified
-  const BP_FORM_PATH = "/businessprofile/from";
+  const BP_FORM_PATH = "/businessprofile/form";
 
   // Redirect: no id + no owner profile
   React.useEffect(() => {
@@ -269,7 +339,6 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
       <main className="bp">
-        {/* ===== explicit id but no profile: replace all page content with message ===== */}
         {notFoundExplicit && (
           <div className="container" style={{ padding: "56px 0" }}>
             <div className="reg-empty" style={{ borderStyle: "solid", textAlign: "center" }}>
@@ -294,7 +363,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
         {!loading && !notFoundExplicit && p && (
           <>
             {/* HERO */}
-            <header className="bp-hero">
+            <header className="bp-hero mb-5">
               <div className="bp-banner" style={heroBg(p.banner)} aria-hidden="true" />
               <div className="container bp-hero-inner">
                 <div className="bp-brand">
@@ -380,6 +449,7 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                 gallery={gallery}
                 teamResp={teamResp}
                 navigate={navigate}
+                isOwnerView={!idParam}
               />
             </section>
           </>
@@ -408,6 +478,7 @@ function TabContent({
   gallery,
   teamResp,
   navigate,
+  isOwnerView,
 }) {
   const [tab] = useHashTab("overview");
 
@@ -435,25 +506,36 @@ function TabContent({
       };
     });
   }, [teamResp]);
-
+  const dataScore = React.useMemo(
+  () => computeLowData(p, apiProfileRaw, overviewData, products, services, gallery, teamResp),
+  [p, apiProfileRaw, overviewData, products, services, gallery, teamResp]
+);
+const tooLow = dataScore.tooLow;
   return (
     <>
       {tab === "overview" && (
-        <BusinessOverview
-          stats={overviewData || {}}
-          products={products}
-          services={services}
-          clients={[]}
-          industries={p.industries}
-          rating={overviewData?.rating?.avg ?? p.rating}
-          offerings={p.offering}
-          lookingFor={p.seeking}
-          capabilities={p.innovation}
-          innovation={overviewData?.innovation || {}}
-          locations={overviewData?.locations || []}
-          certifications={overviewData?.certifications || []}
-          gallery={gallery}
-        />
+        tooLow ? (
+          <LowDataNotice
+            isOwnerView={isOwnerView}
+            onEdit={() => navigate("/BusinessProfile/dashboard")}
+          />
+        ) : (
+          <BusinessOverview
+            stats={overviewData || {}}
+            products={products}
+            services={services}
+            clients={[]}
+            industries={p.industries}
+            rating={overviewData?.rating?.avg ?? p.rating}
+            offerings={p.offering}
+            lookingFor={p.seeking}
+            capabilities={p.innovation}
+            innovation={overviewData?.innovation || {}}
+            locations={overviewData?.locations || []}
+            certifications={overviewData?.certifications || []}
+            gallery={gallery}
+          />
+        )
       )}
 
       {tab === "sectors" && <BusinessSectors sectors={sectors} />}

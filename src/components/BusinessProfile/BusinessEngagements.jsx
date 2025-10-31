@@ -46,12 +46,12 @@ function toCSV(rows){
 export default function BusinessEngagements({
   heading="Engagements",
   subheading="Introductions, meetings, and follow-ups that move deals forward.",
-  items = DEMO,
+  items = '',//DEMO,
   onView,     // (item) => void
   onRebook,   // (item) => void
   onExport,   // (csvString) => void  (optional)
 }) {
-  const data = Array.isArray(items)&&items.length ? items : DEMO;
+  const data = Array.isArray(items)&&items.length ? items : '';//DEMO;
 
   // --- Filters ---
   const years = React.useMemo(()=>{

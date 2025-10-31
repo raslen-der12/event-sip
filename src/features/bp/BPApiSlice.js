@@ -277,7 +277,7 @@ searchPeople: builder.query({
    * Backend should return: { success:true, data:[ { entityType, entityId, role, name, title, avatarUpload, city, country, dept, skills, open } ] }
    */
   query: (profileId) => ({
-    url: `biz/bp/${profileId}/team`,
+    url: `/biz/bp/${profileId}/team`,
     method: 'GET',
   }),
   transformResponse: (resp) => resp?.data || [],

@@ -66,9 +66,9 @@ export default function BusinessContact({
   subheading = "Get in touch with the right team.",
   companyName = "",
   contacts,          // <-- raw from API (dashboard)
-  locations = DEMO_LOCATIONS,
-  collateral = DEMO_COLLATERAL,
-  topics = DEMO_TOPICS,
+  locations = '',//DEMO_LOCATIONS,
+  collateral = '',//DEMO_COLLATERAL,
+  topics = '',//DEMO_TOPICS,
   onSend,            // (payload) => void
   onMessage,         // (contactCard) => void
   onMeet             // (contactCard) => void
@@ -76,7 +76,7 @@ export default function BusinessContact({
   // Build person-like cards from dashboard contacts
   const cards = React.useMemo(() => {
     const grouped = groupContacts(contacts);
-    return grouped.length ? grouped : DEMO_CONTACTS;
+    return grouped.length ? grouped : '';//DEMO_CONTACTS;
   }, [contacts]);
 
   const [form, setForm] = React.useState({

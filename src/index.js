@@ -1,4 +1,5 @@
 import React , { useEffect } from 'react';
+import './i18n';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import "leaflet/dist/leaflet.css";
@@ -12,7 +13,6 @@ import { Provider , useStore } from "react-redux";
 import { store } from "./app/store";
 import { adminSocket } from './services/adminSocket';
 import LateRefreshBootstrap from "./app/LateRefreshBootstrap";
-
 import RootFrame from "./app/RootFrame";
 
 function SocketBootstrap() {

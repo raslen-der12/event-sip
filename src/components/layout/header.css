@@ -412,3 +412,26 @@
 .btn-brand.alt:hover{
   background:rgba(255,255,255,0.06);
 }
+/* topbar layout container now wraps lang + socials */
+.topbar .top-actions{
+  display:flex; align-items:center; gap:12px;
+}
+
+/* compact select */
+.lang-wrap { display:inline-flex; }
+.lang-select{
+  appearance:none;
+  font: 500 12px/1.2 Inter, system-ui, sans-serif;
+  padding:6px 8px;
+  border:1px solid rgba(0,0,0,.15);
+  border-radius:8px;
+  background:#fff;
+  min-width:58px;
+  cursor:pointer;
+}
+@media (prefers-color-scheme: dark){
+  .lang-select{
+    background:#111; color:#fafafa; border-color:rgba(255,255,255,.18);
+  }
+}
+.lang-select:focus{ outline:2px solid rgba(99,102,241,.45); outline-offset:2px; }

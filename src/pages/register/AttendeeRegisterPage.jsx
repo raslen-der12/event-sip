@@ -13,7 +13,8 @@ import imageLink from '../../utils/imageLink';
 import HeaderShell from '../../components/layout/HeaderShell';
 import { cta, footerData, nav, topbar } from '../main.mock';
 import Footer from '../../components/footer/Footer';
-
+import useCountries from '../../lib/hooks/useCountries';
+import CountrySelect from '../../components/CountrySelect';
 /* === Helpers === */
 const toISODate = v => (v ? new Date(v).toLocaleDateString() : '');
 const required = v => (typeof v === 'string' ? v.trim() : v) ? true : false;
@@ -92,55 +93,7 @@ const OBJECTIVES = [
 ];
 
 /* ===== Small controls reused ===== */
-function CountrySelect({ value, onChange, placeholder='Select country' }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState('');
-  const list = useMemo(() => {
-    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    return COUNTRIES.filter(c => rx.test(c.name) || rx.test(c.code));
-  }, [q]);
 
-  const selected = COUNTRIES.find(c => c.code === (value || '').toUpperCase()) || null;
-
-  return (
-    <div className="sel-wrap">
-      <div className="sel-head" onClick={() => setOpen(v => !v)}>
-        {!selected ? (
-          <span className="ph">{placeholder}</span>
-        ) : (
-          <span className="sel-flag">
-            <ReactCountryFlag svg countryCode={selected.code} style={{ fontSize: '1.2em' }} />
-            {selected.name} <span style={{ color:'#64748b', fontWeight:800 }}>({selected.code})</span>
-          </span>
-        )}
-        <span style={{ fontWeight:900, color:'#64748b' }}>{open ? '▲' : '▼'}</span>
-      </div>
-      {open && (
-        <div className="sel-pop">
-          <div className="sel-search">
-            <input
-              placeholder="Search country…"
-              value={q}
-              onChange={e => setQ(e.target.value)}
-            />
-          </div>
-          {list.map(c => (
-            <div
-              key={c.code}
-              className="sel-item"
-              onClick={() => { onChange(c.code); setOpen(false); setQ(''); }}
-            >
-              <ReactCountryFlag svg countryCode={c.code} style={{ fontSize:'1.1em' }} />
-              <span className="name">{c.name}</span>
-              <span className="code">{c.code}</span>
-            </div>
-          ))}
-          {!list.length && <div className="sel-item" style={{ color:'#64748b' }}>No results</div>}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function LanguageSelect({ value = [], onChange, max = 3 }) {
   const toggle = (code) => {
@@ -471,6 +424,11 @@ function SessionModal({ open, onClose, session, counts }) {
 
 /* ===== Main (single-page progressive flow) ===== */
 export default function AttendeeRegisterPage() {
+  const { countries, loading: countriesLoading } = useCountries({ locale: 'en' });
+   const safeCountries = useMemo(
+     () => (Array.isArray(countries) && countries.length ? countries : COUNTRIES),
+     [countries]
+   );
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
@@ -814,11 +772,16 @@ const trackSections = useMemo(() => {
               </div>
 
               <div className="att-field">
-                <label>Pays <span className="req">*</span></label>
+              <label className="mp-field">
+                <span className="mp-label">Pays</span>
                 <CountrySelect
-                  value={form.country}
-                  onChange={code => setField('country', (code || '').toUpperCase())}
-                />
+   value={form.country || ""}
+   onChange={(v) => setField("country", v?.target ? v.target.value : v)}
+   options={safeCountries}
+   placeholder="Select country"
+ />
+ {countriesLoading && <div className="hint">Loading countries…</div>}
+              </label>
                 {errs.country && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.country}</div>}
               </div>
 
