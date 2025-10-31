@@ -1,5 +1,5 @@
 import React from "react";
-import PropTypes from "prop-types";
+import PropTypes, { array } from "prop-types";
 import "./business-contact.css";
 
 /* tiny inline icons (no deps) */
@@ -115,7 +115,7 @@ export default function BusinessContact({
           <div className="card">
             <h4 className="card-title">Talk to a person</h4>
             <div className="people">
-              {cards.map((c)=>(
+              { !Array.isArray(cards) || !cards.length ? null : cards?.map((c)=>(
                 <article key={c.id || c.name} className="person">
                   <div className="avatar" aria-hidden="true">
                     {c.avatar
