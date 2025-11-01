@@ -561,9 +561,8 @@ export default function BusnessProfileEditor() {
   }
 
   async function onRemovePerson(m) {
-    console.log("m",m);
     await removeTeamMember({
-      entityType: m.role,
+      entityType: m.entityType,
       entityId: m.entityId,
     }).unwrap();
     await refetchTeam();
@@ -662,8 +661,7 @@ export default function BusnessProfileEditor() {
       return ind.filter((x) => x !== secKey && allowed.has(String(x)));
     })();
     setSubsectors(ss);
-    setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : []);
-        setLanguages(Array.isArray(profile.languages) ? profile.languages : []);
+setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : []);    setLanguages(Array.isArray(profile.languages) ? profile.languages : []);
     setOffering(Array.isArray(profile.offering) ? profile.offering : []);
     setSeeking(Array.isArray(profile.seeking) ? profile.seeking : []);
     setInnovation(Array.isArray(profile.innovation) ? profile.innovation : []);
@@ -1002,120 +1000,95 @@ export default function BusnessProfileEditor() {
         {/* Main grid */}
         <main className="bpe-main container">
           {/* Identity */}
-<section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 mb-3">
-  <h2 className="text-lg font-semibold text-gray-800 mb-6">Identity</h2>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {/* Name */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Name
-      </label>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Company / Brand name"
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
-
-    {/* Team Size */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Team size
-      </label>
-      <select
-        value={size}
-        onChange={(e) => setSize(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">Select team size</option>
-        {["1-10", "11-50", "51-200", "201-500", "500+"].map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Tagline */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Tagline
-      </label>
-      <input
-        type="text"
-        value={tagline}
-        onChange={(e) => setTagline(e.target.value)}
-        placeholder="Short one-liner"
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
-
-    {/* About */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        About
-      </label>
-      <textarea
-        rows={6}
-        value={about}
-        onChange={(e) => setAbout(e.target.value)}
-        placeholder="Tell visitors what you do, who you help, and why you're different."
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      ></textarea>
-    </div>
-
-    {/* Languages */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Languages
-      </label>
-      <MultiSelect
-        values={languages}
-        onChange={setLanguages}
-        options={languageOptions}
-      />
-    </div>
-
-    {/* Offering */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Offering (what you sell/do)
-      </label>
-      <ArrayInput values={offering} onChange={setOffering} />
-    </div>
-
-    {/* Seeking */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Seeking (what you want)
-      </label>
-      <ArrayInput values={seeking} onChange={setSeeking} />
-    </div>
-
-    {/* Innovation */}
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Innovation / Keywords
-      </label>
-      <ArrayInput values={innovation} onChange={setInnovation} />
-    </div>
-  </div>
-
-  {/* Save Button */}
-  <div className="flex justify-end mt-8">
-    <button
-      className="bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-      onClick={saveBasics}
-      disabled={busy}
-    >
-      Save Identity
-    </button>
-  </div>
-</section>
-
+          <section className="bpe-card">
+            <div className="bpe-card-title">Identity</div>
+            <div className="bpe-grid">
+              <Field label="Name">
+                <TextInput
+                  value={name}
+                  onChange={setName}
+                  placeholder="Company / Brand name"
+                />
+              </Field>
+              <Field label="Team size">
+                <Select
+                  value={size}
+                  onChange={setSize}
+                  options={["1-10", "11-50", "51-200", "201-500", "500+"]}
+                />
+              </Field>
+              <Field label="Tagline">
+                <TextInput
+                  value={tagline}
+                  onChange={setTagline}
+                  placeholder="Short one-liner"
+                />
+              </Field>
+              <Field label="About">
+                <TextArea
+                  rows={6}
+                  value={about}
+                  onChange={setAbout}
+                  placeholder="Tell visitors what you do, who you help, and why you're different."
+                />
+              </Field>
+              <Field label="Sector">
+                <select
+                  className="bpe-select"
+                  disabled={taxFetching}
+                  value={sector}
+                  onChange={(e) => {
+                    setSector(e.target.value);
+                    setSubsectors([]);
+                  }}
+                >
+                  <option value="">
+                    {taxFetching ? "Loading…" : "Select a sector"}
+                  </option>
+                  {sectorOptions.map((sec) => (
+                    <option key={sec} value={sec}>
+                      {titleize(sec)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Subsectors">
+                <MultiSelect
+                  values={subsectors}
+                  onChange={setSubsectors}
+                  options={subsectorOptions}
+                />
+              </Field>
+              <Field label="Countries">
+                <MultiSelect
+                  values={countries}
+                  onChange={setCountries}
+                  options={countryOptions}
+                />
+              </Field>
+              <Field label="Languages">
+                <MultiSelect
+                  values={languages}
+                  onChange={setLanguages}
+                  options={languageOptions}
+                />
+              </Field>
+              <Field label="Offering (what you sell/do)">
+                <ArrayInput values={offering} onChange={setOffering} />
+              </Field>
+              <Field label="Seeking (what you want)">
+                <ArrayInput values={seeking} onChange={setSeeking} />
+              </Field>
+              <Field label="Innovation / Keywords">
+                <ArrayInput values={innovation} onChange={setInnovation} />
+              </Field>
+            </div>
+            <div className="bpe-card-actions">
+              <button className="btn" onClick={saveBasics} disabled={busy}>
+                Save identity
+              </button>
+            </div>
+          </section>
 
           {/* Media */}
           <section className="bpe-card">
@@ -1187,538 +1160,494 @@ export default function BusnessProfileEditor() {
           </section>
 
           {/* Contacts & Socials */}
-<section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 mb-3">
-  <h2 className="text-lg font-semibold text-gray-800 mb-6">
-    Contacts & Socials
-  </h2>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-    {/* Contacts */}
-    <div>
-      <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-        Contacts
-      </h3>
-
-      {contacts.length === 0 && (
-        <p className="text-sm text-gray-400">No contacts yet.</p>
-      )}
-
-      {contacts.map((c, idx) => (
-        <div
-          key={idx}
-          className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3 bg-gray-50 p-3 rounded-xl border border-gray-100"
-        >
-          <select
-            className="w-full sm:w-1/4 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={c.kind || "email"}
-            onChange={(e) => updateContact(idx, { kind: e.target.value })}
-          >
-            <option value="email">Email</option>
-            <option value="phone">Phone</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-
-          <input
-            className="w-full sm:flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Value"
-            value={c.value || ""}
-            onChange={(e) => updateContact(idx, { value: e.target.value })}
-          />
-
-          <input
-            className="w-full sm:w-1/4 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Label (e.g., Sales)"
-            value={c.label || ""}
-            onChange={(e) => updateContact(idx, { label: e.target.value })}
-          />
-
-          <button
-            type="button"
-            className="text-red-600 text-sm font-medium hover:underline sm:ml-2"
-            onClick={() => removeContact(idx)}
-          >
-            Remove
-          </button>
-        </div>
-      ))}
-
-      <button
-        type="button"
-        className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700"
-        onClick={addContact}
-      >
-        + Add contact
-      </button>
-    </div>
-
-    {/* Socials */}
-    <div>
-      <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-        Socials
-      </h3>
-
-      {socials.length === 0 && (
-        <p className="text-sm text-gray-400">No socials yet.</p>
-      )}
-
-      {socials.map((s, idx) => (
-        <div
-          key={idx}
-          className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3 bg-gray-50 p-3 rounded-xl border border-gray-100"
-        >
-          <select
-            className="w-full sm:w-1/4 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={s.kind || "website"}
-            onChange={(e) => updateSocial(idx, { kind: e.target.value })}
-          >
-            <option value="website">Website</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="x">X (Twitter)</option>
-            <option value="facebook">Facebook</option>
-            <option value="instagram">Instagram</option>
-            <option value="youtube">YouTube</option>
-          </select>
-
-          <input
-            className="w-full sm:flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="https://..."
-            value={s.url || ""}
-            onChange={(e) => updateSocial(idx, { url: e.target.value })}
-          />
-
-          <button
-            type="button"
-            className="text-red-600 text-sm font-medium hover:underline sm:ml-2"
-            onClick={() => removeSocial(idx)}
-          >
-            Remove
-          </button>
-        </div>
-      ))}
-
-      <button
-        type="button"
-        className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700"
-        onClick={addSocial}
-      >
-        + Add social
-      </button>
-    </div>
-  </div>
-
-  {/* Save Button */}
-  <div className="flex justify-end mt-8">
-    <button
-      className="bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-      onClick={saveContacts}
-      disabled={savingContacts}
-    >
-      Save Contacts/Socials
-    </button>
-  </div>
-</section>
-
-<section className="bg-white shadow-md rounded-2xl p-6 border border-gray-100 space-y-6">
-  <div className="text-xl font-semibold text-gray-800 border-b pb-2">
-    Team
-  </div>
-
-  {/* Current team list */}
-  {team.length === 0 ? (
-    <div className="text-gray-400 italic">No team members yet.</div>
-  ) : (
-    <div className="space-y-3">
-      {team.map((m) => {
-        const name =
-          m?.name ||
-          m?.displayName ||
-          [m?.firstName, m?.lastName].filter(Boolean).join(" ") ||
-          "—";
-
-        const avatar =
-          imageLink(m?.avatarUpload) ||
-          imageLink(m?.photoUpload) ||
-          imageLink(m?.logoUpload) ||
-          imageLink((Array.isArray(m?.images) && m.images[0]) || "") ||
-          initialsAvatar(name);
-
-        const meta = [m?.entityType, m?.title || m?.position || m?.jobTitle, m?.role]
-          .filter(Boolean)
-          .join(" • ");
-
-        return (
-          <article
-            key={`${m.entityType}-${m.entityId}`}
-            className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-xl border hover:shadow-sm transition"
-          >
-            {/* Avatar */}
-            <div className="flex items-center gap-3 flex-1">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                <img
-                  src={avatar}
-                  alt={name}
-                  className="w-full h-full object-cover"
-                />
+          <section className="bpe-card">
+            <div className="bpe-card-title">Contacts & Socials</div>
+            <div className="bpe-two">
+              <div>
+                <div className="bpe-subtitle">Contacts</div>
+                {contacts.length === 0 && (
+                  <div className="bpe-muted">No contacts yet.</div>
+                )}
+                {contacts.map((c, idx) => (
+                  <div key={idx} className="bpe-row">
+                    <select
+                      className="bpe-select"
+                      value={c.kind || "email"}
+                      onChange={(e) =>
+                        updateContact(idx, { kind: e.target.value })
+                      }
+                    >
+                      <option value="email">email</option>
+                      <option value="phone">phone</option>
+                      <option value="whatsapp">whatsapp</option>
+                    </select>
+                    <input
+                      className="bpe-input"
+                      placeholder="value"
+                      value={c.value || ""}
+                      onChange={(e) =>
+                        updateContact(idx, { value: e.target.value })
+                      }
+                    />
+                    <input
+                      className="bpe-input"
+                      placeholder="label (e.g., Sales)"
+                      value={c.label || ""}
+                      onChange={(e) =>
+                        updateContact(idx, { label: e.target.value })
+                      }
+                    />
+                    <button
+                      className="btn btn-line"
+                      onClick={() => removeContact(idx)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button className="btn" onClick={addContact}>
+                  + Add contact
+                </button>
               </div>
 
-              <div className="flex flex-col">
-                <div className="font-medium text-gray-900">{name}</div>
-                {meta && <div className="text-sm text-gray-500">{meta}</div>}
+              <div>
+                <div className="bpe-subtitle">Socials</div>
+                {socials.length === 0 && (
+                  <div className="bpe-muted">No socials yet.</div>
+                )}
+                {socials.map((s, idx) => (
+                  <div key={idx} className="bpe-row">
+                    <select
+                      className="bpe-select"
+                      value={s.kind || "website"}
+                      onChange={(e) =>
+                        updateSocial(idx, { kind: e.target.value })
+                      }
+                    >
+                      <option value="website">website</option>
+                      <option value="linkedin">linkedin</option>
+                      <option value="x">x</option>
+                      <option value="facebook">facebook</option>
+                      <option value="instagram">instagram</option>
+                      <option value="youtube">youtube</option>
+                    </select>
+                    <input
+                      className="bpe-input"
+                      placeholder="https://..."
+                      value={s.url || ""}
+                      onChange={(e) =>
+                        updateSocial(idx, { url: e.target.value })
+                      }
+                    />
+                    <button
+                      className="btn btn-line"
+                      onClick={() => removeSocial(idx)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button className="btn" onClick={addSocial}>
+                  + Add social
+                </button>
               </div>
             </div>
 
-            <div>
+            <div className="bpe-card-actions">
               <button
-                className="px-3 py-1 border rounded-lg text-red-600 hover:bg-red-50 transition disabled:opacity-50"
-                disabled={removingMember}
-                onClick={() => onRemovePerson(m)}
+                className="btn"
+                onClick={saveContacts}
+                disabled={savingContacts}
               >
-                Remove
+                Save Contacts/Socials
               </button>
             </div>
-          </article>
-        );
-      })}
-    </div>
-  )}
+          </section>
+          <section className="bpe-card">
+            <div className="bpe-card-title">Team</div>
 
-  <div className="pt-4">
-    <button
-      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-      onClick={() => setTeamModalOpen(true)}
-    >
-      + Add team member
-    </button>
-  </div>
+            {/* Current team list */}
+            {team.length === 0 ? (
+  <div className="bpe-muted">No team members yet.</div>
+) : (
+  <div className="bpe-list">
+    {team.map((m) => {
+      const name =
+        m?.name ||
+        m?.displayName ||
+        [m?.firstName, m?.lastName].filter(Boolean).join(" ") ||
+        "—";
 
-  {/* Modal */}
-  {teamModalOpen && (
-    <TeamSelectModal
-      query={query}
-      setQuery={setQuery}
-      draftRole={draftRole}
-      setDraftRole={setDraftRole}
-      results={searchResults}
-      searching={searching}
-      onPick={async (p) => {
-        await onPickPerson(p);
-      }}
-      onClose={() => {
-        setTeamModalOpen(false);
-        setQuery("");
-        setDraftRole("");
-      }}
-    />
-  )}
-</section>
+      const avatar =
+        imageLink(m?.avatarUpload) ||
+        imageLink(m?.photoUpload) ||
+        imageLink(m?.logoUpload) ||
+        imageLink((Array.isArray(m?.images) && m.images[0]) || "") ||
+        initialsAvatar(name);
 
-          {/* Items */}
-<section className="bg-white shadow-md rounded-2xl p-6 space-y-6 border border-gray-100">
-  <div className="text-xl font-semibold text-gray-800 border-b pb-2">
-    Items (Products / Services)
-  </div>
+      const meta = [m?.entityType, m?.title || m?.position || m?.jobTitle, m?.role]
+        .filter(Boolean)
+        .join(" • ");
 
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    {/* Left: List of items */}
-    <div className="space-y-4">
-      <button
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-        onClick={() =>
-          setEditingItem({
-            title: "",
-            descr: "",
-            price: "",
-            tags: [],
-            images: [],
-            sector: "",
-            subsectorId: "",
-            kind: "product",
-          })
-        }
-      >
-        + New Item
-      </button>
-
-      <div className="space-y-3">
-        {(items || []).map((it) => {
-          const thumbSrc =
-            (it.thumbnailUpload ? imageLink(it.thumbnailUpload) : "") ||
-            (Array.isArray(it.images) && it.images.length
-              ? imageLink(it.images[0])
-              : "");
-
-          return (
-            <article
-              key={it._id}
-              className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border hover:shadow-sm transition"
+      return (
+        <article key={`${m.entityType}-${m.entityId}`} className="bpe-item">
+          <div className="bpe-gimg -round">
+            <img src={avatar} alt={name} />
+          </div>
+          <div className="bpe-item-main">
+            <div className="bpe-item-title">{name}</div>
+            {meta ? <div className="bpe-item-tax">{meta}</div> : null}
+          </div>
+          <div className="bpe-item-actions">
+            <button
+              className="btn btn-line"
+              disabled={removingMember}
+              onClick={() => onRemovePerson(m)}
             >
-              {thumbSrc ? (
-                <img
-                  src={thumbSrc}
-                  alt=""
-                  className="w-16 h-16 rounded-md object-cover border"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-md bg-gray-200 flex items-center justify-center text-gray-400 text-sm">
-                  No Img
-                </div>
-              )}
+              Remove
+            </button>
+          </div>
+        </article>
+      );
+    })}
+  </div>
+)}
 
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">
-                  {it.title || "Untitled"}
-                </div>
-                {it.sector || it.subsectorName ? (
-                  <div className="text-sm text-gray-500">
-                    {it.sector || ""}
-                    {it.sector && it.subsectorName ? " • " : ""}
-                    {it.subsectorName || ""}
-                  </div>
-                ) : null}
-                {it.pricingNote && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    {it.pricingNote}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  className="px-3 py-1 border rounded-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    const descr = it.details || it.summary || "";
-                    const price = it.pricingNote || "";
-                    const tags = Array.isArray(it.tags) ? it.tags : [];
-                    let nextSubId = it.subsectorId || "";
-
-                    if (!nextSubId && it.sector && it.subsectorName) {
-                      const row = sectorByKey.get(
-                        String(it.sector).toLowerCase()
-                      );
-                      const found = row?.subsectors?.find(
-                        (s) =>
-                          String(s.name).toLowerCase() ===
-                          String(it.subsectorName).toLowerCase()
-                      );
-                      if (found?._id) nextSubId = String(found._id);
-                    }
-
-                    setEditingItem({
-                      ...it,
-                      sector: String(it.sector || "").toLowerCase(),
-                      subsectorId: nextSubId,
-                      descr,
-                      price,
-                      tags,
-                    });
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="px-3 py-1 border rounded-lg text-red-600 hover:bg-red-50"
-                  onClick={() => onDeleteItem(it._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </div>
-
-    {/* Right: Item Editor */}
-    <div>
-      {!editingItem ? (
-        <div className="text-gray-400 italic">
-          Select or create an item to edit.
-        </div>
-      ) : (
-        <div className="space-y-5">
-          {itemErr && (
-            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-              {itemErr}
+            <div className="bpe-card-actions">
+              <button className="btn" onClick={() => setTeamModalOpen(true)}>
+                + Add team member
+              </button>
             </div>
-          )}
 
-          <Field label="Title">
-            <TextInput
-              value={editingItem.title || ""}
-              onChange={(v) => setEditingItem((s) => ({ ...s, title: v }))}
-            />
-          </Field>
+            {/* Modal */}
+            {teamModalOpen && (
+              <TeamSelectModal
+                query={query}
+                setQuery={setQuery}
+                draftRole={draftRole}
+                setDraftRole={setDraftRole}
+                results={searchResults}
+                searching={searching}
+                onPick={async (p) => {
+                  await onPickPerson(p);
+                }}
+                onClose={() => {
+                  setTeamModalOpen(false);
+                  setQuery("");
+                  setDraftRole("");
+                }}
+              />
+            )}
+          </section>
+          {/* Items */}
+          <section className="bpe-card">
+            <div className="bpe-card-title">Items (Products / Services)</div>
 
-          <Field label="Sector">
-            <select
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-              value={editingItem.sector || ""}
-              onChange={(e) =>
-                setEditingItem((s) => ({
-                  ...s,
-                  sector: e.target.value,
-                  subsectorId: "",
-                }))
-              }
-            >
-              <option value="">Select a sector</option>
-              {itemSectorOptions.map((sec) => (
-                <option key={sec} value={sec}>
-                  {titleize(sec)}
-                </option>
-              ))}
-            </select>
-          </Field>
+            <div className="bpe-two">
+              <div>
+                <button
+                  className="btn"
+                  onClick={() =>
+                    setEditingItem({
+                      title: "",
+                      descr: "",
+                      price: "",
+                      tags: [],
+                      images: [],
+                      sector: "",
+                      subsectorId: "",
+                      kind: "product",
+                    })
+                  }
+                >
+                  + New Item
+                </button>
 
-          <Field label="Subsector">
-            <select
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-              value={editingItem.subsectorId || ""}
-              onChange={(e) =>
-                setEditingItem((s) => ({
-                  ...s,
-                  subsectorId: e.target.value,
-                }))
-              }
-              disabled={!editingItem.sector}
-            >
-              <option value="">
-                {editingItem.sector
-                  ? "Select a subsector"
-                  : "Pick a sector first"}
-              </option>
-              {itemSubsectorOptions.map((ss) => (
-                <option key={ss._id} value={ss._id}>
-                  {ss.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+                <div className="bpe-list">
+                  {(items || []).map((it) => {
+                    // Prefer explicit thumbnailUpload; else first image if present
+                    const thumbSrc =
+                      (it.thumbnailUpload
+                        ? imageLink(it.thumbnailUpload)
+                        : "") ||
+                      (Array.isArray(it.images) && it.images.length
+                        ? imageLink(it.images[0])
+                        : "");
+                    return (
+                      <article key={it._id} className="bpe-item">
+                        {thumbSrc ? (
+                          <div className="bpe-gimg">
+                            <img src={thumbSrc} alt="" />
+                          </div>
+                        ) : (
+                          <div className="bpe-item-thumb -empty" />
+                        )}
 
-          <Field label="Kind">
-            <Select
-              value={editingItem.kind || "product"}
-              onChange={(v) => setEditingItem((s) => ({ ...s, kind: v }))}
-              options={["product", "service"]}
-            />
-          </Field>
+                        <div className="bpe-item-main">
+                          <div className="bpe-item-title">
+                            {it.title || "Untitled"}
+                          </div>
 
-          <Field label="Description">
-            <TextArea
-              rows={6}
-              value={editingItem.descr || ""}
-              onChange={(v) => setEditingItem((s) => ({ ...s, descr: v }))}
-            />
-          </Field>
+                          {it.sector || it.subsectorName ? (
+                            <div className="bpe-item-tax">
+                              {it.sector || ""}
+                              {it.sector && it.subsectorName ? " • " : ""}
+                              {it.subsectorName || ""}
+                            </div>
+                          ) : null}
 
-          <Field label="Price">
-            <TextInput
-              value={editingItem.price || ""}
-              onChange={(v) => setEditingItem((s) => ({ ...s, price: v }))}
-              placeholder="e.g., $499"
-            />
-          </Field>
+                          {it.pricingNote ? (
+                            <div className="bpe-item-price">
+                              {it.pricingNote}
+                            </div>
+                          ) : null}
+                        </div>
 
-          <Field label="Tags">
-            <ArrayInput
-              values={
-                Array.isArray(editingItem.tags) ? editingItem.tags : []
-              }
-              onChange={(v) => setEditingItem((s) => ({ ...s, tags: v }))}
-            />
-          </Field>
+                        <div className="bpe-item-actions">
+                          <button
+                            className="btn btn-line"
+                            onClick={() => {
+                              // map backend fields to editor fields
+                              const descr = it.details || it.summary || "";
+                              const price = it.pricingNote || "";
+                              const tags = Array.isArray(it.tags)
+                                ? it.tags
+                                : [];
 
-          {/* Images */}
-          <div>
-            <div className="font-medium text-gray-700 mb-2">Images</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {(editingItem.images || []).map((img, idx) => {
-                const src = imageLink(img?.url || img);
-                const idOrUpload =
-                  img?.imageId || img?.uploadId || img?.id || img;
-                return (
-                  <div
-                    key={`${String(idOrUpload)}-${idx}`}
-                    className="relative group"
-                  >
-                    <img
-                      src={src}
-                      alt="Item"
-                      className="rounded-lg object-cover w-full h-24 border"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition">
-                      <button
-                        className="text-white text-xs border px-2 py-1 rounded"
-                        onClick={() => onRemoveItemImage(idOrUpload)}
+                              // try to restore subsectorId from subsectorName if missing
+                              let nextSubId = it.subsectorId || "";
+                              if (!nextSubId && it.sector && it.subsectorName) {
+                                const row = sectorByKey.get(
+                                  String(it.sector).toLowerCase()
+                                );
+                                const found = row?.subsectors?.find(
+                                  (s) =>
+                                    String(s.name).toLowerCase() ===
+                                    String(it.subsectorName).toLowerCase()
+                                );
+                                if (found?._id) nextSubId = String(found._id);
+                              }
+
+                              setEditingItem({
+                                ...it,
+                                sector: String(it.sector || "").toLowerCase(),
+                                subsectorId: nextSubId,
+                                descr,
+                                price,
+                                tags,
+                              });
+                            }}
+                          >
+                            Edit
+                          </button>{" "}
+                          <button
+                            className="btn btn-line"
+                            onClick={() => onDeleteItem(it._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                {!editingItem ? (
+                  <div className="bpe-muted">
+                    Select or create an item to edit.
+                  </div>
+                ) : (
+                  <div className="bpe-item-editor">
+                    {itemErr ? (
+                      <div className="bpe-alert">{itemErr}</div>
+                    ) : null}
+
+                    <Field label="Title">
+                      <TextInput
+                        value={editingItem.title || ""}
+                        onChange={(v) =>
+                          setEditingItem((s) => ({ ...s, title: v }))
+                        }
+                      />
+                    </Field>
+
+                    <Field label="Sector">
+                      <select
+                        className="bpe-select"
+                        value={editingItem.sector || ""}
+                        onChange={(e) =>
+                          setEditingItem((s) => ({
+                            ...s,
+                            sector: e.target.value,
+                            subsectorId: "",
+                          }))
+                        }
                       >
-                        Remove
+                        <option value="">Select a sector</option>
+                        {itemSectorOptions.map((sec) => (
+                          <option key={sec} value={sec}>
+                            {titleize(sec)}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="Subsector">
+                      <select
+                        className="bpe-select"
+                        value={editingItem.subsectorId || ""}
+                        onChange={(e) =>
+                          setEditingItem((s) => ({
+                            ...s,
+                            subsectorId: e.target.value,
+                          }))
+                        }
+                        disabled={!editingItem.sector}
+                      >
+                        <option value="">
+                          {editingItem.sector
+                            ? "Select a subsector"
+                            : "Pick a sector first"}
+                        </option>
+                        {itemSubsectorOptions.map((ss) => (
+                          <option key={ss._id} value={ss._id}>
+                            {ss.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="Kind">
+                      <Select
+                        value={editingItem.kind || "product"}
+                        onChange={(v) =>
+                          setEditingItem((s) => ({ ...s, kind: v }))
+                        }
+                        options={["product", "service"]}
+                        placeholder="Select kind"
+                      />
+                    </Field>
+
+                    <Field label="Description">
+                      <TextArea
+                        rows={6}
+                        value={editingItem.descr || ""}
+                        onChange={(v) =>
+                          setEditingItem((s) => ({ ...s, descr: v }))
+                        }
+                      />
+                    </Field>
+
+                    <Field label="Price">
+                      <TextInput
+                        value={editingItem.price || ""}
+                        onChange={(v) =>
+                          setEditingItem((s) => ({ ...s, price: v }))
+                        }
+                        placeholder="e.g., $499"
+                      />
+                    </Field>
+
+                    <Field label="Tags">
+                      <ArrayInput
+                        values={
+                          Array.isArray(editingItem.tags)
+                            ? editingItem.tags
+                            : []
+                        }
+                        onChange={(v) =>
+                          setEditingItem((s) => ({ ...s, tags: v }))
+                        }
+                      />
+                    </Field>
+
+                    {/* Item images */}
+                    <div className="bpe-subtitle">Images</div>
+                    <div className="bpe-gallery">
+                      {(editingItem.images || []).map((img, idx) => {
+                        const src = imageLink(img?.url || img);
+                        const idOrUpload =
+                          img?.imageId || img?.uploadId || img?.id || img;
+                        return (
+                          <figure
+                            key={`${String(idOrUpload)}-${idx}`}
+                            className="bpe-gimg"
+                          >
+                            <img src={src} alt="Item" />
+                            <figcaption>
+                              <button
+                                type="button"
+                                className="btn btn-line"
+                                onClick={() => onRemoveItemImage(idOrUpload)}
+                              >
+                                Remove
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-line"
+                                onClick={() => onSetItemThumb(idOrUpload)}
+                              >
+                                Set thumbnail
+                              </button>
+                            </figcaption>
+                          </figure>
+                        );
+                      })}
+                    </div>
+
+                    {editingItem._id ? (
+                      <label
+                        className={`btn btn-line ${
+                          editingItem._id ? "" : "is-disabled"
+                        }`}
+                        title={
+                          editingItem._id ? "Upload images" : "Save item first"
+                        }
+                      >
+                        {" "}
+                        Add images
+                        <input
+                          hidden
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (!files.length) return;
+                            if (!editingItem._id) {
+                              alert("Save the item first, then add images.");
+                              e.target.value = "";
+                              return;
+                            }
+                            await onAddItemImages(files);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                    ) : (
+                      <div className="bpe-hint">
+                        Save the item first to upload images.
+                      </div>
+                    )}
+
+                    <div className="bpe-actions">
+                      <button className="btn" onClick={onSaveItem}>
+                        Save item
                       </button>
                       <button
-                        className="text-white text-xs border px-2 py-1 rounded"
-                        onClick={() => onSetItemThumb(idOrUpload)}
+                        className="btn btn-line"
+                        onClick={() => setEditingItem(null)}
                       >
-                        Set thumbnail
+                        Cancel
                       </button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-
-            {editingItem._id ? (
-              <label
-                className="mt-3 inline-block px-4 py-2 border rounded-lg text-gray-700 cursor-pointer hover:bg-gray-50"
-                title={
-                  editingItem._id ? "Upload images" : "Save item first"
-                }
-              >
-                Add images
-                <input
-                  hidden
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (!files.length) return;
-                    if (!editingItem._id) {
-                      alert("Save the item first, then add images.");
-                      e.target.value = "";
-                      return;
-                    }
-                    await onAddItemImages(files);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            ) : (
-              <div className="text-sm text-gray-400">
-                Save the item first to upload images.
+                )}
               </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              onClick={onSaveItem}
-            >
-              Save item
-            </button>
-            <button
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              onClick={() => setEditingItem(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-</section>
-
+            </div>
+          </section>
         </main>
       </div>
 
