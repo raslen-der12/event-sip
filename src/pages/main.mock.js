@@ -75,7 +75,7 @@ export const heroV2 = {
   eyebrow: "UPCOMING • 2025",
   title: "Host, discover, and grow",
   highlight: "together",
-  subtitle: "GITS event platform for devs and creators",
+  subtitle: "Eventra event platform for devs and creators",
   metaDate: "22–24 May 2025",
   metaLocation: "Queenbay Hall, USA",
   desc: "Hands-on sessions, real projects, and a community that ships. MERN, AI, cloud, and more.",

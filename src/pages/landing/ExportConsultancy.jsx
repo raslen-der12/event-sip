@@ -86,7 +86,7 @@ export default function ExportConsultancy() {
 
         {/* WHY CHOOSE US */}
         <h2 className="text-center text-3xl font-semibold mt-20 mb-10 text-[#1C3664]">
-          Why Choose GITS Export Consultancy
+          Why Choose Eventra Export Consultancy
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[

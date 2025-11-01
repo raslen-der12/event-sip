@@ -24,7 +24,7 @@ export default function TradeMissions() {
             Trade Missions
           </h1>
           <p className="text-lg md:text-xl mb-6 text-gray-100 max-w-xl mx-auto lg:mx-0">
-            Expand your business internationally with GITS Trade Missions. 
+            Expand your business internationally with Eventra Trade Missions. 
             Connect with partners, explore markets, and leverage AI-powered matchmaking 
             for real B2B opportunities.
           </p>

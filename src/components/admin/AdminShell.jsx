@@ -53,7 +53,7 @@ export default function AdminShell({ nav = [], user, children }) {
           {/* Use children if provided, otherwise nested routes */}
           {children ?? <Outlet />}
         </main>
-        <footer className="adm-foot">© {new Date().getFullYear()} GITS Admin</footer>
+        <footer className="adm-foot">© {new Date().getFullYear()} Eventra Admin</footer>
       </div>
 
       {mobileOpen && <button className="adm-backdrop" onClick={() => setMobileOpen(false)} aria-label="Close menu" />}

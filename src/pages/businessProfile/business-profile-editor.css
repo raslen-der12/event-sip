@@ -527,7 +527,7 @@
 .bpe-modal-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.5); backdrop-filter: blur(2px); }
 .bpe-modal-panel {
   position:relative; z-index:1; width:min(860px, 92vw); max-height:86vh; overflow:auto;
-  background:#0f1221; border:1px solid rgba(255,255,255,.08); border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+  background:#ffffff; border:1px solid rgba(255,255,255,.08); border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.35);
   padding:14px 14px 12px;
 }
 .bpe-modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -546,7 +546,7 @@
 .bpe-person-pic img { width:100%; height:100%; object-fit:cover; display:block; }
 .bpe-person-main { flex:1; min-width:0; }
 .bpe-person-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bpe-person-sub { color:#aab; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bpe-person-sub { color:rgb(32, 32, 32); font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 .bpe-modal-foot { display:flex; justify-content:flex-end; margin-top:12px; }
 

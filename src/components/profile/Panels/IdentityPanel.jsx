@@ -269,11 +269,10 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
                 <>
                   <TextRow label="Full name" value={personal.fullName} />
                   <TextRow label="Organization" value={org.orgName} />
-                  <TextRow label="Role / Title" value={org.businessRole} />
+                  <TextRow label="Role / Title" value={org.jobTitle} />
                   <TextRow label="Country" value={countryCode} extra={countryBadge} />
                   <TextRow label="City" value={personal.city} />
-                  <LinkRow label="Website" href={links.website} />
-                  <LinkRow label="LinkedIn" href={links.linkedin} />
+   
                 </>
               )}
               {isExh && (

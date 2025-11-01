@@ -68,6 +68,19 @@ const fmtLocalTime = (iso) => {
   }
 };
 
+/* ADD THIS BLOCK */
+const fmtBookedDate = (iso) => {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return "—";
+  }
+};
+
 const startOfWeekMonday = (d) => {
   const x = new Date(d || Date.now());
   const day = (x.getDay() + 6) % 7; // Monday=0
@@ -469,6 +482,11 @@ function MeetingRow({
             <FiCornerUpRight/> {String(m?.senderId) === String(myId) ? "Sent by you" : "Received by you"}
           </span>
         </div>
+        {m?.createdAt && (
+  <span className="mtg-chip -muted">
+    Booked on {fmtBookedDate(m.createdAt)}
+  </span>
+)}
 
         <div className="mtg-row">
           <span className="mtg-chip -muted"><FiMail/> {m?.subject || "—"}</span>
@@ -552,6 +570,11 @@ function MeetingModal({ meeting, onClose }) {
           {meeting?.roomId ? <p>Room: {meeting.roomId}</p> : null}
           <p className="muted">{meeting?.subject}</p>
           <p style={{marginTop:8}}>{meeting?.notes || "No additional notes."}</p>
+          {meeting?.createdAt && (
+          <p className="muted" style={{ marginTop: 6, fontSize: '0.875rem' }}>
+            Booked on {fmtBookedDate(meeting.createdAt)}
+          </p>
+        )}
         </div>
       </div>
 
@@ -837,7 +860,7 @@ export default function MeetingsPage() {
           <div className="mtg-filters">
             <input
               className="clean-input"
-              placeholder="Search attendee or subject"
+              placeholder="Search Meetings"
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
               aria-label="Search meetings"
