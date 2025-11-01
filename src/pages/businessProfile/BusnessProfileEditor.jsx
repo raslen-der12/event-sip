@@ -97,6 +97,23 @@ function Field({ label, children, hint }) {
   );
 }
 //add start
+const toKey = (v) =>
+  String(typeof v === "string" ? v : v?.value ?? v?.code ?? v?.key ?? v?.id ?? v?.name ?? v?.label ?? "")
+    .trim()
+    .toLowerCase();
+
+const normalizeOpt = (opt) => {
+  if (typeof opt === "string") {
+    const key = toKey(opt);
+    return { value: key, label: titleize(opt) };
+  }
+  // object option; prefer label/name for display, but use a stable key for value
+  const rawKey = opt.value ?? opt.code ?? opt.key ?? opt.id ?? opt.name ?? opt.label ?? "";
+  return {
+    value: toKey(rawKey),
+    label: opt.label || opt.name || titleize(rawKey),
+  };
+};
 async function uploadFilesCollectIdsAndPaths(uploadFile, files) {
   const uploadIds = [];
   const uploadPaths = [];
@@ -166,24 +183,31 @@ function Select({ value, onChange, options, placeholder = "Select…" }) {
   );
 }
 
-function MultiSelect({ values = [], onChange, options }) {
+function MultiSelect({ values = [], onChange, options = [] }) {
+  const list = options.map(normalizeOpt);
+  const selected = new Set((values || []).map(toKey));
+
   function toggle(v) {
-    const has = values.includes(v);
-    if (has) onChange(values.filter((x) => x !== v));
-    else onChange([...values, v]);
+    const k = toKey(v);
+    const next = new Set(selected);
+    if (next.has(k)) next.delete(k);
+    else next.add(k);
+    // we store canonical lowercase keys (stable + matches comparisons)
+    onChange(Array.from(next));
   }
+
   return (
     <div className="bpe-chipset">
-      {options.map((opt) => {
-        const active = values.includes(opt);
+      {list.map((o) => {
+        const active = selected.has(o.value);
         return (
           <button
             type="button"
-            key={opt}
+            key={o.value}
             className={`bp-chip ${active ? "is-active" : ""}`}
-            onClick={() => toggle(opt)}
+            onClick={() => toggle(o.value)}
           >
-            {opt}
+            {o.label}
           </button>
         );
       })}
@@ -579,6 +603,7 @@ export default function BusnessProfileEditor() {
   }, [sector, sectorByKey]);
 
   const [countries, setCountries] = useState([]);
+  console.log("countries",countries);
   const [languages, setLanguages] = useState([]);
   const [offering, setOffering] = useState([]);
   const [seeking, setSeeking] = useState([]);
@@ -636,8 +661,8 @@ export default function BusnessProfileEditor() {
       return ind.filter((x) => x !== secKey && allowed.has(String(x)));
     })();
     setSubsectors(ss);
-    setCountries(Array.isArray(profile.countries) ? profile.countries : []);
-    setLanguages(Array.isArray(profile.languages) ? profile.languages : []);
+    setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : []);
+        setLanguages(Array.isArray(profile.languages) ? profile.languages : []);
     setOffering(Array.isArray(profile.offering) ? profile.offering : []);
     setSeeking(Array.isArray(profile.seeking) ? profile.seeking : []);
     setInnovation(Array.isArray(profile.innovation) ? profile.innovation : []);
