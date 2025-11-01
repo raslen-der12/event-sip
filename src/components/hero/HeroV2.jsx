@@ -1,7 +1,7 @@
 // src/components/hero/HeroB2B.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link  } from "react-router-dom";
 import {
   useQuickSearchQuery,
   useRegisterSearchClickMutation,
@@ -17,6 +17,7 @@ import "./hero-v2.css";
  * - Deduplicates tags and keeps them inside the styled container.
  * - Removed duplicate QUICK_MAP key and tightened fallback.
  */
+const DEF_EVENT = process.env.DEFAULT_EVENT_ID || "68e6764bb4f9b08db3ccec04";
 
 export default function HeroB2B({
   title = "Find the right B2B partners — fast",
@@ -52,15 +53,29 @@ export default function HeroB2B({
     );
     return uniq.slice(0, 4);
   };
-
+  const liveTags = ["Program", "Attendees", "IPDAYS", "Events"];
+  const hrefForTag = (t) => {
+  switch (String(t).toLowerCase()) {
+    case "program":
+      return `/event/${DEF_EVENT}/schedule`;
+    case "attendees":
+      return `/event/${DEF_EVENT}/attendees`;
+    case "ipdays":
+      return `/event/${DEF_EVENT}`;
+    case "events":
+      return `/events?when=all`;
+    default:
+      return "#";
+  }
+};
   // decide the single source of truth once (no mixing):
-  const liveTags = React.useMemo(() => {
-    const fromProp = pickFour(Array.isArray(tags) ? tags : []);
-    if (fromProp.length) return fromProp;
-    const fromServer = pickFour(Array.isArray(dynTagsRaw) ? dynTagsRaw : []);
-    if (fromServer.length) return fromServer;
-    return pickFour(DEMO_TAGS);
-  }, [tags, dynTagsRaw]);
+  // const liveTags = React.useMemo(() => {
+  //   const fromProp = pickFour(Array.isArray(tags) ? tags : []);
+  //   if (fromProp.length) return fromProp;
+  //   const fromServer = pickFour(Array.isArray(dynTagsRaw) ? dynTagsRaw : []);
+  //   if (fromServer.length) return fromServer;
+  //   return pickFour(DEMO_TAGS);
+  // }, [tags, dynTagsRaw]);
 
   /* ---------- Actions ---------- */
   const DEFAULT_ACTIONS = [
@@ -197,19 +212,18 @@ export default function HeroB2B({
         {/* Tags (dynamic or prop), EXACTLY up to 4, same styling */}
         <div className="hb-tags" role="list" aria-busy={tagsLoading ? "true" : "false"}>
           {liveTags.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="listitem"
-              className={`hb-tag ${active === t ? "on" : ""}`}
-              onClick={() => toggleTag(t)}
-              aria-pressed={active === t ? "true" : "false"}
-              title={`Filter by ${t}`}
-            >
-              {t}
-              <span className="shine" aria-hidden="true" />
-            </button>
-          ))}
+              <Link
+                key={t}
+                role="listitem"
+                className="hb-tag"
+                to={hrefForTag(t)}
+                title={`Open ${t}`}
+                aria-label={`Open ${t}`}
+              >
+                {t}
+                <span className="shine" aria-hidden="true" />
+              </Link>
+            ))}
         </div>
 
         {/* Quick Actions */}

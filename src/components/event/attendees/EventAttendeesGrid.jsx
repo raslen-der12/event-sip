@@ -105,7 +105,7 @@ export default function EventAttendeesGrid({
                 <button
                   type="button"
                   className="esg-media"
-                  style={{ backgroundImage: `url(${imageLink(photo)})` }}
+                  style={{ backgroundImage: `url(${imageLink(photo)})`,backgroundPosition:"top" }}
                   onClick={() => onPreview?.(s, idx)}
                   aria-label={`Preview ${name}`}
                 >

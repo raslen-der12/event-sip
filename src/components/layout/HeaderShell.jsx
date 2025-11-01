@@ -368,13 +368,10 @@ export default function HeaderShell({ top, nav, cta }) {
           <div className="row">
             <div className="left">
               <span className="item">
-                <Icon.phone />
+                <Icon.mail />
                 {top?.phone}
               </span>
-              <span className="item d-none d-sm-flex">
-                <Icon.mail />
-                {top?.email}
-              </span>
+              
               <span className="item d-none d-md-flex">
                 <Icon.clock />
                 {top?.hours}
