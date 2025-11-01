@@ -1,10 +1,12 @@
 // src/pages/products/ProductPage.jsx
-import React, { useMemo } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import React from "react";
+import { useParams, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderShell from "../../components/layout/HeaderShell";
 import Footer from "../../components/footer/Footer";
 import { topbar, nav, cta, footerData } from "../main.mock";
+import { useGetMarketItemQuery } from "../../features/bp/BPApiSlice";
+import imageLink from "../../utils/imageLink";
 import "./product-page.css";
 
 const I = {
@@ -31,127 +33,76 @@ const I = {
   ),
 };
 
-/* ---------------------- Product fallbacks (unchanged) ---------------------- */
-function pickFallback(productId, passed) {
-  if (passed) return passed;
-  const global = Array.isArray(window.__MK_PRODUCTS)
-    ? window.__MK_PRODUCTS.find((p) => p.id === productId)
-    : null;
-  if (global) return global;
-  try {
-    const raw = sessionStorage.getItem("mk:lastProduct");
-    const obj = raw ? JSON.parse(raw) : null;
-    if (obj && obj.id === productId) return obj;
-  } catch {}
-  return null;
-}
-
-/* ---------------------- Business Profile Mock ---------------------- */
-/* Keep it simple but useful. */
-const BP_MOCK = [
-  {
-    id: 1,
-    orgName: "YourCo Industries",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=YourCo",
-    tagline: "Powering tomorrow’s infrastructure.",
-    country: "DE",
-    city: "Berlin",
-    website: "https://yourco.example",
-    email: "sales@yourco.example",
-    overview:
-      "YourCo builds modular hardware and cloud software for utilities and critical infrastructure. We deliver secure, standards-compliant systems deployed in 40+ countries.",
-    offerings: ["Industrial gateways", "DER control", "Telemetry SaaS"],
-    badges: ["ISO 27001", "CE", "RoHS"],
-  },
-  {
-    id: 2,
-    orgName: "HelioGrid",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=HelioGrid",
-    tagline: "Cleaner grids, smarter storage.",
-    country: "DE",
-    city: "Leipzig",
-    website: "https://heliogrid.example",
-    email: "contact@heliogrid.example",
-    overview:
-      "HelioGrid designs advanced battery management systems and fleet software for utility-scale storage and C&I applications.",
-    offerings: ["BMS hardware", "Fleet analytics", "Commissioning services"],
-    badges: ["UL", "IEC 62619"],
-  },
-  {
-    id: 3,
-    orgName: "FlowOps",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=FlowOps",
-    tagline: "Observe. Decide. Act.",
-    country: "US",
-    city: "Austin",
-    website: "https://flowops.example",
-    email: "hello@flowops.example",
-    overview:
-      "FlowOps is a SaaS suite for grid monitoring and real-time alerting. Utilities and IPPs use FlowOps to orchestrate DER and reduce downtime.",
-    offerings: ["Monitoring", "Alerting", "APIs"],
-    badges: ["SOC 2", "GDPR-ready"],
-  },
-  {
-    id: 4,
-    orgName: "Voltix",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=Voltix",
-    tagline: "Measure to manage.",
-    country: "IT",
-    city: "Milan",
-    website: "https://voltix.example",
-    email: "sales@voltix.example",
-    overview:
-      "Voltix manufactures precision current transformers and metering accessories used by energy auditors and OEMs worldwide.",
-    offerings: ["CT sensors", "Meters", "Calibration"],
-    badges: ["CE", "MID"],
-  },
-  {
-    id: 5,
-    orgName: "SunFleet",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=SunFleet",
-    tagline: "Orchestrate your DER.",
-    country: "ES",
-    city: "Madrid",
-    website: "https://sunfleet.example",
-    email: "info@sunfleet.example",
-    overview:
-      "SunFleet provides rule-based DER controllers and virtual power plant readiness for solar + storage deployments.",
-    offerings: ["DER controller", "Rule engine", "Integration"],
-    badges: ["CE", "UL"],
-  },
-  {
-    id: 6,
-    orgName: "AmpRoad",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=AmpRoad",
-    tagline: "Fast, reliable charging.",
-    country: "FR",
-    city: "Lyon",
-    website: "https://amproad.example",
-    email: "contact@amproad.example",
-    overview:
-      "AmpRoad builds DC fast chargers with OCPP backends and smart billing for fleet and public charging networks.",
-    offerings: ["DC chargers", "OCPP backend", "Maintenance"],
-    badges: ["CE", "IEC"],
-  },
-];
-
-/* Deterministic picker:
-   Use the product title length → map to a BP id in 1..BP_MOCK.length */
-function pickBusinessProfile(product) {
-  const len = (product?.title || product?.name || "").length;
-  const id = (len % BP_MOCK.length) + 1; // 1..N
-  return BP_MOCK.find((b) => b.id === id) || BP_MOCK[0];
-}
+const cap = (s="") => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 export default function ProductPage({ fallbackProduct }) {
   const { productId } = useParams();
-  const location = useLocation();
+  const location = useLocation(); // kept to not disturb your router usage
 
-  const product = useMemo(() => {
-    const fromState = location.state?.product || null;
-    const p = pickFallback(productId, fromState) || fallbackProduct || null;
-    return p;
-  }, [productId, location.state, fallbackProduct]);
+  const { data: item, isFetching } = useGetMarketItemQuery(productId);
+
+  // derive display fields from API shape you provided
+  const profile = item?.profile || {};
+  const imgs = Array.isArray(item?.images) ? item.images : [];
+  const cover = imgs[0] ? imageLink(imgs[0]) : "";
+  const companyName = profile?.name || "";
+  const companyHref = profile?.slug || profile?.id ? `/businessprofile/${ profile.id}#sectors` : "#";
+  const country = Array.isArray(profile?.countries) && profile.countries.length ? cap(String(profile.countries[0])) : "";
+  const city = ""; // API sample doesn't include city
+
+  // map optional sections to your existing UI expectations
+  const product = item ? {
+    title: item.title || "—",
+    company: companyName || "—",
+    companyId: profile?.slug || profile?.id || "",
+    sector: cap(item.sector || "—"),
+    city,
+    country,
+    cover,
+    description: item.summary || "",
+    summary: item.summary || "",
+    features: Array.isArray(item.tags) ? item.tags : [],       // reuse tags as features (optional)
+    specs: {},                                                // API has no specs; keeps your "empty" state
+    gallery: imgs.map(imageLink),                             // for the gallery grid
+  } : null;
+
+  // business profile block (keep classes, just fill with available data)
+  const bp = {
+    orgName: profile?.name || "—",
+    logo: profile?.logoUpload ? imageLink(profile.logoUpload) : "",
+    tagline: Array.isArray(profile?.industries) && profile.industries.length
+      ? profile.industries.map(cap).join(" • ")
+      : "",
+    city: "", // not in payload
+    country: country || "",
+    website: "", // not in payload
+    email: "",   // not in payload
+    offerings: Array.isArray(item?.tags) ? item.tags : [],
+    badges: Array.isArray(profile?.languages) ? profile.languages.map(cap) : [],
+    openHref: companyHref,
+  };
+
+  if (isFetching) {
+    return (
+      <>
+        <HeaderShell top={topbar} nav={nav} cta={cta} />
+        <main className="ppg">
+          <div className="container">
+            <div className="ppg-body">
+              <div className="ppg-card ppg-empty">Loading…</div>
+            </div>
+          </div>
+        </main>
+        <Footer
+          brand={footerData.brand}
+          columns={footerData.columns}
+          socials={footerData.socials}
+          actions={footerData.actions}
+          bottomLinks={footerData.bottomLinks}
+        />
+      </>
+    );
+  }
 
   if (!product) {
     return (
@@ -176,13 +127,8 @@ export default function ProductPage({ fallbackProduct }) {
   }
 
   const bannerStyle = product.cover
-    ? {
-        backgroundImage: `linear-gradient(180deg, rgba(22,36,65,.35), rgba(22,36,65,.80)), url(${product.cover})`,
-      }
+    ? { backgroundImage: `linear-gradient(180deg, rgba(22,36,65,.35), rgba(22,36,65,.80)), url(${product.cover})` }
     : { backgroundImage: `linear-gradient(135deg, var(--brand), var(--brand-2))` };
-
-  const gallery = Array.isArray(product.gallery) ? product.gallery : [];
-  const bp = pickBusinessProfile(product);
 
   return (
     <>
@@ -206,7 +152,9 @@ export default function ProductPage({ fallbackProduct }) {
               </div>
             </div>
             <div className="ppg-cta">
-              <a className="ppg-btn" href={`/BusinessProfile/${product.companyId}`}>View company</a>
+              {product.companyId ? (
+                <a className="ppg-btn" href={companyHref}>View company</a>
+              ) : null}
               <a className="ppg-btn ppg-btn-ghost" href="/marketplace">Back to marketplace</a>
             </div>
           </div>
@@ -218,7 +166,7 @@ export default function ProductPage({ fallbackProduct }) {
             {/* LEFT: Overview */}
             <div className="ppg-card">
               <h3 className="ppg-h">Overview</h3>
-              <p className="ppg-text">{product.description || product.summary}</p>
+              <p className="ppg-text">{product.description || product.summary || "—"}</p>
 
               {Array.isArray(product.features) && product.features.length ? (
                 <>
@@ -233,11 +181,11 @@ export default function ProductPage({ fallbackProduct }) {
                 </>
               ) : null}
 
-              {gallery.length ? (
+              {product.gallery.length ? (
                 <>
                   <h4 className="ppg-sub">Gallery</h4>
                   <div className="ppg-gallery">
-                    {gallery.map((g, i) => (
+                    {product.gallery.map((g, i) => (
                       <figure className="ppg-gimg" key={`${i}-${g}`}>
                         <img src={g} alt={`${product.title} ${i + 1}`} />
                       </figure>
@@ -263,57 +211,64 @@ export default function ProductPage({ fallbackProduct }) {
                 <div className="ppg-empty">No technical specs provided.</div>
               )}
             </aside>
-
-            {/* RIGHT: Business Profile (NEW) */}
-            
           </div>
-          <aside className="ppg-card bp my-2">
-              <div className="bp-head">
-                <img className="bp-logo" src={bp.logo} alt={bp.orgName} />
-                <div className="bp-meta">
-                  <h3 className="bp-name">{bp.orgName}</h3>
-                  <p className="bp-tagline">{bp.tagline}</p>
-                </div>
-              </div>
 
+          {/* Business Profile (kept layout/classes, populated from API) */}
+          <aside className="ppg-card bp my-2">
+            <div className="bp-head">
+              <img className="bp-logo" src={bp.logo} alt={bp.orgName} />
+              <div className="bp-meta">
+                <h3 className="bp-name">{bp.orgName}</h3>
+                {bp.tagline ? <p className="bp-tagline">{bp.tagline}</p> : null}
+              </div>
+            </div>
+
+            {bp.badges?.length ? (
               <div className="bp-badges">
-                {bp.badges?.map((b) => (
+                {bp.badges.map((b) => (
                   <span key={b} className="chip chip-soft">{b}</span>
                 ))}
               </div>
+            ) : null}
 
-              <div className="bp-overview">
-                <p>{bp.overview}</p>
-              </div>
-
+            {bp.offerings?.length ? (
               <div className="bp-offerings">
                 <h4 className="bp-sub">Offerings</h4>
                 <ul className="bp-list">
-                  {bp.offerings?.map((o) => (
+                  {bp.offerings.map((o) => (
                     <li key={o}><I.check /> {o}</li>
                   ))}
                 </ul>
               </div>
+            ) : null}
 
+            {(bp.country || bp.city || bp.website || bp.email) ? (
               <div className="bp-info">
-                <div className="bp-row">
-                  <I.map /><span>{bp.city}, {bp.country}</span>
-                </div>
-                <a className="bp-row" href={bp.website} target="_blank" rel="noreferrer">
-                  <I.globe /><span>{bp.website.replace(/^https?:\/\//, "")}</span>
-                </a>
-                <a className="bp-row" href={`mailto:${bp.email}`}>
-                  <I.mail /><span>{bp.email}</span>
-                </a>
+                {(bp.city || bp.country) ? (
+                  <div className="bp-row">
+                    <I.map /><span>{[bp.city, bp.country].filter(Boolean).join(", ")}</span>
+                  </div>
+                ) : null}
+                {bp.website ? (
+                  <a className="bp-row" href={bp.website} target="_blank" rel="noreferrer">
+                    <I.globe /><span>{bp.website.replace(/^https?:\/\//, "")}</span>
+                  </a>
+                ) : null}
+                {bp.email ? (
+                  <a className="bp-row" href={`mailto:${bp.email}`}>
+                    <I.mail /><span>{bp.email}</span>
+                  </a>
+                ) : null}
               </div>
+            ) : null}
 
-              <div className="bp-actions">
-                <a className="ppg-btn" href={`/BusinessProfile/${product.companyId}`}>Open Business Profile</a>
-                <a className="ppg-btn ppg-btn-ghost" href="/messages">
-                  Contact Supplier
-                </a>
-              </div>
-            </aside>
+            <div className="bp-actions">
+              {product.companyId ? (
+                <a className="ppg-btn" href={companyHref}>Open Business Profile</a>
+              ) : null}
+              <a className="ppg-btn ppg-btn-ghost" href="/messages">Contact Supplier</a>
+            </div>
+          </aside>
         </section>
       </main>
 

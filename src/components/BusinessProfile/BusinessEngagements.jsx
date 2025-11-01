@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import "./business-engagements.css";
 
-/* tiny inline icons (no deps) */
 const I = {
   search: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M20 20l-3-3" stroke="currentColor" strokeWidth="2"/></svg>),
   filter: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 5h18M6 12h12M9 19h6" stroke="currentColor" strokeWidth="2"/></svg>),
@@ -14,18 +13,6 @@ const I = {
   link: () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10 14a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1M14 10a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1" stroke="currentColor"/></svg>),
 };
 
-/* ---- Fallback Demo ---- */
-const DEMO = [
-  { id:"e1", type:"intro",    title:"Intro: YourCo × Nova Steel",    counterpart:{ name:"Nova Steel", org:"Nova Steel" }, dateISO:"2025-05-22", mode:"virtual", status:"completed", notes:"Introduced buyer PM to sales lead.", tags:["steel","supply"] },
-  { id:"e2", type:"meeting",  title:"Discovery Call",                counterpart:{ name:"J. Patel", org:"Apex Motors" },  dateISO:"2025-06-04", mode:"in-person", status:"completed", notes:"Qualifying EV chassis needs.", tags:["EV","OEM"] },
-  { id:"e3", type:"followup", title:"RFP Clarification",             counterpart:{ name:"Procurement", org:"Apex Motors" },dateISO:"2025-06-11", mode:"virtual", status:"completed", notes:"Shared BOM and timelines.", tags:["RFP"] },
-  { id:"e4", type:"meeting",  title:"Tech Deep-dive",                counterpart:{ name:"Core Eng.", org:"HelioGrid" },   dateISO:"2025-07-02", mode:"virtual", status:"scheduled", notes:"Grid API security scope.", tags:["energy","api"] },
-  { id:"e5", type:"deal",     title:"Pilot Agreement Signed",        counterpart:{ name:"HelioGrid", org:"HelioGrid" },   dateISO:"2025-07-17", mode:"in-person", status:"won", notes:"3-month pilot; 2 sites.", tags:["pilot"] },
-  { id:"e6", type:"meeting",  title:"Demo Session",                  counterpart:{ name:"L. Gomez", org:"NorthBay Health"},dateISO:"2025-08-09", mode:"virtual", status:"no-show", notes:"Reschedule requested.", tags:["health"] },
-  { id:"e7", type:"intro",    title:"Intro: YourCo × EastWorks",     counterpart:{ name:"EastWorks", org:"EastWorks" },   dateISO:"2025-08-22", mode:"virtual", status:"completed", notes:"SaaS pricing sent.", tags:["SaaS"] },
-  { id:"e8", type:"followup", title:"Proposal Review",               counterpart:{ name:"Board", org:"EastWorks" },       dateISO:"2025-09-05", mode:"virtual", status:"in-progress", notes:"Legal redlines pending.", tags:["proposal"] },
-];
-
 const TYPE_LABEL = { intro:"Introduction", meeting:"Meeting", followup:"Follow-up", deal:"Deal" };
 const STATUS_LABEL = { completed:"Completed", scheduled:"Scheduled", "in-progress":"In progress", won:"Won", lost:"Lost", "no-show":"No-show" };
 
@@ -33,12 +20,12 @@ function toCSV(rows){
   const cols = ["id","type","title","counterpart","date","mode","status","tags"];
   const esc = (v)=> `"${String(v??"").replaceAll('"','""')}"`;
   const lines = [cols.join(",")].concat(
-    rows?.map(r=>[
+    (rows||[]).map(r=>[
       r.id, r.type, r.title,
       (r.counterpart?.org||r.counterpart?.name||""),
       (r.dateISO||""), (r.mode||""), (r.status||""),
       (r.tags||[]).join("|")
-    ]?.map(esc).join(","))
+    ].map(esc).join(","))
   );
   return lines.join("\r\n");
 }
@@ -46,18 +33,18 @@ function toCSV(rows){
 export default function BusinessEngagements({
   heading="Engagements",
   subheading="Introductions, meetings, and follow-ups that move deals forward.",
-  items = '',//DEMO,
-  onView,     // (item) => void
-  onRebook,   // (item) => void
-  onExport,   // (csvString) => void  (optional)
+  items = [],
+  onView,
+  onRebook,
+  onExport,
 }) {
-  const data = Array.isArray(items)&&items.length ? items : '';//DEMO;
+  const data = Array.isArray(items) ? items : [];
 
-  // --- Filters ---
   const years = React.useMemo(()=>{
-    const set = new Set(data?.map(d=> (d.dateISO? new Date(d.dateISO).getFullYear(): null)).filter(Boolean));
+    const set = new Set(data.map(d=> (d.dateISO? new Date(d.dateISO).getFullYear(): null)).filter(Boolean));
     return ["All", ...Array.from(set).sort((a,b)=>b-a)];
   },[data]);
+
   const [q,setQ] = React.useState("");
   const [year,setYear] = React.useState(years[0]||"All");
   const [type,setType] = React.useState("All");
@@ -72,7 +59,7 @@ export default function BusinessEngagements({
         const okYear = year==="All" || y===year;
         const okType = type==="All" || r.type===type;
         const okStatus = status==="All" || r.status===status;
-        const blob = [r.title, r.counterpart?.org, r.counterpart?.name, r.tags?.join(" ")].join(" ").toLowerCase();
+        const blob = [r.title, r.counterpart?.org, r.counterpart?.name, r.tags?.join(" ")].filter(Boolean).join(" ").toLowerCase();
         const okQ = !t || blob.includes(t);
         return okYear && okType && okStatus && okQ;
       })
@@ -83,20 +70,16 @@ export default function BusinessEngagements({
       });
   },[data,q,year,type,status,sort]);
 
-  // --- Stats header ---
   const stats = React.useMemo(()=>{
     const total = filtered.length;
     const meetings = filtered.filter(r=>r.type==="meeting").length;
     const intros = filtered.filter(r=>r.type==="intro").length;
     const won = filtered.filter(r=>r.status==="won").length;
-    const completion = (()=> {
-      const done = filtered.filter(r=>["completed","won","lost"].includes(r.status)).length;
-      return total? Math.round((done/total)*100) : 0;
-    })();
+    const done = filtered.filter(r=>["completed","won","lost"].includes(r.status)).length;
+    const completion = total? Math.round((done/total)*100) : 0;
     return { total, meetings, intros, won, completion };
   },[filtered]);
 
-  // --- export ---
   const doExport = () => {
     const csv = toCSV(filtered);
     if (onExport) { onExport(csv); return; }
@@ -120,7 +103,6 @@ export default function BusinessEngagements({
         </button>
       </header>
 
-      {/* summary tiles */}
       <div className="beng-tiles">
         <div className="tile"><div className="t-k">Total</div><div className="t-v">{stats.total}</div></div>
         <div className="tile"><div className="t-k">Meetings</div><div className="t-v">{stats.meetings}</div></div>
@@ -129,7 +111,6 @@ export default function BusinessEngagements({
         <div className="tile"><div className="t-k">Completion</div><div className="t-v">{stats.completion}%</div></div>
       </div>
 
-      {/* toolbar */}
       <div className="beng-toolbar">
         <div className="search">
           <I.search/>
@@ -153,9 +134,8 @@ export default function BusinessEngagements({
         </div>
       </div>
 
-      {/* list */}
       <div className="beng-list">
-        {filtered?.map(item=>{
+        {filtered.map(item=>{
           const d = item.dateISO ? new Date(item.dateISO) : null;
           const dateStr = d ? d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"2-digit"}) : "—";
           return (

@@ -78,6 +78,7 @@ import AdminScanActor from './pages/admin/scan/AdminScanActor';
 import AdminScanMeet from './pages/admin/scan/AdminScanMeet';
 import AdminScanSession from './pages/admin/scan/AdminScanSession';
 import AdminActorInvitesPage from './pages/admin/AdminActorInvitesPage';
+import MarketPage from './pages/marketplace/MarketPage';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -131,7 +132,7 @@ function App() {
         <Route path="/services/event-management" element={<EventManagementPlatform/>} />
         <Route path="/services/export-consultancy" element={<ExportConsultancy/>} />
         <Route path="/services/trade-missions" element={<TradeMissions/>} />
-        <Route path="/marketplace" element={<Marketplace/>} />
+        <Route path="/marketplace" element={<MarketPage/>} />
         <Route path="/communities" element={<Communities/>} />
         <Route path="/communities/students" element={<SingleCommunity/>} />
         <Route path="/logistics/freight-calculator" element={<FreightCalculator />} />

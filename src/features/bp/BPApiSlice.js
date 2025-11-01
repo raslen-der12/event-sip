@@ -272,16 +272,40 @@ searchPeople: builder.query({
       invalidatesTags: ['Team'],
     }),
     getPublicTeam: builder.query({
-  /**
-   * GET /api/bp/:profileId/team
-   * Backend should return: { success:true, data:[ { entityType, entityId, role, name, title, avatarUpload, city, country, dept, skills, open } ] }
-   */
-  query: (profileId) => ({
-    url: `/biz/bp/${profileId}/team`,
-    method: 'GET',
+      query: (profileId) => ({ url: `/biz/bp/${profileId}/team`, method: 'GET' }),
+      transformResponse: (r) => r?.data || [],
+      providesTags: (r, e, id) => [{ type: 'BPOverview', id }],
+    }),
+    getPublicContact: builder.query({
+      query: (profileId) => ({ url: `/biz/bp/${profileId}/contact`, method: 'GET' }),
+      transformResponse: (r) => r?.data || {
+        people: [], social: [], locations: [], company: [], collateral: [], topics: []
+      },
+      providesTags: (r, e, id) => [{ type: 'BPOverview', id }],
+    }),
+
+    getPublicEngagements: builder.query({
+    query: (profileId) => `/biz/bp/${profileId}/engagements`,
+    transformResponse: (res) => {
+      // backend returns { success, data: [...] }
+      if (Array.isArray(res?.data)) return res.data;
+      if (Array.isArray(res)) return res; // tolerate raw array
+      return [];
+    }
   }),
-  transformResponse: (resp) => resp?.data || [],
-}),
+    getMarketFacets: builder.query({
+      query: () => ({ url: 'biz/market/facets' }),
+      transformResponse: (res) => res?.success ? res : { success:false, sectors:[], counts:{}, tagsTop:[] }
+    }),
+    getMarketItem: builder.query({
+        query: (id) => `/biz/market/items/${id}`,
+        transformResponse: (res) => (res && res.data ? res.data : res),
+      }),
+    getMarketItem: builder.query({
+      query: (id) => ({ url: `biz/market/items/${id}` }),
+      transformResponse: (res) => res?.item || null
+    }),
+
   }),
   overrideExisting: true,
 });
@@ -354,4 +378,9 @@ export const {
   useAddTeamMemberMutation,
   useRemoveTeamMemberMutation,
   useGetPublicTeamQuery,
+  useGetPublicContactQuery,
+  useGetPublicEngagementsQuery,
+   useGetMarketFacetsQuery,
+  useGetMarketItemsQuery,
+  useGetMarketItemQuery,
 } = BPApiSlice;

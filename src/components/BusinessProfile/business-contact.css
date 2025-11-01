@@ -137,3 +137,116 @@ input:focus, select:focus, textarea:focus{ border-color:var(--brand-400); box-sh
   background:#fff; color:var(--brand-900); border:1px solid var(--brand-200); border-radius:999px;
   padding:6px 10px; font-weight:900; font-size:12px;
 }
+@media (min-width: 1280px){
+  .bc-grid{ grid-template-columns: 1.5fr 1fr; gap:20px; }
+}
+
+/* Large laptop/tablet landscape */
+@media (min-width: 1024px) and (max-width: 1279.98px){
+  .bc-grid{ grid-template-columns: 1.35fr 1fr; gap:18px; }
+}
+
+/* Stack on tablet & below */
+@media (max-width: 1024px){
+  .bc-grid{ grid-template-columns: 1fr !important; gap:16px !important; }
+  .bc-left, .bc-form { width:100%; min-width:0; }
+}
+
+/* Phones: tighten spacing, prevent clipping, full-width links */
+@media (max-width: 767.98px){
+  .card{ padding:14px; }
+  .people{ grid-template-columns: 1fr; gap:12px; width:100%; }
+  .person{ display:grid; grid-template-columns: 56px 1fr; gap:10px; min-width:0; }
+  .p-body{ min-width:0; }
+  .p-row{ min-width:0; }
+  .p-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p-actions{ gap:8px; }
+  .p-actions .btn, .p-actions .btn-ghost{ flex:1 1 140px; }
+  .files{ display:grid; gap:8px; }
+  .files .file{ width:100%; justify-content:space-between; }
+}
+
+/* Small phones: even tighter */
+@media (max-width: 479.98px){
+  .person{ grid-template-columns: 48px 1fr; }
+  .p-actions .btn, .p-actions .btn-ghost{ flex:1 1 120px; }
+}
+
+/* Bottom breathing room */
+.bcontact{ padding-bottom:24px; }
+.bc-form .card:last-child{ margin-bottom:12px; }
+
+/* Ensure link rows never overflow their labels */
+.files .file{ width:100%; display:flex; align-items:center; justify-content:space-between; }
+.files .file > span{ display:inline-flex; align-items:center; gap:8px; min-width:0; }
+.files .file > span > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* ===== Balanced 2-col grid on desktop, stack on <=1024px ===== */
+.bcontact .bc-grid{
+  display:grid;
+  grid-template-columns: clamp(260px, 28vw, 380px) 1fr; /* smaller left */
+  gap:18px;
+  align-items:start;
+}
+
+/* Very wide screens: keep left modest */
+@media (min-width:1440px){
+  .bcontact .bc-grid{
+    grid-template-columns: clamp(300px, 24vw, 420px) 1fr;
+  }
+}
+
+/* Laptops */
+@media (max-width:1280px){
+  .bcontact .bc-grid{
+    grid-template-columns: clamp(240px, 32vw, 360px) 1fr;
+  }
+}
+
+/* Tablets & phones: stack */
+@media (max-width:1024px){
+  .bcontact .bc-grid{ grid-template-columns: 1fr !important; }
+  .bcontact .bc-left,
+  .bcontact .bc-form{ width:100%; }
+  .bcontact .bc-left .card,
+  .bcontact .bc-form .card{ margin-bottom:12px; }
+}
+
+/* ===== Person cards: prevent clipping & overflow ===== */
+.bcontact .people{ display:grid; grid-template-columns:1fr; gap:10px; }
+.bcontact .person{ min-width:0; }
+.bcontact .p-name,
+.bcontact .p-role{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ===== Links: take full width inside the left column ===== */
+.bcontact .files .file{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+/* ===== Form rows: 2 cols on desktop, stack below ===== */
+.bcontact .bc-form .form .row{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+@media (max-width:1024px){
+  .bcontact .bc-form .form .row{ grid-template-columns:1fr; }
+}
+
+/* ===== Collateral grid: responsive without breaking desktop ===== */
+.bcontact .bc-form .asset-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+}
+@media (max-width:1280px){
+  .bcontact .bc-form .asset-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); }
+}
+@media (max-width:480px){
+  .bcontact .bc-form .asset-grid{ grid-template-columns:1fr; }
+}
+
+/* Bottom breathing room */
+.bcontact{ padding-bottom:24px; }

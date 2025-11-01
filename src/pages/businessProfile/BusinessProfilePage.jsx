@@ -21,6 +21,8 @@ import {
   useListProfileItemsQuery,
   useGetProfileOverviewQuery,
   useGetPublicTeamQuery,
+  useGetPublicContactQuery,
+  useGetPublicEngagementsQuery,
 } from "../../features/bp/BPApiSlice";
 
 /* ===== tiny inline icons ===== */
@@ -242,6 +244,8 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   const { data: teamResp = [], isFetching: teamFetching } = useGetPublicTeamQuery(profileId, {
     skip: !profileId,
   });
+  const { data: contactData = {},     isFetching: contactLoading }= useGetPublicContactQuery(profileId, { skip: !profileId });
+  const { data: engageData = [],      isFetching: engageLoading } = useGetPublicEngagementsQuery(profileId, { skip: !profileId });
 
   // Loading & not-found states
   const loading = (!!idParam ? idFetching : myFetching) || itemsFetching;
@@ -448,6 +452,8 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                 sectors={sectors}
                 gallery={gallery}
                 teamResp={teamResp}
+                contactData={contactData}
+                engageData={engageData}
                 navigate={navigate}
                 isOwnerView={!idParam}
               />
@@ -477,6 +483,8 @@ function TabContent({
   sectors,
   gallery,
   teamResp,
+  contactData,
+  engageData,
   navigate,
   isOwnerView,
 }) {
@@ -542,7 +550,7 @@ const tooLow = dataScore.tooLow;
 
       {tab === "team" && (
         <BusinessTeam
-          members={teamMembers}
+          members={teamResp } //teamMembers}
           onMessage={(m) => navigate(`/messages?member=${m.entityId}`)}
           onMeet={(m) => navigate(`/team?prefill=${m.entityId}`)}
           onProfile={(m) => navigate(`/member/${m.entityType}/${m.entityId}`)}
@@ -551,11 +559,13 @@ const tooLow = dataScore.tooLow;
 
       {tab === "contact" && (
         <BusinessContact
-          companyName={p.name}
-          contacts={apiProfileRaw?.contacts}
-          locations={overviewData?.locations || []}
-          collateral={[]}
-          topics={["Sales Inquiry","Partnership","Support","Press","Other"]}
+          companyName={contactData.company?.value || []}
+          contacts={contactData.people || {}}
+          social={contactData.social || []}
+          people={contactData.people || []}
+          locations={contactData.locations || []}
+          collateral={contactData.collateral || []}
+          topics={contactData.topics || []}
           onMessage={() => {
             const peerId =
               apiProfileRaw?.owner?.actor ||
@@ -569,7 +579,7 @@ const tooLow = dataScore.tooLow;
         />
       )}
 
-      {tab === "engagements" && <BusinessEngagements items={[]} />}
+      {tab === "engagements" && <BusinessEngagements   items={engageData || []} />}
     </>
   );
 }

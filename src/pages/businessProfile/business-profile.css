@@ -261,3 +261,134 @@
 .bp-cta .btn {
   box-shadow: 0 4px 14px rgba(0,0,0,.2);
 }
+/* ===== BP HERO — RESPONSIVE FIXES ===== */
+
+/* Tablet & small laptops */
+@media (max-width: 1024px) {
+  .bp-hero .bp-hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0 8px;
+  }
+
+  .bp-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bp-logo-wrap {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .bp-logo-img { width: 100%; height: 100%; object-fit: contain; }
+
+  .bp-id { flex: 1; min-width: 0; }
+  .bpp-name { font-size: 1.5rem; line-height: 1.2; margin: 0 0 4px; }
+  .bp-tag { font-size: .95rem; line-height: 1.3; margin: 0 0 6px; }
+  .bp-about {
+    font-size: .92rem;
+    line-height: 1.45;
+    max-height: 3.6em;           /* ~2 lines clamp */
+    overflow: hidden;
+  }
+
+  .bp-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .bp-cta { display: flex; gap: 8px; }
+  .bp-cta .btn { flex: 1 1 50%; min-width: 0; }
+
+  .bp-banner {
+    min-height: 200px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Tabs: make them scroll on small widths */
+  .bp-tabs { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(2px); }
+  .bp-tabs .bp-tabs-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .bp-tab { white-space: nowrap; flex: 0 0 auto; }
+}
+
+/* Phones (<= 768px) */
+@media (max-width: 768px) {
+  .bp-logo-wrap { width: 60px; height: 60px; }
+  .bpp-name { font-size: 1.25rem; }
+  .bp-tag, .bp-about { font-size: .9rem; }
+
+  /* Better text clamp on very small screens */
+  .bp-about {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  /* Stack CTA buttons full width */
+  .bp-cta { flex-direction: column; }
+  .bp-cta .btn,
+  .bp-cta .btn.btn-outline { width: 100%; }
+
+  .bp-banner { min-height: 180px; }
+  .bp-hero { margin-bottom: 16px; }
+}
+
+/* Extra small (<= 480px) */
+@media (max-width: 480px) {
+  .bp-hero .container { padding-left: 12px; padding-right: 12px; }
+  .bp-logo-wrap { width: 52px; height: 52px; }
+  .bpp-name { font-size: 1.1rem; }
+  .bp-meta .chip { font-size: .8rem; padding: 6px 8px; }
+  .bp-banner { min-height: 160px; }
+}
+
+/* Desktop safety: allow wrapping but keep layout */
+@media (min-width: 1025px) {
+  .bp-brand { display: flex; gap: 16px; align-items: center; }
+  .bp-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+}
+/* ===== BP HERO: make About text scrollable on small screens ===== */
+@media (max-width: 1024px) {
+  .bp-hero .bp-about {
+    /* override earlier clamp/hidden rules */
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: initial !important;
+
+    max-height: 28vh;           /* room to read without covering screen */
+    overflow: auto;             /* allow scroll */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
+    padding-right: 4px;         /* keep text clear of scrollbar */
+    scrollbar-gutter: stable;   /* reserve space for scrollbar (modern browsers) */
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .bp-hero .bp-about {
+    max-height: 36vh;           /* a bit taller on phones */
+  }
+}
+
+/* Optional: subtle custom scrollbar (WebKit) */
+.bp-hero .bp-about::-webkit-scrollbar {
+  width: 8px;
+}
+.bp-hero .bp-about::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: rgba(0,0,0,.2);
+}
+.bp-hero .bp-about::-webkit-scrollbar-track {
+  background: transparent;
+}

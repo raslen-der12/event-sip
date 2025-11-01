@@ -161,7 +161,6 @@ const norm = (s) =>
 const LABEL_ALIASES = { communitites: "communities" }; // guard common typo
 const DISABLED_LABELS = new Set([
   "communities",
-  "marketplace",
   "load calculator: mena & africa",
   "container shipping costs: informations",
 ]);
