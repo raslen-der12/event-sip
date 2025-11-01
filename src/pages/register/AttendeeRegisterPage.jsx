@@ -40,7 +40,24 @@ function familyOfTrack(track) {
   if (t.includes('atelier')) return ATELIER;
   return 'other';
 }
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
+ function extractError(e) {
+   if (!e) return "Registration failed";
+   const d = e.data;
+   if (typeof d === "string") return d;
+   if (d?.message) return d.message;
+   if (Array.isArray(d?.errors) && d.errors.length) {
+     return d.errors.map(x => x.msg || x.message || `${x.field || "field"} invalid`).join("\n");
+  }
+   return e.error || e.message || "Registration failed";
+}
 
+ function acceptPhotoFile(file, { onOK, onTooLarge, onNotImage }) {
+   if (!file) return;
+   if (!(file.type || "").startsWith("image/")) { onNotImage?.(); return; }
+   if (file.size > MAX_PHOTO_BYTES) { onTooLarge?.(file.size); return; }
+  onOK?.(file);
+}
 /* SubRole options (checkbox list) */
 const SUBROLE_OPTIONS = [
   'Researchers','Students','Coaches & Trainers','Experts & Consultants','Employees & Professionals','Entrepreneurs & Startups','Developers & Engineers',
@@ -675,13 +692,15 @@ const trackSections = useMemo(() => {
       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60);
       setTimeout(() => navigate('/'), 1400);
     } catch (e) {
-      triggerPopup({
-        title: "Échec de l’inscription",
-        body: e?.data?.message || "Une erreur s’est produite. Veuillez réessayer.",
-        type: "error"
-      });
-      alert(e?.data?.message || 'Registration failed');
-    }
+        const msg = extractError(e);
+        triggerPopup({
+          title: "Échec de l’inscription",
+          body: msg,
+          type: "error"
+        });
+        // optionally surface near the submit button as well
+        setErrs(prev => ({ ...prev, _submit: msg }));
+      }
   };
 
   /* Compact sessions data (space-efficient) */
@@ -929,9 +948,22 @@ const trackSections = useMemo(() => {
                   onClick={() => fileRef.current?.click()}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => {
-                    e.preventDefault();
-                    if (e.dataTransfer.files?.[0]) setPhotoFile(e.dataTransfer.files[0]);
-                  }}
+                  e.preventDefault();
+                  const f = e.dataTransfer.files?.[0];
+                  acceptPhotoFile(f, {
+                    onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
+                    onTooLarge: () => {
+                      setPhotoFile(null);
+                      setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
+                      triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
+                    },
+                    onNotImage: () => {
+                      setPhotoFile(null);
+                      setErrs(p => ({ ...p, photo: "Fichier non image" }));
+                      triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
+                    }
+                });
+                }}
                 >
                   {!photoUrl ? (
                     <div className="att-photo-empty">
@@ -948,8 +980,30 @@ const trackSections = useMemo(() => {
                       </div>
                     </div>
                   )}
-                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files?.[0] || null)} />
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={e => {
+                      const f = e.target.files?.[0] || null;
+                      acceptPhotoFile(f, {
+                        onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
+                        onTooLarge: () => {
+                          setPhotoFile(null);
+                          setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
+                          triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
+                        },
+                        onNotImage: () => {
+                          setPhotoFile(null);
+                          setErrs(p => ({ ...p, photo: "Fichier non image" }));
+                          triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
+                        }
+                      });
+                    }}
+                  />
                 </div>
+                {errs.photo && <div style={{ color:'#ef4444', fontWeight:800, marginTop:8 }}>{errs.photo}</div>}
               </div>
             </div>
 

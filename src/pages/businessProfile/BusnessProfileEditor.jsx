@@ -561,8 +561,9 @@ export default function BusnessProfileEditor() {
   }
 
   async function onRemovePerson(m) {
+    console.log("m",m);
     await removeTeamMember({
-      entityType: m.entityType,
+      entityType: m.role,
       entityId: m.entityId,
     }).unwrap();
     await refetchTeam();
