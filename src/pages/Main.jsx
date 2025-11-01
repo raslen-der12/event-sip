@@ -180,7 +180,7 @@ export default function Main() {
 
       <ContactUs
         image={`https://gits.seketak-eg.com/wp-content/uploads/2025/05/Frame-369.png`}
-        title="Feature Your Brand at GITS 2025"
+        title="Feature Your Brand at Eventra"
         text="Maximize your visibility with our premium ad space. Perfect for industry leaders looking to make a bold impact."
         ctaText="Contact Us"
         ctaHref="/contact"

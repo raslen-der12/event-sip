@@ -53,7 +53,7 @@ export default function AIMatchmaking() {
             {
               step: "3",
               title: "Connect & Engage",
-              desc: "Reach out through GITS, join relevant communities, or engage via Marketplace and Trade Missions.",
+              desc: "Reach out through Eventra, join relevant communities, or engage via Marketplace and Trade Missions.",
             },
           ].map(({ step, title, desc }) => (
             <div
@@ -73,7 +73,7 @@ export default function AIMatchmaking() {
 
         {/* WHY CHOOSE US */}
         <h2 className="text-center text-3xl font-semibold mt-20 mb-10 text-[#1C3664]">
-          Why Choose GITS AI Matchmaking
+          Why Choose Eventra AI Matchmaking
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[

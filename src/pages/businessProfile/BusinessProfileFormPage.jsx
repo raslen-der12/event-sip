@@ -19,27 +19,97 @@ import {
 const SIZES = ["1-10", "11-50", "51-200", "201-1000", "1000+"];
 
 const INDUSTRY_OPTIONS = [
-  "AI & IoT","Fintech","Logistics","Healthcare","Manufacturing","Retail","Education",
-  "Tourism & Hospitality","Energy & Cleantech","Agriculture","Construction & Real Estate",
-  "Media & Entertainment","Telecom","Finance & Banking","Government","Nonprofit",
-  "E-commerce","Cybersecurity","Cloud & DevOps","Software / SaaS","Hardware & Electronics",
-  "Marketing & Advertising","Automotive & Mobility",
+  // Core Tech
+  "AI & IoT",
+  "Fintech",
+  "Cybersecurity",
+  "Cloud & DevOps",
+  "Software / SaaS",
+  "Hardware & Electronics",
+    // New ecosystem category
+  "Enabler Organisations & Innovation Ecosystem",
+
+  // Infrastructure & Production
+  "Manufacturing",
+  "Construction & Real Estate",
+  "Energy & Cleantech",
+  "Water & Waste Management",
+  "Transport & Logistics",
+
+  // Commerce & Consumer
+  "Retail",
+  "E-commerce",
+  "Marketing & Advertising",
+  "Media & Entertainment",
+  "Tourism & Hospitality",
+
+  // Public & Institutional
+  "Government & Smart Cities",
+  "Nonprofit & Social Impact",
+  "Education & EdTech",
+  "Healthcare & MedTech",
+  "Finance & Banking",
+
+  // Regional Innovation Drivers
+  "Agriculture & AgriTech",
+  "Blue Economy & Fisheries",
+  "Climate & Sustainability",
+  "Automotive & Mobility",
+  "Textile & Fashion Industry",
+  "Cultural & Creative Industries",
+  "Food & Beverage Innovation",
+  "Mining & Natural Resources",
+  "Defense & Security Tech",
+
+  // Frontier & Emerging
+  "Green Hydrogen & Renewable Energy",
+  "Space & Aerospace Technology",
+  "Sports & Recreation Tech",
+  "Circular Economy & Recycling",
+  "Digital Infrastructure & Connectivity"
 ];
+
 
 const COUNTRY_OPTIONS = [
-  "Algeria","Angola","Benin","Botswana","Burkina Faso","Burundi","Cabo Verde","Cameroon","Central African Republic","Chad","Comoros","Democratic Republic of the Congo","Republic of the Congo","Cote d'Ivoire","Djibouti","Egypt","Equatorial Guinea","Eritrea","Eswatini","Ethiopia","Gabon","Gambia","Ghana","Guinea","Guinea-Bissau","Kenya","Lesotho","Liberia","Libya","Madagascar","Malawi","Mali","Mauritania","Mauritius","Morocco","Mozambique","Namibia","Niger","Nigeria","Rwanda","Sao Tome and Principe","Senegal","Seychelles","Sierra Leone","Somalia","South Africa","South Sudan","Sudan","Tanzania","Togo","Tunisia","Uganda","Zambia","Zimbabwe",
-  "Antigua and Barbuda","Argentina","Bahamas","Barbados","Belize","Bolivia","Brazil","Canada","Chile","Colombia","Costa Rica","Cuba","Dominica","Dominican Republic","Ecuador","El Salvador","Grenada","Guatemala","Guyana","Haiti","Honduras","Jamaica","Mexico","Nicaragua","Panama","Paraguay","Peru","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Suriname","Trinidad and Tobago","United States","Uruguay","Venezuela",
+  // Africa
+  "Algeria","Angola","Benin","Botswana","Burkina Faso","Burundi","Cabo Verde","Cameroon",
+  "Central African Republic","Chad","Comoros","Democratic Republic of the Congo","Republic of the Congo",
+  "Ivory Coast","Djibouti","Egypt","Equatorial Guinea","Eritrea","Eswatini","Ethiopia","Gabon","Gambia",
+  "Ghana","Guinea","Guinea-Bissau","Kenya","Lesotho","Liberia","Libya","Madagascar","Malawi","Mali",
+  "Mauritania","Mauritius","Morocco","Mozambique","Namibia","Niger","Nigeria","Rwanda","Sao Tome and Principe",
+  "Senegal","Seychelles","Sierra Leone","Somalia","South Africa","South Sudan","Sudan","Tanzania","Togo",
+  "Tunisia","Uganda","Zambia","Zimbabwe","Western Sahara",
 
-  // Asia (48, incl. State of Palestine)
-  "Afghanistan","Armenia","Azerbaijan","Bahrain","Bangladesh","Bhutan","Brunei","Cambodia","China","Cyprus","Georgia","India","Indonesia","Iran","Iraq","Israel","Japan","Jordan","Kazakhstan","Kuwait","Kyrgyzstan","Laos","Lebanon","Malaysia","Maldives","Mongolia","Myanmar","Nepal","North Korea","Oman","Pakistan","Palestine","Philippines","Qatar","Saudi Arabia","Singapore","South Korea","Sri Lanka","Syria","Tajikistan","Thailand","Timor-Leste","Turkey","Turkmenistan","United Arab Emirates","Uzbekistan","Vietnam","Yemen",
+  // MENA + extended
+  "Bahrain","Iraq","Iran","Israel","Jordan","Kuwait","Lebanon","Oman","Palestine","Qatar",
+  "Saudi Arabia","Syria","Turkey","United Arab Emirates","Yemen",
 
-  // Europe (44, incl. Vatican City)
-  "Albania","Andorra","Austria","Belarus","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Czechia","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Iceland","Ireland","Italy","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro","Netherlands","North Macedonia","Norway","Poland","Portugal","Romania","Russia","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Ukraine","United Kingdom","Vatican City",
+  // Europe
+  "Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium","Bosnia and Herzegovina",
+  "Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France","Georgia","Germany",
+  "Greece","Hungary","Iceland","Ireland","Italy","Kosovo","Latvia","Liechtenstein","Lithuania","Luxembourg",
+  "Malta","Moldova","Monaco","Montenegro","Netherlands","North Macedonia","Norway","Poland","Portugal",
+  "Romania","Russia","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Ukraine",
+  "United Kingdom","Vatican City",
 
-  // Oceania (14)
-  "Australia","Fiji","Kiribati","Marshall Islands","Micronesia","Nauru","New Zealand","Palau","Papua New Guinea","Samoa","Solomon Islands","Tonga","Tuvalu","Vanuatu"
+  // Americas
+  "Antigua and Barbuda","Argentina","Bahamas","Barbados","Belize","Bolivia","Brazil","Canada","Chile",
+  "Colombia","Costa Rica","Cuba","Dominica","Dominican Republic","Ecuador","El Salvador","Grenada",
+  "Guatemala","Guyana","Haiti","Honduras","Jamaica","Mexico","Nicaragua","Panama","Paraguay","Peru",
+  "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Suriname","Trinidad and Tobago",
+  "United States of America","Uruguay","Venezuela",
 
+  // Asia
+  "Afghanistan","Bangladesh","Bhutan","Brunei","Cambodia","China","India","Indonesia","Japan","Kazakhstan",
+  "Kyrgyzstan","Laos","Malaysia","Maldives","Mongolia","Myanmar","Nepal","North Korea","Pakistan","Philippines",
+  "Singapore","South Korea","Sri Lanka","Tajikistan","Thailand","Timor-Leste","Turkmenistan","Uzbekistan",
+  "Vietnam",
+
+  // Oceania
+  "Australia","Fiji","Kiribati","Marshall Islands","Micronesia","Nauru","New Zealand","Palau",
+  "Papua New Guinea","Samoa","Solomon Islands","Tonga","Tuvalu","Vanuatu"
 ];
+
 
 
 function MultiSelectCountries({ options = [], values = [], onChange, placeholder = "Select countries…" }) {

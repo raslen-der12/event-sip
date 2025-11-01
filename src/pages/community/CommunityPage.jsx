@@ -120,7 +120,7 @@ const Hero = () => (
   <section className="flex flex-col justify-center items-center text-center py-20 sm:py-28 px-5 bg-gradient-to-r from-[#1C3664] to-[#EB5434] text-white">
     <h1 className="text-3xl sm:text-5xl font-bold mb-4">Communities</h1>
     <p className="text-base sm:text-xl mb-6 max-w-[700px]">
-      GITS connects professionals, experts, students, and business owners in dedicated communities to network, learn, and grow together.
+      Eventra connects professionals, experts, students, and business owners in dedicated communities to network, learn, and grow together.
     </p>
     <a
       href="/register"

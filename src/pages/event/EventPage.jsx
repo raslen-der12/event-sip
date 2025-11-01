@@ -209,8 +209,7 @@ export default function EventPage() {
   { label: "Speakers", href: `/event/${eventId}/speakers` },
   { label: "Attendees", href: `/event/${eventId}/attendees` },
   { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
-  { label: "Schedule", href: `/event/${eventId}/schedule` },
-  { label: "Tickets", href: `/event/${eventId}/tickets` },
+  { label: "Schedule", href: `/event/${eventId}/schedule` }
 ];
   const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
   return (

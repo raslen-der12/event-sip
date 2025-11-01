@@ -96,7 +96,7 @@ function ProductCard({ product }) {
             View
           </Link>
           <a
-            href={`mailto:info@gits.com?subject=Inquiry about ${encodeURIComponent(product.name)}`}
+            href={`mailto:eventora@seketak-eg.com?subject=Inquiry about ${encodeURIComponent(product.name)}`}
             className="flex-1 text-center border border-gray-200 px-3 py-2 rounded-lg font-medium text-[#1C3664] hover:bg-gray-50"
           >
             Contact

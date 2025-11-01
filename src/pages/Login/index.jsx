@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div className="auth-card">
           <header className="auth-head">
             <h1 className="auth-title">Welcome back</h1>
-            <p className="auth-sub">Sign in to continue to GITS</p>
+            <p className="auth-sub">Sign in to continue to Eventra</p>
           </header>
 
           {error ? <div className="auth-alert">{error}</div> : null}
