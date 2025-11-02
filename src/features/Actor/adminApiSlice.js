@@ -75,6 +75,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 
 export const {
 useGetAdminRegisterRequestQuery,
+useLazyGetAdminRegisterRequestQuery,
 useUpdateAdminRegisterRequestMutation,
 useGetActorsListAdminQuery,
   useGetAdminActorQuery,
