@@ -935,54 +935,69 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
       <HeaderShell top={topbar} nav={nav} cta={cta} />
 
       <div className="bpe-editor">
-        {/* Sticky top bar */}
-        <header className="bpe-topbar">
-          <div className="container">
-            <div className="bpe-topbar-left">
-              <div className="bpe-top-title">Business Profile</div>
-              <div className="bpe-top-sub">
-                {profile?.published ? (
-                  <span className="bpe-badge -ok">Published</span>
-                ) : (
-                  <span className="bpe-badge -warn">Draft</span>
-                )}
-                {profile?._id ? (
-                  <a
-                    className="bpe-pill"
-                    href="/BusinessProfile"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open owner view"
-                  >
-                    <span className="bpe-pill-ico" aria-hidden>
-                      👁️
+      {/* Topbar */}
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div>
+                  <div className="text-sm font-medium text-slate-800">Business Profile</div>
+                  <div className="text-xs text-slate-500">Edit your public profile</div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {profile?.published ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                      Published
                     </span>
-                    View public page
-                  </a>
-                ) : null}
-                {profile?._id ? (
-                  <button
-                    type="button"
-                    className={`bpe-pill ${copied ? "is-copied" : ""}`}
-                    onClick={copyShareUrl}
-                    title="Copy public link"
-                  >
-                    <span className="bpe-pill-ico" aria-hidden>
-                      🔗
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                      Draft
                     </span>
-                    {copied ? "Copied!" : "Copy share link"}
-                  </button>
-                ) : null}
-                {busy ? <span className="bpe-dot">Saving…</span> : null}
+                  )}
+
+                  {profile?._id && (
+                    <a
+                      href="/BusinessProfile"
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Open owner view"
+                      className="inline-flex items-center gap-2 text-xs px-2 py-0.5 rounded-full bg-slate-50 border border-slate-100 text-slate-700 hover:bg-slate-100"
+                    >
+                      <span aria-hidden>👁️</span>
+                      <span className="truncate">View public page</span>
+                    </a>
+                  )}
+
+                  {profile?._id && (
+                    <button
+                      type="button"
+                      onClick={copyShareUrl}
+                      title="Copy public link"
+                      className={`inline-flex items-center gap-2 text-xs px-2 py-0.5 rounded-full border ${copied ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-slate-50 border-slate-100 text-slate-700"} hover:opacity-95`}
+                    >
+                      <span aria-hidden>🔗</span>
+                      <span>{copied ? "Copied!" : "Copy share link"}</span>
+                    </button>
+                  )}
+
+                  {busy && <span className="ml-2 text-xs text-slate-500">Saving…</span>}
+                </div>
               </div>
             </div>
 
-            <div className="bpe-topbar-actions">
-              <button className="btn mx" disabled={busy} onClick={saveBasics}>
+            <div className="flex gap-2">
+              <button
+                className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-60"
+                onClick={saveBasics}
+                disabled={busy}
+              >
                 Save
               </button>
+
               <button
-                className={`btn ${profile?.published ? "btn-line" : ""}`}
+                className={`inline-flex items-center px-3 py-2 rounded-md text-sm border ${profile?.published ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-amber-500 text-white hover:bg-amber-600"}`}
                 disabled={busy}
                 onClick={() => togglePublish(!profile?.published)}
                 title={profile?.published ? "Unpublish" : "Request publish"}
@@ -991,157 +1006,362 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Hero banner preview */}
-        <section className="bpe-hero">
-          <div className="bpe-hero-inner">
-            <div className="bpe-hero-media">
-              <div className="bpe-banner-prev">
-                <img src={bannerUrl} alt="Banner" />
+      {/* Hero banner preview */}
+      <section className="bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="md:flex md:items-center">
+              {/* Media / Banner */}
+              <div className="relative md:w-1/3 w-full h-44 md:h-48 bg-gray-100">
+                {bannerUrl ? (
+                  <div
+                    className="absolute inset-0 bg-center bg-cover"
+                    style={{ backgroundImage: `url(${bannerUrl})` }}
+                    aria-hidden
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">No banner</div>
+                )}
+
+                {/* Logo overlay */}
+                <div className="absolute left-4 -bottom-8 md:left-6 md:-bottom-10">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-white border border-slate-100 flex items-center justify-center">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+                    ) : (
+                      <div className="text-slate-400 text-xs">No logo</div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="bpe-logo-prev">
-                <img src={logoUrl} alt="Logo" />
+
+              {/* Meta */}
+              <div className="md:flex-1 md:pl-8 px-4 pt-6 md:pt-0 pb-6 md:pb-0">
+                <div className="mt-2 md:mt-0">
+                  <div className="text-xl md:text-2xl font-semibold text-slate-800">{name || "Your company name"}</div>
+                  <div className="mt-1 text-sm text-slate-600">{tagline || "placeholder"}</div>
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <a className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}>
+                      View public page
+                    </a>
+                    <button
+                      className="inline-flex items-center px-3 py-2 rounded-md text-sm border bg-white text-slate-700 hover:bg-slate-50"
+                      onClick={copyShareUrl}
+                      disabled={!profile?._id}
+                    >
+                      Copy share link
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="bpe-hero-meta">
-              <div className="bpe-hero-name">{name || "Your company name"}</div>
-              <div className="bpe-hero-tag">{tagline || "placeholder"}</div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
+
 
         {/* Main grid */}
         <main className="bpe-main container">
           {/* Identity */}
-          <section className="bpe-card">
-            <div className="bpe-card-title">Identity</div>
-            <div className="bpe-grid">
-              <Field label="Name">
-                <TextInput
+        <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-800">Identity</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Name</label>
+              {TextInput ? (
+                <TextInput value={name} onChange={setName} placeholder="Company / Brand name" />
+              ) : (
+                <input
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                   value={name}
-                  onChange={setName}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Company / Brand name"
                 />
-              </Field>
-              <Field label="Team size">
-                <Select
+              )}
+            </div>
+
+            {/* Team size */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Team size</label>
+              {Select ? (
+                <Select value={size} onChange={setSize} options={["1-10", "11-50", "51-200", "201-500", "500+"]} />
+              ) : (
+                <select
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                   value={size}
-                  onChange={setSize}
-                  options={["1-10", "11-50", "51-200", "201-500", "500+"]}
-                />
-              </Field>
-              <Field label="Tagline">
-                <TextInput
+                  onChange={(e) => setSize(e.target.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="1-10">1-10</option>
+                  <option value="11-50">11-50</option>
+                  <option value="51-200">51-200</option>
+                  <option value="201-500">201-500</option>
+                  <option value="500+">500+</option>
+                </select>
+              )}
+            </div>
+
+            {/* Tagline */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Tagline</label>
+              {TextInput ? (
+                <TextInput value={tagline} onChange={setTagline} placeholder="Short one-liner" />
+              ) : (
+                <input
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                   value={tagline}
-                  onChange={setTagline}
+                  onChange={(e) => setTagline(e.target.value)}
                   placeholder="Short one-liner"
                 />
-              </Field>
-              <Field label="About">
+              )}
+            </div>
+
+            {/* About (spans full width) */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">About</label>
+              {TextArea ? (
                 <TextArea
                   rows={6}
                   value={about}
                   onChange={setAbout}
                   placeholder="Tell visitors what you do, who you help, and why you're different."
                 />
-              </Field>
-              <Field label="Sector">
+              ) : (
+                <textarea
+                  rows={6}
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  placeholder="Tell visitors what you do, who you help, and why you're different."
+                />
+              )}
+            </div>
+
+            {/* Sector */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Sector</label>
+              <select
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                disabled={taxFetching}
+                value={sector}
+                onChange={(e) => {
+                  setSector(e.target.value);
+                  setSubsectors([]);
+                }}
+              >
+                <option value="">{taxFetching ? "Loading…" : "Select a sector"}</option>
+                {sectorOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {typeof titleize === "function" ? titleize(opt.label) : opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Subsectors */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Subsectors</label>
+              {MultiSelect ? (
+                <MultiSelect values={subsectors} onChange={setSubsectors} options={subsectorOptions} />
+              ) : (
                 <select
-    className="bpe-select"
-    disabled={taxFetching}
-    value={sector}
-    onChange={(e) => {
-      setSector(e.target.value);
-      setSubsectors([]);
-    }}
-  >
-    <option value="">{taxFetching ? "Loading…" : "Select a sector"}</option>
-    {sectorOptions.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-        {titleize(opt.label)}
-      </option>
-    ))}
-  </select>
-              </Field>
-              <Field label="Subsectors">
-                <MultiSelect
-                  values={subsectors}
-                  onChange={setSubsectors}
-                  options={subsectorOptions}
-                />
-              </Field>
-              <Field label="Countries">
-                <MultiSelect
-                  values={countries}
-                  onChange={setCountries}
-                  options={countryOptions}
-                />
-              </Field>
-              <Field label="Languages">
-                <MultiSelect
-                  values={languages}
-                  onChange={setLanguages}
-                  options={languageOptions}
-                />
-              </Field>
-              <Field label="Offering (what you sell/do)">
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  multiple
+                  value={subsectors || []}
+                  onChange={(e) =>
+                    setSubsectors(Array.from(e.target.selectedOptions).map((o) => o.value))
+                  }
+                >
+                  {subsectorOptions.map((opt) => (
+                    <option key={opt._id || opt.value} value={opt._id || opt.value}>
+                      {opt.name || opt.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Countries */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Countries</label>
+              {MultiSelect ? (
+                <MultiSelect values={countries} onChange={setCountries} options={countryOptions} />
+              ) : (
+                <select
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  multiple
+                  value={countries || []}
+                  onChange={(e) => setCountries(Array.from(e.target.selectedOptions).map((o) => o.value))}
+                >
+                  {countryOptions.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Languages */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Languages</label>
+              {MultiSelect ? (
+                <MultiSelect values={languages} onChange={setLanguages} options={languageOptions} />
+              ) : (
+                <select
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  multiple
+                  value={languages || []}
+                  onChange={(e) => setLanguages(Array.from(e.target.selectedOptions).map((o) => o.value))}
+                >
+                  {languageOptions.map((l) => (
+                    <option key={l.value} value={l.value}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Offering */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Offering (what you sell/do)</label>
+              {ArrayInput ? (
                 <ArrayInput values={offering} onChange={setOffering} />
-              </Field>
-              <Field label="Seeking (what you want)">
+              ) : (
+                <input
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  value={(offering || []).join(", ")}
+                  onChange={(e) => setOffering(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
+                  placeholder="comma, separated, offerings"
+                />
+              )}
+            </div>
+
+            {/* Seeking */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Seeking (what you want)</label>
+              {ArrayInput ? (
                 <ArrayInput values={seeking} onChange={setSeeking} />
-              </Field>
-              <Field label="Innovation / Keywords">
+              ) : (
+                <input
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  value={(seeking || []).join(", ")}
+                  onChange={(e) => setSeeking(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
+                  placeholder="comma, separated, seeking..."
+                />
+              )}
+            </div>
+
+            {/* Innovation / Keywords */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Innovation / Keywords</label>
+              {ArrayInput ? (
                 <ArrayInput values={innovation} onChange={setInnovation} />
-              </Field>
+              ) : (
+                <input
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  value={(innovation || []).join(", ")}
+                  onChange={(e) => setInnovation(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
+                  placeholder="comma, separated keywords"
+                />
+              )}
             </div>
-            <div className="bpe-card-actions">
-              <button className="btn" onClick={saveBasics} disabled={busy}>
-                Save identity
-              </button>
-            </div>
-          </section>
+          </div>
+
+          <div className="mt-4 flex justify-end">
+            <button
+              className={`px-4 py-2 rounded-md ${busy ? "bg-slate-300 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+              onClick={saveBasics}
+              disabled={busy}
+            >
+              Save identity
+            </button>
+          </div>
+        </section>
+
 
           {/* Media */}
-          <section className="bpe-card">
-            <div className="bpe-card-title">Media</div>
-            <div className="bpe-media-grid">
+          <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">Media</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Logo */}
               <div>
-                <div className="bpe-media-label">Logo</div>
+                <div className="text-sm font-medium text-slate-700 mb-2">Logo</div>
+
                 {logoUrl ? (
-                  <div className="bpe-media-prev">
-                    <img src={logoUrl} alt="Logo" />
+                  <div className="w-full max-w-xs h-28 rounded-md overflow-hidden bg-slate-50 border border-slate-100 mb-3">
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
                   </div>
                 ) : (
-                  <div className="bpe-media-empty">No logo</div>
+                  <div className="w-full max-w-xs h-28 rounded-md flex items-center justify-center bg-slate-50 border border-dashed border-slate-200 mb-3 text-sm text-slate-500">
+                    No logo
+                  </div>
                 )}
-                <FileDrop label="Upload logo" onPick={onLogo} />
+
+                {/* FileDrop component (kept as-is) */}
+                {typeof FileDrop !== "undefined" ? (
+                  <div className="max-w-xs">
+                    <FileDrop label="Upload logo" onPick={onLogo} />
+                  </div>
+                ) : (
+                  <label className="inline-block px-3 py-2 border rounded-md cursor-pointer text-sm bg-white">
+                    Upload logo
+                    <input hidden type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) onLogo(f); e.target.value = ""; }} />
+                  </label>
+                )}
               </div>
+
+              {/* Banner */}
               <div>
-                <div className="bpe-media-label">Banner</div>
+                <div className="text-sm font-medium text-slate-700 mb-2">Banner</div>
+
                 {bannerUrl ? (
-                  <div className="bpe-media-prev -wide">
-                    <img src={bannerUrl} alt="Banner" />
+                  <div className="w-full h-28 rounded-md overflow-hidden bg-slate-50 border border-slate-100 mb-3">
+                    <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="bpe-media-empty">No banner</div>
+                  <div className="w-full h-28 rounded-md flex items-center justify-center bg-slate-50 border border-dashed border-slate-200 mb-3 text-sm text-slate-500">
+                    No banner
+                  </div>
                 )}
-                <FileDrop label="Upload banner" onPick={onBanner} />
+
+                {typeof FileDrop !== "undefined" ? (
+                  <div>
+                    <FileDrop label="Upload banner" onPick={onBanner} />
+                  </div>
+                ) : (
+                  <label className="inline-block px-3 py-2 border rounded-md cursor-pointer text-sm bg-white">
+                    Upload banner
+                    <input hidden type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) onBanner(f); e.target.value = ""; }} />
+                  </label>
+                )}
               </div>
             </div>
 
-            <div className="bpe-media-label" style={{ marginTop: 10 }}>
-              Gallery
-            </div>
+            {/* Gallery heading */}
+            <div className="text-sm font-medium text-slate-700 mt-5 mb-3">Gallery</div>
+
             {gallery?.length ? (
-              <div className="bpe-gallery">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {gallery.map((g, i) => (
-                  <figure key={`${String(g)}-${i}`} className="bpe-gimg">
-                    <img src={imageLink(g)} alt={`Gallery ${i + 1}`} />
-                    <figcaption>
+                  <figure key={`${String(g)}-${i}`} className="relative rounded-md overflow-hidden bg-slate-50 border border-slate-100">
+                    <img src={imageLink(g)} alt={`Gallery ${i + 1}`} className="w-full h-28 object-cover" />
+                    <figcaption className="absolute left-2 right-2 bottom-2 flex gap-2 justify-end">
                       <button
                         type="button"
-                        className="btn btn-line"
+                        className="text-xs px-2 py-1 bg-white/90 border rounded-md hover:bg-white"
                         onClick={() => onRemoveGalleryImage(g)}
                       >
                         Remove
@@ -1151,10 +1371,12 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                 ))}
               </div>
             ) : (
-              <div className="bpe-media-empty">No gallery images</div>
+              <div className="text-sm text-slate-500">No gallery images</div>
             )}
-            <div className="bpe-gallery-actions">
-              <label className="btn">
+
+            <div className="mt-4">
+              <label className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm cursor-pointer hover:bg-indigo-700">
+                <span className="text-lg leading-none">+</span>
                 Add images
                 <input
                   hidden
@@ -1171,103 +1393,126 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
             </div>
           </section>
 
+
           {/* Contacts & Socials */}
-          <section className="bpe-card">
-            <div className="bpe-card-title">Contacts & Socials</div>
-            <div className="bpe-two">
+          <section className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">Contacts &amp; Socials</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Contacts */}
               <div>
-                <div className="bpe-subtitle">Contacts</div>
-                {contacts.length === 0 && (
-                  <div className="bpe-muted">No contacts yet.</div>
-                )}
-                {contacts.map((c, idx) => (
-                  <div key={idx} className="bpe-row">
-                    <select
-                      className="bpe-select"
-                      value={c.kind || "email"}
-                      onChange={(e) =>
-                        updateContact(idx, { kind: e.target.value })
-                      }
+                <div className="text-sm font-medium text-slate-700 mb-3">Contacts</div>
+
+                {contacts.length === 0 && <div className="text-sm text-slate-500 mb-3">No contacts yet.</div>}
+
+                <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
+                  {contacts.map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
                     >
-                      <option value="email">email</option>
-                      <option value="phone">phone</option>
-                      <option value="whatsapp">whatsapp</option>
-                    </select>
-                    <input
-                      className="bpe-input"
-                      placeholder="value"
-                      value={c.value || ""}
-                      onChange={(e) =>
-                        updateContact(idx, { value: e.target.value })
-                      }
-                    />
-                    <input
-                      className="bpe-input"
-                      placeholder="label (e.g., Sales)"
-                      value={c.label || ""}
-                      onChange={(e) =>
-                        updateContact(idx, { label: e.target.value })
-                      }
-                    />
-                    <button
-                      className="btn btn-line"
-                      onClick={() => removeContact(idx)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button className="btn" onClick={addContact}>
-                  + Add contact
+                      <select
+                        className="w-full sm:w-36 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
+                        value={c.kind || "email"}
+                        onChange={(e) => updateContact(idx, { kind: e.target.value })}
+                      >
+                        <option value="email">email</option>
+                        <option value="phone">phone</option>
+                        <option value="whatsapp">whatsapp</option>
+                      </select>
+
+                      <input
+                        className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
+                        placeholder="value"
+                        value={c.value || ""}
+                        onChange={(e) => updateContact(idx, { value: e.target.value })}
+                      />
+
+                      <input
+                        className="w-full sm:w-40 rounded-md border border-slate-200 px-3 py-2 text-sm"
+                        placeholder="label (e.g., Sales)"
+                        value={c.label || ""}
+                        onChange={(e) => updateContact(idx, { label: e.target.value })}
+                      />
+
+                      <button
+                        type="button"
+                        className="mt-2 sm:mt-0 inline-flex items-center px-3 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
+                        onClick={() => removeContact(idx)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
+                  onClick={addContact}
+                >
+                  <span className="text-lg leading-none">+</span> Add contact
                 </button>
               </div>
 
+              {/* Socials */}
               <div>
-                <div className="bpe-subtitle">Socials</div>
-                {socials.length === 0 && (
-                  <div className="bpe-muted">No socials yet.</div>
-                )}
-                {socials.map((s, idx) => (
-                  <div key={idx} className="bpe-row">
-                    <select
-                      className="bpe-select"
-                      value={s.kind || "website"}
-                      onChange={(e) =>
-                        updateSocial(idx, { kind: e.target.value })
-                      }
+                <div className="text-sm font-medium text-slate-700 mb-3">Socials</div>
+
+                {socials.length === 0 && <div className="text-sm text-slate-500 mb-3">No socials yet.</div>}
+
+                <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
+                  {socials.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
                     >
-                      <option value="website">website</option>
-                      <option value="linkedin">linkedin</option>
-                      <option value="x">x</option>
-                      <option value="facebook">facebook</option>
-                      <option value="instagram">instagram</option>
-                      <option value="youtube">youtube</option>
-                    </select>
-                    <input
-                      className="bpe-input"
-                      placeholder="https://..."
-                      value={s.url || ""}
-                      onChange={(e) =>
-                        updateSocial(idx, { url: e.target.value })
-                      }
-                    />
-                    <button
-                      className="btn btn-line"
-                      onClick={() => removeSocial(idx)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button className="btn" onClick={addSocial}>
-                  + Add social
+                      <select
+                        className="w-full sm:w-36 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
+                        value={s.kind || "website"}
+                        onChange={(e) => updateSocial(idx, { kind: e.target.value })}
+                      >
+                        <option value="website">website</option>
+                        <option value="linkedin">linkedin</option>
+                        <option value="x">x</option>
+                        <option value="facebook">facebook</option>
+                        <option value="instagram">instagram</option>
+                        <option value="youtube">youtube</option>
+                      </select>
+
+                      <input
+                        className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
+                        placeholder="https://..."
+                        value={s.url || ""}
+                        onChange={(e) => updateSocial(idx, { url: e.target.value })}
+                      />
+
+                      <button
+                        type="button"
+                        className="mt-2 sm:mt-0 inline-flex items-center px-3 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
+                        onClick={() => removeSocial(idx)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
+                  onClick={addSocial}
+                >
+                  <span className="text-lg leading-none">+</span> Add social
                 </button>
               </div>
             </div>
 
-            <div className="bpe-card-actions">
+            <div className="mt-4 flex justify-end">
               <button
-                className="btn"
+                className={`px-4 py-2 rounded-md ${savingContacts ? "bg-slate-300 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
                 onClick={saveContacts}
                 disabled={savingContacts}
               >
@@ -1275,59 +1520,73 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </button>
             </div>
           </section>
-          <section className="bpe-card">
-            <div className="bpe-card-title">Team</div>
+
+          <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">Team</h3>
+            </div>
 
             {/* Current team list */}
             {team.length === 0 ? (
-  <div className="bpe-muted">No team members yet.</div>
-) : (
-  <div className="bpe-list">
-    {team.map((m) => {
-      const name =
-        m?.name ||
-        m?.displayName ||
-        [m?.firstName, m?.lastName].filter(Boolean).join(" ") ||
-        "—";
+              <div className="text-sm text-slate-500">No team members yet.</div>
+            ) : (
+              <div className="overflow-y-auto max-h-[56vh] md:max-h-[66vh] space-y-3 pr-2">
+                {team.map((m) => {
+                  const name =
+                    m?.name ||
+                    m?.displayName ||
+                    [m?.firstName, m?.lastName].filter(Boolean).join(" ") ||
+                    "—";
 
-      const avatar =
-        imageLink(m?.avatarUpload) ||
-        imageLink(m?.photoUpload) ||
-        imageLink(m?.logoUpload) ||
-        imageLink((Array.isArray(m?.images) && m.images[0]) || "") ||
-        initialsAvatar(name);
+                  const avatar =
+                    imageLink(m?.avatarUpload) ||
+                    imageLink(m?.photoUpload) ||
+                    imageLink(m?.logoUpload) ||
+                    imageLink((Array.isArray(m?.images) && m.images[0]) || "") ||
+                    initialsAvatar(name);
 
-      const meta = [m?.entityType, m?.title || m?.position || m?.jobTitle, m?.role]
-        .filter(Boolean)
-        .join(" • ");
+                  const meta = [m?.entityType, m?.title || m?.position || m?.jobTitle, m?.role]
+                    .filter(Boolean)
+                    .join(" • ");
 
-      return (
-        <article key={`${m.entityType}-${m.entityId}`} className="bpe-item">
-          <div className="bpe-gimg -round">
-            <img src={avatar} alt={name} />
-          </div>
-          <div className="bpe-item-main">
-            <div className="bpe-item-title">{name}</div>
-            {meta ? <div className="bpe-item-tax">{meta}</div> : null}
-          </div>
-          <div className="bpe-item-actions">
-            <button
-              className="btn btn-line"
-              disabled={removingMember}
-              onClick={() => onRemovePerson(m)}
-            >
-              Remove
-            </button>
-          </div>
-        </article>
-      );
-    })}
-  </div>
-)}
+                  return (
+                    <article
+                      key={`${m.entityType}-${m.entityId}`}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:shadow-sm"
+                    >
+                      <div className="w-12 h-12 flex-none rounded-full overflow-hidden bg-slate-50">
+                        <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                      </div>
 
-            <div className="bpe-card-actions">
-              <button className="btn" onClick={() => setTeamModalOpen(true)}>
-                + Add team member
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-slate-800 truncate">{name}</div>
+                        </div>
+
+                        {meta ? <div className="text-xs text-slate-500 mt-1 truncate">{meta}</div> : null}
+                      </div>
+
+                      <div className="flex-none">
+                        <button
+                          className="px-3 py-1.5 bg-white border border-rose-200 rounded-md text-sm text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                          disabled={removingMember}
+                          onClick={() => onRemovePerson(m)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="mt-4">
+              <button
+                className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                onClick={() => setTeamModalOpen(true)}
+              >
+                <span className="text-xl leading-none">+</span> Add team member
               </button>
             </div>
 
@@ -1351,128 +1610,129 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               />
             )}
           </section>
+
           {/* Items */}
-          <section className="bpe-card">
-            <div className="bpe-card-title">Items (Products / Services)</div>
+          <section className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-lg font-semibold text-slate-800">Items (Products / Services)</div>
+              <button
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                onClick={() =>
+                  setEditingItem({
+                    title: "",
+                    descr: "",
+                    price: "",
+                    priceValue: 0,
+                    priceCurrency: "TND",
+                    priceUnit: "",
+                    tags: [],
+                    images: [],
+                    sector: "",
+                    subsectorId: "",
+                    kind: "product",
+                  })
+                }
+              >
+                <span className="text-xl leading-none">+</span> New Item
+              </button>
+            </div>
 
-            <div className="bpe-two">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left: items list */}
               <div>
-                <button
-                  className="btn"
-                  onClick={() =>
-                    setEditingItem({
-                      title: "",
-                      descr: "",
-                      price: "",            // keeps your note field (unchanged)
-                      priceValue: 0,        // NEW numeric price
-                      priceCurrency: "TND", // default
-                      priceUnit: "",
-                      tags: [],
-                      images: [],
-                      sector: "",
-                      subsectorId: "",
-                      kind: "product",
-                    })
-                  }
-                >
-                  + New Item
-                </button>
+                <div className="overflow-y-auto max-h-[56vh] md:max-h-[66vh] pr-2 space-y-3">
+                  {(items || []).length === 0 && (
+                    <div className="text-sm text-slate-500">No items yet. Create one with "New Item".</div>
+                  )}
 
-                <div className="bpe-list">
                   {(items || []).map((it) => {
-                    // Prefer explicit thumbnailUpload; else first image if present
                     const thumbSrc =
-                      (it.thumbnailUpload
-                        ? imageLink(it.thumbnailUpload)
-                        : "") ||
-                      (Array.isArray(it.images) && it.images.length
-                        ? imageLink(it.images[0])
-                        : "");
+                      (it.thumbnailUpload ? imageLink(it.thumbnailUpload) : "") ||
+                      (Array.isArray(it.images) && it.images.length ? imageLink(it.images[0]) : "");
+                    const priceValue = typeof it.priceValue === "number" ? it.priceValue : 0;
+
                     return (
-                      <article key={it._id} className="bpe-item">
+                      <article
+                        key={it._id}
+                        className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 hover:shadow-sm"
+                      >
                         {thumbSrc ? (
-                          <div className="bpe-gimg">
-                            <img src={thumbSrc} alt="" />
+                          <div className="w-16 h-16 flex-none rounded-md overflow-hidden bg-slate-50">
+                            <img src={thumbSrc} alt={it.title || "item"} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="bpe-item-thumb -empty" />
+                          <div className="w-16 h-16 flex-none rounded-md bg-slate-100 flex items-center justify-center text-slate-400">
+                            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path d="M3 7h18M3 12h18M3 17h18" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
                         )}
 
-                        <div className="bpe-item-main">
-                          <div className="bpe-item-title">
-                            {it.title || "Untitled"}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-slate-800 truncate">{it.title || "Untitled"}</div>
+                            <div className="text-sm text-slate-500">{it.kind === "service" ? "Service" : "Product"}</div>
                           </div>
 
-                          {it.sector || it.subsectorName ? (
-                            <div className="bpe-item-tax">
+                          {(it.sector || it.subsectorName) && (
+                            <div className="text-xs text-slate-500 mt-1">
                               {it.sector || ""}
                               {it.sector && it.subsectorName ? " • " : ""}
                               {it.subsectorName || ""}
                             </div>
-                          ) : null}
+                          )}
 
-                          {it.pricingNote ? (
-                            <div className="bpe-item-price">
-                              {it.pricingNote}
+                          {it.pricingNote && <div className="mt-2 text-sm text-slate-600">{it.pricingNote}</div>}
+
+                          {priceValue > 0 && (
+                            <div className="mt-2 text-sm font-semibold text-slate-700">
+                              {`${it.priceCurrency || ""} ${priceValue}${it.priceUnit ? " " + it.priceUnit : ""}`}
                             </div>
-                          ) : null}
-                          {(typeof it.priceValue === 'number' && it.priceValue > 0) ? (
-                              <div className="bpe-item-price">
-                                {`${it.priceCurrency || ''} ${it.priceValue}${it.priceUnit ? ' ' + it.priceUnit : ''}`}
-                              </div>
-                            ) : null}
-                        </div>
+                          )}
 
-                        <div className="bpe-item-actions">
-                          <button
-                            className="btn btn-line"
-                            onClick={() => {
-                              // map backend fields to editor fields
-                              const descr = it.details || it.summary || "";
-                              const price = it.pricingNote || "";
-                              const priceValue = typeof it.priceValue === 'number' ? it.priceValue : 0;
-                              const priceCurrency = it.priceCurrency || 'TND';
-                              const priceUnit = it.priceUnit || '';
-                              const tags = Array.isArray(it.tags)
-                                ? it.tags
-                                : [];
+                          <div className="mt-3 flex gap-2">
+                            <button
+                              className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-sm hover:bg-slate-50"
+                              onClick={() => {
+                                const descr = it.details || it.summary || "";
+                                const price = it.pricingNote || "";
+                                const priceValueLocal = typeof it.priceValue === "number" ? it.priceValue : 0;
+                                const priceCurrency = it.priceCurrency || "TND";
+                                const priceUnit = it.priceUnit || "";
+                                const tags = Array.isArray(it.tags) ? it.tags : [];
 
-                              // try to restore subsectorId from subsectorName if missing
-                              let nextSubId = it.subsectorId || "";
-                              if (!nextSubId && it.sector && it.subsectorName) {
-                                const row = sectorByKey.get(
-                                  String(it.sector).toLowerCase()
-                                );
-                                const found = row?.subsectors?.find(
-                                  (s) =>
-                                    String(s.name).toLowerCase() ===
-                                    String(it.subsectorName).toLowerCase()
-                                );
-                                if (found?._id) nextSubId = String(found._id);
-                              }
+                                let nextSubId = it.subsectorId || "";
+                                if (!nextSubId && it.sector && it.subsectorName) {
+                                  const row = sectorByKey.get(String(it.sector).toLowerCase());
+                                  const found = row?.subsectors?.find(
+                                    (s) => String(s.name).toLowerCase() === String(it.subsectorName).toLowerCase()
+                                  );
+                                  if (found?._id) nextSubId = String(found._id);
+                                }
 
-                              setEditingItem({
-                                ...it,
-                                sector: String(it.sector || "").toLowerCase(),
-                                subsectorId: nextSubId,
-                                descr,
-                                price,
-                                price,
-                                priceValue,
-                                priceCurrency,
-                                priceUnit,
-                                tags,
-                              });
-                            }}
-                          >
-                            Edit
-                          </button>{" "}
-                          <button
-                            className="btn btn-line"
-                            onClick={() => onDeleteItem(it._id)}
-                          >
-                            Delete
-                          </button>
+                                setEditingItem({
+                                  ...it,
+                                  sector: String(it.sector || "").toLowerCase(),
+                                  subsectorId: nextSubId,
+                                  descr,
+                                  price,
+                                  priceValue: priceValueLocal,
+                                  priceCurrency,
+                                  priceUnit,
+                                  tags,
+                                });
+                              }}
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              className="px-3 py-1.5 bg-white border border-rose-200 rounded-md text-sm text-rose-600 hover:bg-rose-50"
+                              onClick={() => onDeleteItem(it._id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </article>
                     );
@@ -1480,50 +1740,57 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                 </div>
               </div>
 
+              {/* Right: editor */}
               <div>
                 {!editingItem ? (
-                  <div className="bpe-muted">
-                    Select or create an item to edit.
-                  </div>
+                  <div className="p-6 rounded-md bg-slate-50 text-slate-600">Select or create an item to edit.</div>
                 ) : (
-                  <div className="bpe-item-editor">
-                    {itemErr ? (
-                      <div className="bpe-alert">{itemErr}</div>
-                    ) : null}
+                  <div className="space-y-4">
+                    {itemErr && <div className="p-2 rounded-md bg-rose-50 text-rose-700">{itemErr}</div>}
 
-                    <Field label="Title">
-                      <TextInput
-                        value={editingItem.title || ""}
-                        onChange={(v) =>
-                          setEditingItem((s) => ({ ...s, title: v }))
+                    {/* Title */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Title</label>
+                      {TextInput ? (
+                        <TextInput value={editingItem.title || ""} onChange={(v) => setEditingItem((s) => ({ ...s, title: v }))} />
+                      ) : (
+                        <input
+                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                          value={editingItem.title || ""}
+                          onChange={(e) => setEditingItem((s) => ({ ...s, title: e.target.value }))}
+                          placeholder="Item title"
+                        />
+                      )}
+                    </div>
+
+                    {/* Sector */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Sector</label>
+                      <select
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                        value={editingItem.sector || ""}
+                        onChange={(e) =>
+                          setEditingItem((s) => ({
+                            ...s,
+                            sector: e.target.value,
+                            subsectorId: "",
+                          }))
                         }
-                      />
-                    </Field>
+                      >
+                        <option value="">Select a sector</option>
+                        {itemSectorOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {titleize ? titleize(opt.label) : opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                    <Field label="Sector">
+                    {/* Subsector */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Subsector</label>
                       <select
-    className="bpe-select"
-    value={editingItem.sector || ""}
-    onChange={(e) =>
-      setEditingItem((s) => ({
-        ...s,
-        sector: e.target.value,
-       subsectorId: "",
-      }))
-    }
-  >
-  <option value="">Select a sector</option>
-    {itemSectorOptions.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-       {titleize(opt.label)}
-    </option>
-    ))}
-  </select>
-                    </Field>
-
-                    <Field label="Subsector">
-                      <select
-                        className="bpe-select"
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                         value={editingItem.subsectorId || ""}
                         onChange={(e) =>
                           setEditingItem((s) => ({
@@ -1533,181 +1800,191 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                         }
                         disabled={!editingItem.sector}
                       >
-                        <option value="">
-                          {editingItem.sector
-                            ? "Select a subsector"
-                            : "Pick a sector first"}
-                        </option>
+                        <option value="">{editingItem.sector ? "Select a subsector" : "Pick a sector first"}</option>
                         {itemSubsectorOptions.map((ss) => (
                           <option key={ss._id} value={ss._id}>
                             {ss.name}
                           </option>
                         ))}
                       </select>
-                    </Field>
+                    </div>
 
-                    <Field label="Kind">
-                      <Select
-                        value={editingItem.kind || "product"}
-                        onChange={(v) =>
-                          setEditingItem((s) => ({ ...s, kind: v }))
-                        }
-                        options={["product", "service"]}
-                        placeholder="Select kind"
-                      />
-                    </Field>
+                    {/* Kind */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Kind</label>
+                      {Select ? (
+                        <Select
+                          value={editingItem.kind || "product"}
+                          onChange={(v) => setEditingItem((s) => ({ ...s, kind: v }))}
+                          options={["product", "service"]}
+                          placeholder="Select kind"
+                        />
+                      ) : (
+                        <div className="flex gap-3 items-center">
+                          <label className="inline-flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              name="kind"
+                              value="product"
+                              checked={(editingItem.kind || "product") === "product"}
+                              onChange={() => setEditingItem((s) => ({ ...s, kind: "product" }))}
+                            />
+                            Product
+                          </label>
+                          <label className="inline-flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              name="kind"
+                              value="service"
+                              checked={(editingItem.kind || "product") === "service"}
+                              onChange={() => setEditingItem((s) => ({ ...s, kind: "service" }))}
+                            />
+                            Service
+                          </label>
+                        </div>
+                      )}
+                    </div>
 
-                    <Field label="Description">
-                      <TextArea
-                        rows={6}
-                        value={editingItem.descr || ""}
-                        onChange={(v) =>
-                          setEditingItem((s) => ({ ...s, descr: v }))
-                        }
-                      />
-                    </Field>
+                    {/* Description */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Description</label>
+                      {TextArea ? (
+                        <TextArea rows={6} value={editingItem.descr || ""} onChange={(v) => setEditingItem((s) => ({ ...s, descr: v }))} />
+                      ) : (
+                        <textarea
+                          rows={5}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                          value={editingItem.descr || ""}
+                          onChange={(e) => setEditingItem((s) => ({ ...s, descr: e.target.value }))}
+                        />
+                      )}
+                    </div>
 
-                    <Field label="Price">
-                      <TextInput
-                        value={editingItem.price || ""}
-                        onChange={(v) => setEditingItem((s) => ({ ...s, price: v }))}
-                        placeholder="Optional note (e.g., negotiable)"
-                      />
-
-                      {/* Structured price row */}
-                      <div style={{ display: "grid", gridTemplateColumns: "140px 130px 1fr", gap: 8, marginTop: 8 }}>
+                    {/* Price */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Price</label>
+                      {TextInput ? (
+                        <TextInput value={editingItem.price || ""} onChange={(v) => setEditingItem((s) => ({ ...s, price: v }))} placeholder="Optional note (e.g., negotiable)" />
+                      ) : (
                         <input
-                          className="bpe-input"
+                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                          value={editingItem.price || ""}
+                          onChange={(e) => setEditingItem((s) => ({ ...s, price: e.target.value }))}
+                          placeholder="Optional note (e.g., negotiable)"
+                        />
+                      )}
+
+                      <div className="mt-3 grid grid-cols-[140px_130px_1fr] gap-2">
+                        <input
+                          className="rounded-md border border-slate-200 px-3 py-2 text-sm"
                           type="number"
                           min="0"
                           step="0.01"
                           value={editingItem.priceValue ?? 0}
-                          onChange={(e) =>
-                            setEditingItem((s) => ({ ...s, priceValue: Number(e.target.value) }))
-                          }
+                          onChange={(e) => setEditingItem((s) => ({ ...s, priceValue: Number(e.target.value) }))}
                           placeholder="0"
                           title="0 = do not show price"
                         />
                         <select
-                          className="bpe-select"
+                          className="rounded-md border border-slate-200 px-3 py-2 text-sm"
                           value={editingItem.priceCurrency || "TND"}
-                          onChange={(e) =>
-                            setEditingItem((s) => ({ ...s, priceCurrency: e.target.value }))
-                          }
+                          onChange={(e) => setEditingItem((s) => ({ ...s, priceCurrency: e.target.value }))}
                           disabled={!(editingItem.priceValue > 0)}
                           title="Currency"
                         >
                           {CURRENCIES.map((c) => (
-                            <option key={c} value={c}>{c}</option>
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
                           ))}
                         </select>
                         <select
-                          className="bpe-select"
+                          className="rounded-md border border-slate-200 px-3 py-2 text-sm"
                           value={editingItem.priceUnit || ""}
-                          onChange={(e) =>
-                            setEditingItem((s) => ({ ...s, priceUnit: e.target.value }))
-                          }
+                          onChange={(e) => setEditingItem((s) => ({ ...s, priceUnit: e.target.value }))}
                           disabled={!(editingItem.priceValue > 0)}
                           title="Unit"
                         >
                           {UNITS.map((u) => (
-                            <option key={u.value} value={u.value}>{u.label}</option>
+                            <option key={u.value} value={u.value}>
+                              {u.label}
+                            </option>
                           ))}
                         </select>
                       </div>
-                      <div className="bpe-hint">Set price to <b>0</b> to hide structured price.</div>
-                    </Field>
-
-                    <Field label="Tags">
-                      <ArrayInput
-                        values={
-                          Array.isArray(editingItem.tags)
-                            ? editingItem.tags
-                            : []
-                        }
-                        onChange={(v) =>
-                          setEditingItem((s) => ({ ...s, tags: v }))
-                        }
-                      />
-                    </Field>
-
-                    {/* Item images */}
-                    <div className="bpe-subtitle">Images</div>
-                    <div className="bpe-gallery">
-                      {(editingItem.images || []).map((img, idx) => {
-                        const src = imageLink(img?.url || img);
-                        const idOrUpload =
-                          img?.imageId || img?.uploadId || img?.id || img;
-                        return (
-                          <figure
-                            key={`${String(idOrUpload)}-${idx}`}
-                            className="bpe-gimg"
-                          >
-                            <img src={src} alt="Item" />
-                            <figcaption>
-                              <button
-                                type="button"
-                                className="btn btn-line"
-                                onClick={() => onRemoveItemImage(idOrUpload)}
-                              >
-                                Remove
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-line"
-                                onClick={() => onSetItemThumb(idOrUpload)}
-                              >
-                                Set thumbnail
-                              </button>
-                            </figcaption>
-                          </figure>
-                        );
-                      })}
+                      <div className="text-xs text-slate-500 mt-1">Set price to <b>0</b> to hide structured price.</div>
                     </div>
 
-                    {editingItem._id ? (
-                      <label
-                        className={`btn btn-line ${
-                          editingItem._id ? "" : "is-disabled"
-                        }`}
-                        title={
-                          editingItem._id ? "Upload images" : "Save item first"
-                        }
-                      >
-                        {" "}
-                        Add images
+                    {/* Tags */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Tags</label>
+                      {ArrayInput ? (
+                        <ArrayInput values={Array.isArray(editingItem.tags) ? editingItem.tags : []} onChange={(v) => setEditingItem((s) => ({ ...s, tags: v }))} />
+                      ) : (
                         <input
-                          hidden
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const files = Array.from(e.target.files || []);
-                            if (!files.length) return;
-                            if (!editingItem._id) {
-                              alert("Save the item first, then add images.");
-                              e.target.value = "";
-                              return;
-                            }
-                            await onAddItemImages(files);
-                            e.target.value = "";
-                          }}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                          value={(editingItem.tags || []).join(", ")}
+                          onChange={(e) => setEditingItem((s) => ({ ...s, tags: String(e.target.value).split(",").map((t) => t.trim()).filter(Boolean) }))}
+                          placeholder="comma, separated, tags"
                         />
-                      </label>
-                    ) : (
-                      <div className="bpe-hint">
-                        Save the item first to upload images.
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    <div className="bpe-actions">
-                      <button className="btn" onClick={onSaveItem}>
+                    {/* Images */}
+                    <div>
+                      <div className="text-sm font-medium mb-2">Images</div>
+                      <div className="flex flex-wrap gap-3">
+                        {(editingItem.images || []).map((img, idx) => {
+                          const src = imageLink(img?.url || img);
+                          const idOrUpload = img?.imageId || img?.uploadId || img?.id || img;
+                          return (
+                            <figure key={`${String(idOrUpload)}-${idx}`} className="w-24">
+                              <img src={src} alt="Item" className="w-24 h-24 object-cover rounded-md" />
+                              <figcaption className="mt-2 flex gap-1">
+                                <button type="button" className="text-xs px-2 py-1 border rounded-md" onClick={() => onRemoveItemImage(idOrUpload)}>
+                                  Remove
+                                </button>
+                                <button type="button" className="text-xs px-2 py-1 border rounded-md" onClick={() => onSetItemThumb(idOrUpload)}>
+                                  Set thumbnail
+                                </button>
+                              </figcaption>
+                            </figure>
+                          );
+                        })}
+                      </div>
+
+                      {editingItem._id ? (
+                        <label className="inline-block mt-3 text-sm px-3 py-2 border rounded-md cursor-pointer">
+                          Add images
+                          <input
+                            hidden
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (!files.length) return;
+                              if (!editingItem._id) {
+                                alert("Save the item first, then add images.");
+                                e.target.value = "";
+                                return;
+                              }
+                              await onAddItemImages(files);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                      ) : (
+                        <div className="text-xs text-slate-500 mt-2">Save the item first to upload images.</div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <button className="px-4 py-2 bg-indigo-600 text-white rounded-md" onClick={onSaveItem}>
                         Save item
                       </button>
-                      <button
-                        className="btn btn-line"
-                        onClick={() => setEditingItem(null)}
-                      >
+                      <button className="px-4 py-2 border rounded-md" onClick={() => setEditingItem(null)}>
                         Cancel
                       </button>
                     </div>
@@ -1716,6 +1993,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </div>
             </div>
           </section>
+
         </main>
       </div>
 

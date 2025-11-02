@@ -559,7 +559,7 @@ const tooLow = dataScore.tooLow;
           members={teamResp } //teamMembers}
           onMessage={(m) => navigate(`/messages?member=${m.entityId}`)}
           onMeet={(m) => navigate(`/team?prefill=${m.entityId}`)}
-          onProfile={(m) => navigate(`/member/${m.entityType}/${m.entityId}`)}
+          onProfile={(m) => navigate(`/profile/${m.entityId}`)}
         />
       )}
 

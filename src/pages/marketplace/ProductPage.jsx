@@ -7,11 +7,10 @@ import Footer from "../../components/footer/Footer";
 import { topbar, nav, cta, footerData } from "../main.mock";
 import { useGetMarketItemQuery } from "../../features/bp/BPApiSlice";
 import imageLink from "../../utils/imageLink";
-import "./product-page.css";
 
 const cap = (s = "") => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const fmtPrice = (v, cur, unit, note) => {
-  const num = typeof v === "number" ? v : (v ? Number(v) : null);
+  const num = typeof v === "number" ? v : v ? Number(v) : null;
   if (!num || num === 0) return note || "";
   return `${num} ${cur || ""}${unit ? ` / ${unit}` : ""}`.trim();
 };
@@ -61,9 +60,9 @@ export default function ProductPage({ fallbackProduct }) {
   const notFoundUI = (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
-      <main className="pd">
-        <div className="pd-container">
-          <div className="pd-card pd-empty">Item not found.</div>
+      <main className="bg-slate-50 min-h-[60vh]">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="bg-white rounded-lg shadow p-8 text-center text-slate-700">Item not found.</div>
         </div>
       </main>
       <Footer
@@ -80,9 +79,19 @@ export default function ProductPage({ fallbackProduct }) {
     return (
       <>
         <HeaderShell top={topbar} nav={nav} cta={cta} />
-        <main className="pd">
-          <div className="pd-container">
-            <div className="pd-skel" />
+        <main className="bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 py-12">
+            <div className="animate-pulse">
+              <div className="h-44 rounded-lg bg-slate-200 mb-6" />
+              <div className="space-y-4">
+                <div className="h-6 bg-slate-200 rounded w-3/4" />
+                <div className="h-4 bg-slate-200 rounded w-1/3" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="h-40 bg-slate-200 rounded" />
+                  <div className="h-40 bg-slate-200 rounded md:col-span-2" />
+                </div>
+              </div>
+            </div>
           </div>
         </main>
         <Footer
@@ -104,60 +113,90 @@ export default function ProductPage({ fallbackProduct }) {
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
 
-      <main className="pd">
+      <main className="bg-slate-50">
         {/* header */}
-        <section className="pd-head">
-          <div className={`pd-cover ${cover ? "has" : ""}`} style={cover ? { backgroundImage: `url(${cover})` } : undefined} />
-          <div className="pd-hmeta">
-            <h1 className="pd-title">{title}</h1>
+        <section className="relative">
+          <div
+            className={`w-full h-56 md:h-72 bg-slate-100 ${cover ? "" : "bg-gradient-to-r from-slate-100 to-white"}`}
+            style={cover ? { backgroundImage: `url(${cover})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+            aria-hidden
+          />
+          <div className="max-w-6xl mx-auto px-4 -mt-16 md:-mt-20">
+            <div className="bg-white rounded-lg shadow p-6 md:p-8">
+              <div className="md:flex md:items-start md:gap-6">
+                <div className="flex-shrink-0 w-full md:w-48">
+                  {cover ? (
+                    <div className="w-full h-32 md:h-40 rounded-md overflow-hidden bg-slate-50 border">
+                      <img src={cover} alt={title} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-full h-32 md:h-40 rounded-md bg-slate-100 border flex items-center justify-center text-slate-400">
+                      No image
+                    </div>
+                  )}
+                </div>
 
-            <div className="pd-chips">
-              {kind ? <span className="chip">{kind}</span> : null}
-              {sector ? <span className="chip">{sector}</span> : null}
-              {subsector ? <span className="chip">{subsector}</span> : null}
-              {priceStr ? <span className="chip chip-strong">{priceStr}</span> : null}
-            </div>
+                <div className="mt-4 md:mt-0 flex-1">
+                  <h1 className="text-2xl md:text-3xl font-semibold text-slate-800">{title}</h1>
 
-            {/* BP inline */}
-            {(bp.name || bp.logo) && (
-              <div className="pd-bp">
-                {bp.logo ? <img className="pd-bp-logo" src={bp.logo} alt={bp.name} /> : <div className="pd-bp-logo" />}
-                <div className="pd-bp-meta">
-                  <div className="pd-bp-name">{bp.name || "—"}</div>
-                  <div className="pd-bp-tags">
-                    {bp.industries?.slice(0, 3).map((t) => (
-                      <span className="chip chip-soft" key={`ind-${t}`}>{cap(t)}</span>
-                    ))}
-                    {bp.languages?.slice(0, 3).map((t) => (
-                      <span className="chip chip-soft" key={`lng-${t}`}>{cap(t)}</span>
-                    ))}
-                    {bp.countries?.slice(0, 2).map((t) => (
-                      <span className="chip chip-soft" key={`cty-${t}`}>{cap(t)}</span>
-                    ))}
+                  <div className="mt-3 flex flex-wrap gap-2 items-center">
+                    {kind && <span className="text-xs md:text-sm px-2 py-1 bg-slate-100 rounded-full text-slate-700">{kind}</span>}
+                    {sector && <span className="text-xs md:text-sm px-2 py-1 bg-slate-100 rounded-full text-slate-700">{sector}</span>}
+                    {subsector && <span className="text-xs md:text-sm px-2 py-1 bg-slate-100 rounded-full text-slate-700">{subsector}</span>}
+                    {priceStr && <span className="text-xs md:text-sm px-2 py-1 rounded-full bg-indigo-600 text-white font-medium">{priceStr}</span>}
+                  </div>
+
+                  {/* BP inline */}
+                  {(bp.name || bp.logo) && (
+                    <div className="mt-4 md:flex md:items-center md:gap-4">
+                      <div className="flex items-center gap-3">
+                        {bp.logo ? (
+                          <img src={bp.logo} alt={bp.name} className="w-12 h-12 object-contain rounded-md border bg-white" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-md bg-slate-100 border" />
+                        )}
+                        <div>
+                          <div className="text-sm font-medium text-slate-800">{bp.name || "—"}</div>
+                          <div className="flex gap-2 mt-1 flex-wrap">
+                            {bp.industries?.slice(0, 3).map((t) => (
+                              <span key={`ind-${t}`} className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-700">{cap(t)}</span>
+                            ))}
+                            {bp.languages?.slice(0, 3).map((t) => (
+                              <span key={`lng-${t}`} className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-700">{cap(t)}</span>
+                            ))}
+                            {bp.countries?.slice(0, 2).map((t) => (
+                              <span key={`cty-${t}`} className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-700">{cap(t)}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {bpHref ? (
+                      <a href={bpHref} className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm">View company</a>
+                    ) : null}
+                    <a href="/market" className="inline-block px-4 py-2 border rounded-md text-slate-700 bg-white">Back to market</a>
                   </div>
                 </div>
               </div>
-            )}
-
-            <div className="pd-cta">
-              {bpHref ? <a className="pd-btn" href={bpHref}>View company</a> : null}
-              <a className="pd-btn pd-btn-ghost" href="/market">Back to market</a>
             </div>
           </div>
         </section>
 
         {/* body */}
-        <section className="pd-body">
-          <div className="pd-grid">
+        <section className="max-w-6xl mx-auto px-4 py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* left */}
-            <article className="pd-card">
-              {summary ? <p className="pd-text">{summary}</p> : null}
-              {details ? <div className="pd-rich" dangerouslySetInnerHTML={{ __html: details }} /> : null}
+            <article className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+              {summary ? <p className="text-slate-700">{summary}</p> : null}
+              {details ? <div className="mt-4 prose max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: details }} /> : null}
 
               {tags?.length ? (
                 <>
-                  <h3 className="pd-h3">Highlights</h3>
-                  <ul className="pd-list">
+                  <h3 className="mt-6 text-lg font-semibold text-slate-800">Highlights</h3>
+                  <ul className="list-disc list-inside mt-2 space-y-1 text-slate-700">
                     {tags.map((t) => (
                       <li key={t}>{t}</li>
                     ))}
@@ -167,10 +206,18 @@ export default function ProductPage({ fallbackProduct }) {
 
               {gallery?.length ? (
                 <>
-                  <h3 className="pd-h3">Gallery</h3>
-                  <div className="pd-gallery">
+                  <h3 className="mt-6 text-lg font-semibold text-slate-800">Gallery</h3>
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {gallery.map((src, i) => (
-                      <a className="pd-gimg" key={`${src}-${i}`} href={src} target="_blank" rel="noreferrer" style={{ backgroundImage: `url(${src})` }} />
+                      <a
+                        key={`${src}-${i}`}
+                        href={src}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block w-full h-36 rounded-md bg-center bg-cover border"
+                        style={{ backgroundImage: `url(${src})` }}
+                        aria-label={`Gallery ${i + 1}`}
+                      />
                     ))}
                   </div>
                 </>
@@ -179,39 +226,43 @@ export default function ProductPage({ fallbackProduct }) {
 
             {/* right */}
             {(bp.name || bp.logo) && (
-              <aside className="pd-card pd-bpcard">
-                <div className="pd-bp-row">
-                  {bp.logo ? <img className="pd-bp-logo lg" src={bp.logo} alt={bp.name} /> : <div className="pd-bp-logo lg" />}
+              <aside className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center gap-4">
+                  {bp.logo ? (
+                    <img src={bp.logo} alt={bp.name} className="w-16 h-16 object-contain rounded-md border bg-white" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-md bg-slate-100 border" />
+                  )}
                   <div>
-                    <div className="pd-bp-name">{bp.name || "—"}</div>
-                    <div className="pd-bp-tags">
+                    <div className="text-sm font-medium text-slate-800">{bp.name || "—"}</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
                       {bp.industries?.slice(0, 4).map((t) => (
-                        <span className="chip chip-soft" key={`i-${t}`}>{cap(t)}</span>
+                        <span key={`i-${t}`} className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-700">{cap(t)}</span>
                       ))}
                     </div>
                   </div>
                 </div>
 
                 {(bp.countries?.length || bp.languages?.length) ? (
-                  <div className="pd-kv">
+                  <div className="mt-6 space-y-3 text-sm text-slate-700">
                     {bp.countries?.length ? (
-                      <div className="pd-kv-row">
-                        <div className="pd-k">Countries</div>
-                        <div className="pd-v">{bp.countries.map(cap).join(", ")}</div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-24 text-slate-500">Countries</div>
+                        <div className="flex-1">{bp.countries.map(cap).join(", ")}</div>
                       </div>
                     ) : null}
                     {bp.languages?.length ? (
-                      <div className="pd-kv-row">
-                        <div className="pd-k">Languages</div>
-                        <div className="pd-v">{bp.languages.map(cap).join(", ")}</div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-24 text-slate-500">Languages</div>
+                        <div className="flex-1">{bp.languages.map(cap).join(", ")}</div>
                       </div>
                     ) : null}
                   </div>
                 ) : null}
 
-                <div className="pd-actions">
-                  {bpHref ? <a className="pd-btn" href={bpHref}>Open Business Profile</a> : null}
-                  <a className="pd-btn pd-btn-ghost" href="/messages">Contact Supplier</a>
+                <div className="mt-6 flex flex-col gap-3">
+                  {bpHref ? <a className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md text-center" href={bpHref}>Open Business Profile</a> : null}
+                  <a className="inline-block px-4 py-2 border rounded-md text-center text-slate-700 bg-white" href="/messages">Contact Supplier</a>
                 </div>
               </aside>
             )}
