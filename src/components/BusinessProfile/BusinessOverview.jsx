@@ -124,7 +124,21 @@ export default function BusinessOverview({
     responseTime != null;
 
   const galleryList = Array.isArray(gallery) ? gallery.filter(Boolean) : [];
+  const hasLen  = (v) => Array.isArray(v) && v.length > 0;
+const hasNum  = (v) => v !== null && v !== undefined; // 0 is valid
+const hasTech = hasLen(techStack);
+const hasLoc  = hasLen(locations);
+const hasCert = hasLen(certifications);
 
+const hasInnovation = hasNum(innovation?.patents) || hasNum(innovation?.rdSpendPct) || hasTech;
+const hasPresence   = (offerings?.length || lookingFor?.length || capabilities?.length);
+const inno =(innovation?.patents != null ||
+        innovation?.rdSpendPct != null ||
+        techStack.length ||
+        locations.length ||
+        certifications.length);
+
+const inno1 =(innovation?.patents != null || innovation?.rdSpendPct != null || techStack.length)
   return (
     <section className="bpov my-2">
       {/* Rating & Industries header row */}
@@ -159,7 +173,7 @@ export default function BusinessOverview({
       )}
 
       {/* Offer / Looking for + capabilities */}
-      {(offerings?.length || lookingFor?.length || capabilities?.length) && (
+      {hasPresence && (
         <div className="bpov-rows my-2">
           {offerings?.length ? (
             <div className="bpov-card ">
@@ -288,13 +302,9 @@ export default function BusinessOverview({
       ) : null}
 
       {/* Innovation & Presence */}
-      {(innovation?.patents != null ||
-        innovation?.rdSpendPct != null ||
-        techStack.length ||
-        locations.length ||
-        certifications.length) && (
+      {inno && (
         <div className="bpov-rows">
-          {(innovation?.patents != null || innovation?.rdSpendPct != null || techStack.length) && (
+          {inno1 ? (
             <div className="bpov-card">
               <div className="bpov-card-head">
                 <h3>Innovation</h3>
@@ -313,7 +323,7 @@ export default function BusinessOverview({
                 </div>
               ) : null}
             </div>
-          )}
+          ): null}
 
           {(locations.length || certifications.length) && (
             <div className="bpov-card">

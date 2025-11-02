@@ -1,7 +1,7 @@
 import React from "react";
 import "./business-profile-sectors.css";
 import imageLink from "../../utils/imageLink";
-
+const CUR_SYM = { USD:"$", EUR:"€", GBP:"£", JPY:"¥", CNY:"¥", INR:"₹", TND:"TND", AED:"AED", SAR:"SAR" };
 /* tiny inline icons (no deps) */
 const I = {
   sector: () => (
@@ -41,27 +41,24 @@ const getThumb = (it) => {
    - if 0 or missing => hide price entirely
    - if pricingNote exists use it instead */
 const renderPrice = (it) => {
-  if (it?.pricingNote) return <div className="bps-price">{it.pricingNote}$</div>;
+  const note = String(it?.pricingNote || "").trim();
+  if (note) return <div className="bps-price">{note}</div>;
 
-  const val = Number(it?.price?.value);
-  if (Number.isFinite(val) && val > 0) {
-    const formatAmount = (n) =>
-      (n % 1 === 0)
-        ? n.toLocaleString()
-        : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // support new flat fields + legacy nested
+  const vRaw = (it?.priceValue ?? it?.price?.value);
+  const val = Number(vRaw);
+  if (!Number.isFinite(val) || val <= 0) return <span/>;
 
-    const unit = it?.price?.unit ? <span className="bps-muted"> / {it.price.unit}</span> : null;
+  const cur = String(it?.priceCurrency ?? it?.price?.currency ?? "").toUpperCase();
+  const sym = CUR_SYM[cur] || (cur || "$");
+  const unit = (it?.priceUnit ?? it?.price?.unit) ? ` / ${it.priceUnit ?? it.price?.unit}` : "";
 
-    // always display a dollar sign, per requirement
-    return (
-      <div className="bps-price">
-        ${formatAmount(val)}{unit}
-      </div>
-    );
-  }
-  return <span />; // keep layout
+  const fmt = (n) => (n % 1 === 0)
+    ? n.toLocaleString()
+    : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return <div className="bps-price">{sym}{fmt(val)}{unit && <span className="bps-muted">{unit}</span>}</div>;
 };
-
 /**
  * Props:
  * sectors: [
@@ -74,7 +71,7 @@ const renderPrice = (it) => {
  * ]
  * onItemClick?: (item)=>void
  */
-export default function BusinessProfileSectorsTab({ sectors = [], onItemClick }) {
+export default function BusinessProfileSectorsTab({ sectors = [], onItemClick , profileHasAnySector = true }) {
   const data = Array.isArray(sectors) ? sectors : [];
   const [active, setActive] = React.useState(0);
   const [expanded, setExpanded] = React.useState(() => new Set()); // subsector ids
@@ -87,16 +84,24 @@ export default function BusinessProfileSectorsTab({ sectors = [], onItemClick })
     });
   };
 
-  if (!data.length) {
-    return (
-      <section className="bps bps--min">
-        <div className="container bps-empty-main">
-          <div className="bps-empty-big">No products or services yet.</div>
-          <div className="bps-empty-sub">Check back soon — this company hasn’t published any items.</div>
+ if (!data.length) {
+  return (
+    <section className="bps bps--min">
+      <div className="container bps-empty-main">
+        <div className="bps-empty-big">
+          {profileHasAnySector
+            ? "No products or services yet."
+            : "No products available."}
         </div>
-      </section>
-    );
-  }
+        <div className="bps-empty-sub">
+          {profileHasAnySector
+            ? "Check back soon — this company hasn’t published any items."
+            : "This business profile doesn’t have any published products (no sector selected)."}
+        </div>
+      </div>
+    </section>
+  );
+}
 
   const clampedActive = Math.min(active, data.length - 1);
   const sector = data[clampedActive];

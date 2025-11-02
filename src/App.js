@@ -79,6 +79,9 @@ import AdminScanMeet from './pages/admin/scan/AdminScanMeet';
 import AdminScanSession from './pages/admin/scan/AdminScanSession';
 import AdminActorInvitesPage from './pages/admin/AdminActorInvitesPage';
 import MarketPage from './pages/marketplace/MarketPage';
+import AdminBpOverview from './pages/admin/bp/AdminBpOverview';
+import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
+import AdminBpTools from './pages/admin/bp/AdminBpTools';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -172,6 +175,9 @@ function App() {
             <Route path="/admin/scanActor" element={<AdminScanActor/>} />
             <Route path="/admin/scanSession" element={<AdminScanSession/>} />
             <Route path="/admin/invites" element={<AdminActorInvitesPage />} />
+            <Route path="/admin/bp/overview" element={<AdminBpOverview/>}/>
+            <Route path="/admin/bp/queue" element={<AdminBpQueue/>}/>
+            <Route path="/admin/bp/tools" element={<AdminBpTools/>}/>
           </Route>
         </Route>
         

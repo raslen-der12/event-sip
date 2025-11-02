@@ -860,10 +860,10 @@ export default function MeetingsPage() {
           <div className="mtg-filters">
             <input
               className="clean-input"
-              placeholder="Search Meetings"
+              placeholder="Search Requested Meetings"
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              aria-label="Search meetings"
+              aria-label="Search Requested Meetings"
             />
             <input
               className="clean-input small"

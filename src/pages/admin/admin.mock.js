@@ -56,6 +56,16 @@ export const adminNav = [
     ],
   },
   {
+    id: "BP",
+    label: "Business Profiles managment",
+    icon: "tickets",
+    children: [
+      { id: "overview",   label: "overview",           href: "/admin/bp/overview" },
+      { id: "publishbp", label: "publish business profiles",         href: "/admin/bp/queue" },
+      { id: "adminTools", label: "admin tools",  href: "/admin/bp/tools" },
+    ],
+  },
+  {
     id : "forms",
     label: "Forms & Content",
     icon: "forms",
@@ -64,7 +74,7 @@ export const adminNav = [
     ],
   },
 
-  { id: "tickets",  label: "Tickets",  icon: "tickets",  href: "/admin/tickets" },
+  // { id: "tickets",  label: "Tickets",  icon: "tickets",  href: "/admin/tickets" },
   { id: "settings", label: "Settings", icon: "settings", href: "/admin/settings" },
 ];
 

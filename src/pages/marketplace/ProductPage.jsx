@@ -1,6 +1,6 @@
 // src/pages/products/ProductPage.jsx
-import React from "react";
-import { useParams, useLocation } from "react-router-dom";
+import React, { useMemo } from "react";
+import { useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderShell from "../../components/layout/HeaderShell";
 import Footer from "../../components/footer/Footer";
@@ -9,88 +9,80 @@ import { useGetMarketItemQuery } from "../../features/bp/BPApiSlice";
 import imageLink from "../../utils/imageLink";
 import "./product-page.css";
 
-const I = {
-  check: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path d="m4 12 5 5 11-11" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ),
-  globe: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M12 3a9 9 0 100 18 9 9 0 000-18Zm0 0c3.5 3.5 3.5 14.5 0 18M3 12h18" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  ),
-  map: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3zM9 3v15M15 6v15" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  ),
-  mail: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  ),
+const cap = (s = "") => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const fmtPrice = (v, cur, unit, note) => {
+  const num = typeof v === "number" ? v : (v ? Number(v) : null);
+  if (!num || num === 0) return note || "";
+  return `${num} ${cur || ""}${unit ? ` / ${unit}` : ""}`.trim();
 };
-
-const cap = (s="") => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 export default function ProductPage({ fallbackProduct }) {
   const { productId } = useParams();
-  const location = useLocation(); // kept to not disturb your router usage
-
   const { data: item, isFetching } = useGetMarketItemQuery(productId);
 
-  // derive display fields from API shape you provided
-  const profile = item?.profile || {};
-  const imgs = Array.isArray(item?.images) ? item.images : [];
-  const cover = imgs[0] ? imageLink(imgs[0]) : "";
-  const companyName = profile?.name || "";
-  const companyHref = profile?.slug || profile?.id ? `/businessprofile/${ profile.id}#sectors` : "#";
-  const country = Array.isArray(profile?.countries) && profile.countries.length ? cap(String(profile.countries[0])) : "";
-  const city = ""; // API sample doesn't include city
+  const view = useMemo(() => {
+    const prod = item || fallbackProduct;
+    if (!prod) return null;
 
-  // map optional sections to your existing UI expectations
-  const product = item ? {
-    title: item.title || "—",
-    company: companyName || "—",
-    companyId: profile?.slug || profile?.id || "",
-    sector: cap(item.sector || "—"),
-    city,
-    country,
-    cover,
-    description: item.summary || "",
-    summary: item.summary || "",
-    features: Array.isArray(item.tags) ? item.tags : [],       // reuse tags as features (optional)
-    specs: {},                                                // API has no specs; keeps your "empty" state
-    gallery: imgs.map(imageLink),                             // for the gallery grid
-  } : null;
+    const imgs = Array.isArray(prod.images) ? prod.images.map(imageLink) : [];
+    const thumb = prod.thumbnailUpload ? imageLink(prod.thumbnailUpload) : "";
+    const cover = imgs[0] || thumb || "";
 
-  // business profile block (keep classes, just fill with available data)
-  const bp = {
-    orgName: profile?.name || "—",
-    logo: profile?.logoUpload ? imageLink(profile.logoUpload) : "",
-    tagline: Array.isArray(profile?.industries) && profile.industries.length
-      ? profile.industries.map(cap).join(" • ")
-      : "",
-    city: "", // not in payload
-    country: country || "",
-    website: "", // not in payload
-    email: "",   // not in payload
-    offerings: Array.isArray(item?.tags) ? item.tags : [],
-    badges: Array.isArray(profile?.languages) ? profile.languages.map(cap) : [],
-    openHref: companyHref,
-  };
+    const profile = prod.profile || {};
+    const industries = Array.isArray(profile.industries) ? profile.industries : [];
+    const countries = Array.isArray(profile.countries) ? profile.countries : [];
+    const languages = Array.isArray(profile.languages) ? profile.languages : [];
+
+    const priceStr = fmtPrice(prod.priceValue, prod.priceCurrency, prod.priceUnit, prod.pricingNote);
+
+    return {
+      cover,
+      title: prod.title || "—",
+      kind: cap(prod.kind || "product"),
+      sector: cap(prod.sector || ""),
+      subsector: prod.subsectorName || "",
+      summary: prod.summary || "",
+      details: prod.details || "",
+      tags: Array.isArray(prod.tags) ? prod.tags : [],
+      gallery: imgs,
+      priceStr,
+      bp: {
+        id: profile.id || "",
+        slug: profile.slug || "",
+        name: profile.name || "",
+        logo: profile.logoUpload ? imageLink(profile.logoUpload) : "",
+        industries,
+        countries,
+        languages,
+      },
+    };
+  }, [item, fallbackProduct]);
+
+  const notFoundUI = (
+    <>
+      <HeaderShell top={topbar} nav={nav} cta={cta} />
+      <main className="pd">
+        <div className="pd-container">
+          <div className="pd-card pd-empty">Item not found.</div>
+        </div>
+      </main>
+      <Footer
+        brand={footerData.brand}
+        columns={footerData.columns}
+        socials={footerData.socials}
+        actions={footerData.actions}
+        bottomLinks={footerData.bottomLinks}
+      />
+    </>
+  );
 
   if (isFetching) {
     return (
       <>
         <HeaderShell top={topbar} nav={nav} cta={cta} />
-        <main className="ppg">
-          <div className="container">
-            <div className="ppg-body">
-              <div className="ppg-card ppg-empty">Loading…</div>
-            </div>
+        <main className="pd">
+          <div className="pd-container">
+            <div className="pd-skel" />
           </div>
         </main>
         <Footer
@@ -103,172 +95,127 @@ export default function ProductPage({ fallbackProduct }) {
       </>
     );
   }
+  if (!view) return notFoundUI;
 
-  if (!product) {
-    return (
-      <>
-        <HeaderShell top={topbar} nav={nav} cta={cta} />
-        <main className="ppg">
-          <div className="container">
-            <div className="ppg-body">
-              <div className="ppg-card ppg-empty">Product not found.</div>
-            </div>
-          </div>
-        </main>
-        <Footer
-          brand={footerData.brand}
-          columns={footerData.columns}
-          socials={footerData.socials}
-          actions={footerData.actions}
-          bottomLinks={footerData.bottomLinks}
-        />
-      </>
-    );
-  }
-
-  const bannerStyle = product.cover
-    ? { backgroundImage: `linear-gradient(180deg, rgba(22,36,65,.35), rgba(22,36,65,.80)), url(${product.cover})` }
-    : { backgroundImage: `linear-gradient(135deg, var(--brand), var(--brand-2))` };
+  const { cover, title, kind, sector, subsector, summary, details, gallery, tags, priceStr, bp } = view;
+  const bpHref = bp.slug || bp.id ? `/BusinessProfile/${bp.id}` : null;
 
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
 
-      <main className="ppg">
-        {/* HERO */}
-        <header className="ppg-hero">
-          <div className="ppg-banner" style={bannerStyle} aria-hidden="true" />
-          <div className="container ppg-hero-inner">
-            <div>
-              <h1 className="ppg-title">{product.title}</h1>
-              <div className="ppg-meta">
-                <span className="chip">{product.company}</span>
-                <span className="chip">{product.sector}</span>
-                <span className="chip">
-                  {product.city && product.country
-                    ? `${product.city}, ${product.country}`
-                    : product.city || product.country || "—"}
-                </span>
-              </div>
+      <main className="pd">
+        {/* header */}
+        <section className="pd-head">
+          <div className={`pd-cover ${cover ? "has" : ""}`} style={cover ? { backgroundImage: `url(${cover})` } : undefined} />
+          <div className="pd-hmeta">
+            <h1 className="pd-title">{title}</h1>
+
+            <div className="pd-chips">
+              {kind ? <span className="chip">{kind}</span> : null}
+              {sector ? <span className="chip">{sector}</span> : null}
+              {subsector ? <span className="chip">{subsector}</span> : null}
+              {priceStr ? <span className="chip chip-strong">{priceStr}</span> : null}
             </div>
-            <div className="ppg-cta">
-              {product.companyId ? (
-                <a className="ppg-btn" href={companyHref}>View company</a>
-              ) : null}
-              <a className="ppg-btn ppg-btn-ghost" href="/marketplace">Back to marketplace</a>
+
+            {/* BP inline */}
+            {(bp.name || bp.logo) && (
+              <div className="pd-bp">
+                {bp.logo ? <img className="pd-bp-logo" src={bp.logo} alt={bp.name} /> : <div className="pd-bp-logo" />}
+                <div className="pd-bp-meta">
+                  <div className="pd-bp-name">{bp.name || "—"}</div>
+                  <div className="pd-bp-tags">
+                    {bp.industries?.slice(0, 3).map((t) => (
+                      <span className="chip chip-soft" key={`ind-${t}`}>{cap(t)}</span>
+                    ))}
+                    {bp.languages?.slice(0, 3).map((t) => (
+                      <span className="chip chip-soft" key={`lng-${t}`}>{cap(t)}</span>
+                    ))}
+                    {bp.countries?.slice(0, 2).map((t) => (
+                      <span className="chip chip-soft" key={`cty-${t}`}>{cap(t)}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="pd-cta">
+              {bpHref ? <a className="pd-btn" href={bpHref}>View company</a> : null}
+              <a className="pd-btn pd-btn-ghost" href="/market">Back to market</a>
             </div>
           </div>
-        </header>
+        </section>
 
-        {/* BODY */}
-        <section className="container ppg-body">
-          <div className="ppg-grid">
-            {/* LEFT: Overview */}
-            <div className="ppg-card">
-              <h3 className="ppg-h">Overview</h3>
-              <p className="ppg-text">{product.description || product.summary || "—"}</p>
+        {/* body */}
+        <section className="pd-body">
+          <div className="pd-grid">
+            {/* left */}
+            <article className="pd-card">
+              {summary ? <p className="pd-text">{summary}</p> : null}
+              {details ? <div className="pd-rich" dangerouslySetInnerHTML={{ __html: details }} /> : null}
 
-              {Array.isArray(product.features) && product.features.length ? (
+              {tags?.length ? (
                 <>
-                  <h4 className="ppg-sub">Key features</h4>
-                  <ul className="ppg-list">
-                    {product.features.map((f, i) => (
-                      <li key={i}>
-                        <I.check /> {f}
-                      </li>
+                  <h3 className="pd-h3">Highlights</h3>
+                  <ul className="pd-list">
+                    {tags.map((t) => (
+                      <li key={t}>{t}</li>
                     ))}
                   </ul>
                 </>
               ) : null}
 
-              {product.gallery.length ? (
+              {gallery?.length ? (
                 <>
-                  <h4 className="ppg-sub">Gallery</h4>
-                  <div className="ppg-gallery">
-                    {product.gallery.map((g, i) => (
-                      <figure className="ppg-gimg" key={`${i}-${g}`}>
-                        <img src={g} alt={`${product.title} ${i + 1}`} />
-                      </figure>
+                  <h3 className="pd-h3">Gallery</h3>
+                  <div className="pd-gallery">
+                    {gallery.map((src, i) => (
+                      <a className="pd-gimg" key={`${src}-${i}`} href={src} target="_blank" rel="noreferrer" style={{ backgroundImage: `url(${src})` }} />
                     ))}
                   </div>
                 </>
               ) : null}
-            </div>
+            </article>
 
-            {/* RIGHT: Specs */}
-            <aside className="ppg-card">
-              <h3 className="ppg-h">Specs</h3>
-              {product.specs && Object.keys(product.specs).length ? (
-                <div className="ppg-specs">
-                  {Object.entries(product.specs).map(([k, v]) => (
-                    <div className="ppg-spec" key={k}>
-                      <div className="ppg-spec-k">{k}</div>
-                      <div className="ppg-spec-v">{String(v)}</div>
+            {/* right */}
+            {(bp.name || bp.logo) && (
+              <aside className="pd-card pd-bpcard">
+                <div className="pd-bp-row">
+                  {bp.logo ? <img className="pd-bp-logo lg" src={bp.logo} alt={bp.name} /> : <div className="pd-bp-logo lg" />}
+                  <div>
+                    <div className="pd-bp-name">{bp.name || "—"}</div>
+                    <div className="pd-bp-tags">
+                      {bp.industries?.slice(0, 4).map((t) => (
+                        <span className="chip chip-soft" key={`i-${t}`}>{cap(t)}</span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="ppg-empty">No technical specs provided.</div>
-              )}
-            </aside>
-          </div>
 
-          {/* Business Profile (kept layout/classes, populated from API) */}
-          <aside className="ppg-card bp my-2">
-            <div className="bp-head">
-              <img className="bp-logo" src={bp.logo} alt={bp.orgName} />
-              <div className="bp-meta">
-                <h3 className="bp-name">{bp.orgName}</h3>
-                {bp.tagline ? <p className="bp-tagline">{bp.tagline}</p> : null}
-              </div>
-            </div>
-
-            {bp.badges?.length ? (
-              <div className="bp-badges">
-                {bp.badges.map((b) => (
-                  <span key={b} className="chip chip-soft">{b}</span>
-                ))}
-              </div>
-            ) : null}
-
-            {bp.offerings?.length ? (
-              <div className="bp-offerings">
-                <h4 className="bp-sub">Offerings</h4>
-                <ul className="bp-list">
-                  {bp.offerings.map((o) => (
-                    <li key={o}><I.check /> {o}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {(bp.country || bp.city || bp.website || bp.email) ? (
-              <div className="bp-info">
-                {(bp.city || bp.country) ? (
-                  <div className="bp-row">
-                    <I.map /><span>{[bp.city, bp.country].filter(Boolean).join(", ")}</span>
+                {(bp.countries?.length || bp.languages?.length) ? (
+                  <div className="pd-kv">
+                    {bp.countries?.length ? (
+                      <div className="pd-kv-row">
+                        <div className="pd-k">Countries</div>
+                        <div className="pd-v">{bp.countries.map(cap).join(", ")}</div>
+                      </div>
+                    ) : null}
+                    {bp.languages?.length ? (
+                      <div className="pd-kv-row">
+                        <div className="pd-k">Languages</div>
+                        <div className="pd-v">{bp.languages.map(cap).join(", ")}</div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
-                {bp.website ? (
-                  <a className="bp-row" href={bp.website} target="_blank" rel="noreferrer">
-                    <I.globe /><span>{bp.website.replace(/^https?:\/\//, "")}</span>
-                  </a>
-                ) : null}
-                {bp.email ? (
-                  <a className="bp-row" href={`mailto:${bp.email}`}>
-                    <I.mail /><span>{bp.email}</span>
-                  </a>
-                ) : null}
-              </div>
-            ) : null}
 
-            <div className="bp-actions">
-              {product.companyId ? (
-                <a className="ppg-btn" href={companyHref}>Open Business Profile</a>
-              ) : null}
-              <a className="ppg-btn ppg-btn-ghost" href="/messages">Contact Supplier</a>
-            </div>
-          </aside>
+                <div className="pd-actions">
+                  {bpHref ? <a className="pd-btn" href={bpHref}>Open Business Profile</a> : null}
+                  <a className="pd-btn pd-btn-ghost" href="/messages">Contact Supplier</a>
+                </div>
+              </aside>
+            )}
+          </div>
         </section>
       </main>
 

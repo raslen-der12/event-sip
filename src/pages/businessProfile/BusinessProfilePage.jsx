@@ -80,11 +80,11 @@ function useHashTab(defaultKey = "overview") {
   return [tab, go];
 }
 
-/* ===== group flat items to sectors/subsectors ===== */
+/* ===== group flat items to sectors/subsectors (now carries price fields) ===== */
 function groupItemsToSectors(items) {
   const map = new Map();
-  for (const it of safeArray(items)) {
-    const sec = lower(it.sector || "other");
+  for (const it of (Array.isArray(items) ? items : [])) {
+    const sec = String(it.sector || "other").toLowerCase();
     const subName = it.subsectorName || "General";
     if (!map.has(sec)) map.set(sec, new Map());
     const sub = map.get(sec);
@@ -97,6 +97,11 @@ function groupItemsToSectors(items) {
       tags: it.tags || [],
       images: it.images || [],
       thumbnailUpload: it.thumbnailUpload,
+      // NEW: price fields (flat + legacy fallback)
+      pricingNote  : it.pricingNote || "",
+      priceValue   : (typeof it.priceValue !== "undefined" ? it.priceValue : (it.price && it.price.value)),
+      priceCurrency: (it.priceCurrency || (it.price && it.price.currency) || ""),
+      priceUnit    : (it.priceUnit || (it.price && it.price.unit) || "")
     });
   }
   const sectors = [];
@@ -114,6 +119,7 @@ function groupItemsToSectors(items) {
   }
   return sectors;
 }
+
 const toStr = (v) => (v == null ? "" : String(v));
 
 /** Replace old calcOverviewCompleteness with this */
@@ -546,7 +552,7 @@ const tooLow = dataScore.tooLow;
         )
       )}
 
-      {tab === "sectors" && <BusinessSectors sectors={sectors} />}
+      {tab === "sectors" && <BusinessSectors sectors={sectors} profileHasAnySector={Array.isArray(p?.industries) && p.industries.length > 0} />}
 
       {tab === "team" && (
         <BusinessTeam

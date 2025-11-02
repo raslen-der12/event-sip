@@ -36,7 +36,18 @@ import Footer from "../../components/footer/Footer";
 import { cta, footerData, nav, topbar } from "../main.mock";
 import HeaderShell from "../../components/layout/HeaderShell";
 import imageLink from "../../utils/imageLink";
-
+const CURRENCIES = ['TND','USD','EUR','GBP','AED','SAR','INR','CNY','JPY'];
+const UNITS = [
+  { value:'', label:'(no unit)' },
+  { value:'per piece', label:'per piece' },
+  { value:'per package', label:'per package' },
+  { value:'per kg', label:'per kg' },
+  { value:'per liter', label:'per liter' },
+  { value:'per hour', label:'per hour' },
+  { value:'per day', label:'per day' },
+  { value:'per month', label:'per month' },
+  { value:'per km', label:'per km' },
+];
 /* ---------- Fallback banner (SVG mesh) ---------- */
 const STANDARD_BANNER =
   "data:image/svg+xml;utf8," +
@@ -586,24 +597,24 @@ export default function BusnessProfileEditor() {
   const [size, setSize] = useState("1-10");
   const taxonomy = useMemo(() => taxResp?.data || taxResp || [], [taxResp]);
   const sectorOptions = useMemo(
-    () => taxonomy.map((t) => t.sector),
-    [taxonomy]
-  );
+   () => taxonomy.map((t) => ({ value: toKey(t.sector), label: t.sector })),
+   [taxonomy]
+ );
   const sectorByKey = useMemo(() => {
-    const m = new Map();
-    taxonomy.forEach((t) => m.set(t.sector, t));
-    return m;
-  }, [taxonomy]);
+   const m = new Map();
+   taxonomy.forEach((t) => m.set(toKey(t.sector), t));
+   return m;
+ }, [taxonomy])
 
   const [sector, setSector] = useState(""); // lowercased key
   const [subsectors, setSubsectors] = useState([]); // display names for Identity only
   const subsectorOptions = useMemo(() => {
-    const row = sectorByKey.get(sector);
-    return row ? row.subsectors.map((s) => s.name) : [];
-  }, [sector, sectorByKey]);
+   const row = sectorByKey.get(sector);
+   return row ? row.subsectors.map((s) => s.name) : [];
+ }, [sector, sectorByKey]);
+
 
   const [countries, setCountries] = useState([]);
-  console.log("countries",countries);
   const [languages, setLanguages] = useState([]);
   const [offering, setOffering] = useState([]);
   const [seeking, setSeeking] = useState([]);
@@ -647,20 +658,20 @@ export default function BusnessProfileEditor() {
     setAbout(profile.about || "");
     setSize(profile.size || "1-10");
 
-    const ind = Array.isArray(profile.industries) ? profile.industries : [];
-    // sectors are stored lowercased; match against backend sectors
-    const foundSector =
-      ind.find((x) => sectorOptions.includes(String(x).toLowerCase())) || "";
-    const secKey = String(foundSector).toLowerCase();
-    setSector(secKey);
-    // keep subsectors as display names (Identity only)
-    const ss = (() => {
-      const row = sectorByKey.get(secKey);
-      if (!row) return [];
-      const allowed = new Set(row.subsectors.map((s) => s.name));
-      return ind.filter((x) => x !== secKey && allowed.has(String(x)));
-    })();
-    setSubsectors(ss);
+    const indKeys = (Array.isArray(profile.industries) ? profile.industries : []).map(toKey);
+
+// Pick sector key that actually exists in taxonomy
+const secKey = indKeys.find((k) => sectorByKey.has(k)) || "";
+setSector(secKey);
+
+// Keep subsectors as keys too (Identity only shows titleized labels)
+const ssKeys = (() => {
+  const row = sectorByKey.get(secKey);
+  if (!row) return [];
+  const allowed = new Set(row.subsectors.map((s) => toKey(s.name)));
+  return indKeys.filter((k) => k !== secKey && allowed.has(k));
+})();
+setSubsectors(ssKeys);
 setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : []);    setLanguages(Array.isArray(profile.languages) ? profile.languages : []);
     setOffering(Array.isArray(profile.offering) ? profile.offering : []);
     setSeeking(Array.isArray(profile.seeking) ? profile.seeking : []);
@@ -772,7 +783,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
   async function onSaveItem() {
     setItemErr("");
     const title = (editingItem?.title || "").trim();
-    const isect = (editingItem?.sector || "").trim().toLowerCase();
+    const isect = (editingItem?.sector || "").trim()
     const isub = (editingItem?.subsectorId || "").trim();
     const kind = (editingItem?.kind || "").trim();
     if (!title) return setItemErr("Title is required.");
@@ -791,6 +802,9 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
       details: editingItem?.details || "", // keep if you add a long editor later
       tags: Array.isArray(editingItem?.tags) ? editingItem.tags : [],
       pricingNote: editingItem?.price || "",
+      priceValue: Number(editingItem?.priceValue) || 0,
+      priceCurrency: (editingItem?.priceCurrency || "").toUpperCase(),
+      priceUnit: (editingItem?.priceUnit || "").toLowerCase(),
     };
     // NEW: respect the API slice shapes
     if (editingItem?._id) {
@@ -1034,23 +1048,21 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </Field>
               <Field label="Sector">
                 <select
-                  className="bpe-select"
-                  disabled={taxFetching}
-                  value={sector}
-                  onChange={(e) => {
-                    setSector(e.target.value);
-                    setSubsectors([]);
-                  }}
-                >
-                  <option value="">
-                    {taxFetching ? "Loading…" : "Select a sector"}
-                  </option>
-                  {sectorOptions.map((sec) => (
-                    <option key={sec} value={sec}>
-                      {titleize(sec)}
-                    </option>
-                  ))}
-                </select>
+    className="bpe-select"
+    disabled={taxFetching}
+    value={sector}
+    onChange={(e) => {
+      setSector(e.target.value);
+      setSubsectors([]);
+    }}
+  >
+    <option value="">{taxFetching ? "Loading…" : "Select a sector"}</option>
+    {sectorOptions.map((opt) => (
+      <option key={opt.value} value={opt.value}>
+        {titleize(opt.label)}
+      </option>
+    ))}
+  </select>
               </Field>
               <Field label="Subsectors">
                 <MultiSelect
@@ -1351,7 +1363,10 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                     setEditingItem({
                       title: "",
                       descr: "",
-                      price: "",
+                      price: "",            // keeps your note field (unchanged)
+                      priceValue: 0,        // NEW numeric price
+                      priceCurrency: "TND", // default
+                      priceUnit: "",
                       tags: [],
                       images: [],
                       sector: "",
@@ -1401,6 +1416,11 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                               {it.pricingNote}
                             </div>
                           ) : null}
+                          {(typeof it.priceValue === 'number' && it.priceValue > 0) ? (
+                              <div className="bpe-item-price">
+                                {`${it.priceCurrency || ''} ${it.priceValue}${it.priceUnit ? ' ' + it.priceUnit : ''}`}
+                              </div>
+                            ) : null}
                         </div>
 
                         <div className="bpe-item-actions">
@@ -1410,6 +1430,9 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                               // map backend fields to editor fields
                               const descr = it.details || it.summary || "";
                               const price = it.pricingNote || "";
+                              const priceValue = typeof it.priceValue === 'number' ? it.priceValue : 0;
+                              const priceCurrency = it.priceCurrency || 'TND';
+                              const priceUnit = it.priceUnit || '';
                               const tags = Array.isArray(it.tags)
                                 ? it.tags
                                 : [];
@@ -1434,6 +1457,10 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                                 subsectorId: nextSubId,
                                 descr,
                                 price,
+                                price,
+                                priceValue,
+                                priceCurrency,
+                                priceUnit,
                                 tags,
                               });
                             }}
@@ -1475,23 +1502,23 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
 
                     <Field label="Sector">
                       <select
-                        className="bpe-select"
-                        value={editingItem.sector || ""}
-                        onChange={(e) =>
-                          setEditingItem((s) => ({
-                            ...s,
-                            sector: e.target.value,
-                            subsectorId: "",
-                          }))
-                        }
-                      >
-                        <option value="">Select a sector</option>
-                        {itemSectorOptions.map((sec) => (
-                          <option key={sec} value={sec}>
-                            {titleize(sec)}
-                          </option>
-                        ))}
-                      </select>
+    className="bpe-select"
+    value={editingItem.sector || ""}
+    onChange={(e) =>
+      setEditingItem((s) => ({
+        ...s,
+        sector: e.target.value,
+       subsectorId: "",
+      }))
+    }
+  >
+  <option value="">Select a sector</option>
+    {itemSectorOptions.map((opt) => (
+      <option key={opt.value} value={opt.value}>
+       {titleize(opt.label)}
+    </option>
+    ))}
+  </select>
                     </Field>
 
                     <Field label="Subsector">
@@ -1543,11 +1570,52 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                     <Field label="Price">
                       <TextInput
                         value={editingItem.price || ""}
-                        onChange={(v) =>
-                          setEditingItem((s) => ({ ...s, price: v }))
-                        }
-                        placeholder="e.g., $499"
+                        onChange={(v) => setEditingItem((s) => ({ ...s, price: v }))}
+                        placeholder="Optional note (e.g., negotiable)"
                       />
+
+                      {/* Structured price row */}
+                      <div style={{ display: "grid", gridTemplateColumns: "140px 130px 1fr", gap: 8, marginTop: 8 }}>
+                        <input
+                          className="bpe-input"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingItem.priceValue ?? 0}
+                          onChange={(e) =>
+                            setEditingItem((s) => ({ ...s, priceValue: Number(e.target.value) }))
+                          }
+                          placeholder="0"
+                          title="0 = do not show price"
+                        />
+                        <select
+                          className="bpe-select"
+                          value={editingItem.priceCurrency || "TND"}
+                          onChange={(e) =>
+                            setEditingItem((s) => ({ ...s, priceCurrency: e.target.value }))
+                          }
+                          disabled={!(editingItem.priceValue > 0)}
+                          title="Currency"
+                        >
+                          {CURRENCIES.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        <select
+                          className="bpe-select"
+                          value={editingItem.priceUnit || ""}
+                          onChange={(e) =>
+                            setEditingItem((s) => ({ ...s, priceUnit: e.target.value }))
+                          }
+                          disabled={!(editingItem.priceValue > 0)}
+                          title="Unit"
+                        >
+                          {UNITS.map((u) => (
+                            <option key={u.value} value={u.value}>{u.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="bpe-hint">Set price to <b>0</b> to hide structured price.</div>
                     </Field>
 
                     <Field label="Tags">
