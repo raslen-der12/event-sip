@@ -69,9 +69,27 @@ export const adminApiSlice = apiSlice.injectEndpoints({
       body: { eventId, actorId, slots }
     })
   }),
+// inside createApi(...) builder:
+uploadActorPhoto: builder.mutation({
+  query: ({ id, file }) => {
+    const fd = new FormData();
+    fd.append("photo", file); // backend expects field named "photo"
+    return {
+      url: `/admin/actors/${id}/photo`, // <-- match your backend route
+      method: "POST",
+      body: fd,
+    };
+  },
+  invalidatesTags: (result, error, { id }) => [
+    { type: "Actor", id },
+    { type: "Actors", id: "LIST" },
+  ],
+}),
 
     })
+    
 })
+
 
 export const {
 useGetAdminRegisterRequestQuery,
@@ -82,4 +100,5 @@ useGetActorsListAdminQuery,
   useCreateActorMutation,
   useSetWhitelistMutation,
   useAdminSetWhitelistMutation,
+  useUploadActorPhotoMutation
 } = adminApiSlice

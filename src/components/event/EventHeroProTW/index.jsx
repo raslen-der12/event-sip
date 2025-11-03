@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import imageLink from "../../../utils/imageLink";
-
+import { useTranslation } from "react-i18next";
 /**
  * Props:
  *  - event: { _id, title, description, startDate, endDate, venueName, city, country, capacity, seatsTaken, target }
@@ -16,10 +16,12 @@ export default function HeroEvent({
   backgroundImage = "/uploads/images/admin/ipdayscover.png",
   highlights,
 }) {
+  const { t } = useTranslation("common");
+
   const {
     _id: id,
-    title = "L’international",
-    description = "Les InnoPreneurs Days – IPDAYS 2025",
+    title = t("international", "International"),
+    description = t("innoPreneursDays", "The InnoPreneurs Days – IPDAYS 2025"),
     startDate,
     endDate,
     venueName,
@@ -30,13 +32,13 @@ export default function HeroEvent({
     target,
   } = event || {};
 
-  // Date formatting (FR locale)
+  // Date formatting (EN locale)
   const dateFmt = useMemo(() => {
     try {
       const s = startDate ? new Date(startDate) : null;
       const e = endDate ? new Date(endDate) : null;
       if (!s && !e) return "";
-      const fmt = (d, opts) => new Intl.DateTimeFormat("fr-FR", opts).format(d);
+      const fmt = (d, opts) => new Intl.DateTimeFormat("en-US", opts).format(d);
       if (s && e) {
         const sameYear = s.getFullYear() === e.getFullYear();
         const sameMonth = sameYear && s.getMonth() === e.getMonth();
@@ -83,7 +85,7 @@ export default function HeroEvent({
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
-      aria-label="Event hero"
+      aria-label={t("eventHero", "Event hero")}
     >
       {/* dark overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60  backdrop-blur-sm"  />
@@ -94,8 +96,14 @@ export default function HeroEvent({
           <div className="lg:col-span-7 space-y-6">
             {/* tag row */}
             <div className="flex flex-wrap gap-3 items-center text-sm text-gray-200">
-              {target && <span className="px-3 py-1 rounded-full bg-[#EB5434]/10 text-[#EB5434] font-medium">{target}</span>}
-              {dateFmt ? <span className="px-3 py-1 rounded-full bg-white/6">{dateFmt}</span> : null}
+              {target && (
+                <span className="px-3 py-1 rounded-full bg-[#EB5434]/10 text-[#EB5434] font-medium">
+                  {target}
+                </span>
+              )}
+              {dateFmt ? (
+                <span className="px-3 py-1 rounded-full bg-white/6">{dateFmt}</span>
+              ) : null}
             </div>
 
             {/* title + description */}
@@ -103,9 +111,7 @@ export default function HeroEvent({
               {title}
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-200 max-w-2xl">
-              {description}
-            </p>
+            <p className="text-base sm:text-lg text-gray-200 max-w-2xl">{description}</p>
 
             {/* DATE + VENUE (explicit) */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-3 mt-3 text-gray-200">
@@ -129,9 +135,9 @@ export default function HeroEvent({
               <a
                 href={regHref}
                 className="inline-block bg-[#EB5434] hover:bg-[#cf4426] text-white font-semibold px-5 py-3 rounded-full shadow-md transition transform hover:-translate-y-0.5"
-                aria-label="Register for event"
+                aria-label={t("registerForEvent", "Register for event")}
               >
-                Je m’inscris
+                {t("registerNow", "Register Now")}
               </a>
             </div>
 
@@ -141,8 +147,13 @@ export default function HeroEvent({
             {marquee?.length && (
               <div className="mt-8">
                 <div className="flex gap-3 overflow-x-auto no-scrollbar py-2">
-                  {marquee.map((t, i) => (
-                    <span key={i} className="inline-block px-3 py-1 rounded-full bg-white/6 text-xs text-gray-200">{t}</span>
+                  {marquee.map((tItem, i) => (
+                    <span
+                      key={i}
+                      className="inline-block px-3 py-1 rounded-full bg-white/6 text-xs text-gray-200"
+                    >
+                      {tItem}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -159,10 +170,13 @@ export default function HeroEvent({
           >
             <div className="w-full max-w-md mx-auto lg:mr-0 bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl">
               <h3 className="text-xl font-semibold text-white mb-2 text-center">
-                Rejoignez l’aventure <br />IPDAYS × GITS 2025
+                {t("joinAdventure", "Join the adventure IPDAYS × GITS 2025")}
               </h3>
               <p className="text-sm text-gray-200 text-center mb-4">
-                Réservez votre place pour vivre l’expérience entrepreneuriale la plus inspirante de 2025.
+                {t(
+                  "reserveSpot",
+                  "Reserve your spot for the most inspiring entrepreneurial experience of 2025."
+                )}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -172,14 +186,14 @@ export default function HeroEvent({
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 text-center px-5 py-3 rounded-full bg-[#EB5434] text-white font-semibold shadow-md"
                 >
-                  Je m’inscris maintenant
+                  {t("registerNow", "Register Now")}
                 </motion.a>
 
                 <a
                   href={id ? `/event/${id}/schedule` : "#schedule"}
                   className="flex-1 text-center px-5 py-3 rounded-full bg-white/10 text-white border border-white/20"
                 >
-                  Voir le programme
+                  {t("viewSchedule", "View Schedule")}
                 </a>
               </div>
 
@@ -194,12 +208,12 @@ export default function HeroEvent({
                   }}
                   className="px-2 py-1 rounded-md bg-white/5"
                 >
-                  Ajouter au calendrier
+                  {t("addToCalendar", "Add to Calendar")}
                 </button>
 
                 <div className="text-right">
                   {/* {typeof filled === "number" ? … : …}   // <-- hidden for now */}
-                  <span>Places limitées</span>
+                  <span>{t("limitedSeats", "Limited seats available")}</span>
                 </div>
               </div>
             </div>

@@ -18,27 +18,32 @@ import {
 import { useGetEventSessionsQuery } from "../../../features/events/scheduleApiSlice";
 import imageLink from "../../../utils/imageLink";
 
+/* ───────────────────────── i18n-iso-countries setup ───────────────────────── */
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+// Register locale once (top-level)
+countries.registerLocale(enLocale);
+
+// Build an array of { code, name } sorted by name.
+// Do this once at module initialization so it doesn't rerun on every render.
+const ALL_COUNTRIES = Object.entries(countries.getNames("en", { select: "official" }))
+  .map(([code, name]) => ({ code, name }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
 /* ───────────────────────── Helpers / constants ───────────────────────── */
 
 const ROLE = "attendee";
 
-// ISO-3166-1 alpha-2 (code) → label used in selects.
-// Keep concise; value MUST be the key (code).
-const COUNTRIES = [
-  { code: "TN", name: "Tunisia" },
-  { code: "FR", name: "France" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "DE", name: "Germany" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "MA", name: "Morocco" },
-  { code: "DZ", name: "Algeria" },
-  { code: "EG", name: "Egypt" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "CA", name: "Canada" },
-];
+function normalizeToAlpha2(input) {
+  if (!input) return "";
+  const s = String(input).trim();
+  if (!s) return "";
+  if (s.length === 2) return s.toUpperCase();
+  // Try to map full name (in English) to alpha2
+  const mapped = countries.getAlpha2Code(s, "en");
+  return mapped ? mapped.toUpperCase() : "";
+}
 
 function EventName({ id, fallback = "—" }) {
   const { data } = useGetEventQuery(id, { skip: !id });
@@ -46,20 +51,26 @@ function EventName({ id, fallback = "—" }) {
   return <>{title}</>;
 }
 
-function flagChip(code) {
-  if (!code) return "—";
-  const up = String(code).toUpperCase();
+function flagChip(codeOrName) {
+  if (!codeOrName) return "—";
+  // Accept either "TN" or "Tunisia" — try to map to alpha2
+  const alpha2 = normalizeToAlpha2(codeOrName) || String(codeOrName).trim().slice(0, 2).toUpperCase();
+  if (!alpha2 || alpha2.length !== 2) {
+    // If mapping failed, show the raw label instead of a flag
+    return <span className="flag-chip" title={String(codeOrName)}>{String(codeOrName)}</span>;
+  }
   return (
-    <span className="flag-chip" title={up}>
-      <ReactCountryFlag svg countryCode={up} style={{ fontSize: "1em" }} />
+    <span className="flag-chip" title={alpha2}>
+      <ReactCountryFlag svg countryCode={alpha2} style={{ fontSize: "1em" }} />
     </span>
   );
 }
+
 function isDefaultPhoto(src) {
   if (!src) return false;
   try {
     return String(src).includes("/uploads/default/photodef.png") ||
-           String(src).endsWith(": /default/photodef.png") || // safety for odd prefixes
+           String(src).endsWith(": /default/photodef.png") ||
            String(src).endsWith("/default/photodef.png");
   } catch { return false; }
 }
@@ -68,12 +79,11 @@ function fmtUrl(u) {
   if (!u) return null;
   const s = String(u).trim();
   if (!s) return null;
-  // ensure it’s clickable
   return /^https?:\/\//i.test(s) ? s : `https://${s}`;
 }
 function getId(x) {
   return (
-    x?.data?._id || // when response is { success, data: {...} }
+    x?.data?._id ||
     x?._id ||
     x?.id ||
     x?.personal?._id ||
@@ -173,7 +183,7 @@ export default function AdminAttendees() {
     eventId: "",
     sessionIds: [],
   });
-  const [roleKind, setRoleKind] = React.useState(""); // optional role-like (Business Owner, etc.)
+  const [roleKind, setRoleKind] = React.useState("");
 
   // Load sessions for the selected event (and filter out tracker "Formation")
   const { data: sessionsPack, isFetching: fetchingSessions } = useGetEventSessionsQuery(
@@ -188,23 +198,23 @@ export default function AdminAttendees() {
     );
   }, [sessionsPack]);
   const pickerSessions = React.useMemo(() => {
-  return cleanSessions.map((s) => {
-    const start = s.startAt || s.startTime || s.start || s.startsAt || null;
-    const end   = s.endAt   || s.endTime   || s.end   || s.endsAt   || null;
-    return {
-      _id: s._id || s.id,
-      title: s.title || s.sessionTitle || "Session",
-      track: s.track || "Session",
-      startAt: start ? new Date(start).toISOString() : null,
-      endAt:   end   ? new Date(end).toISOString()   : null,
-      room: {
-        name: s?.room?.name || s?.roomName || "",
-        capacity: Number(s?.room?.capacity || 0),
-      },
-      seatsTaken: Number(s?.seatsTaken || 0),
-    };
-  });
-}, [cleanSessions]);
+    return cleanSessions.map((s) => {
+      const start = s.startAt || s.startTime || s.start || s.startsAt || null;
+      const end   = s.endAt   || s.endTime   || s.end   || s.endsAt   || null;
+      return {
+        _id: s._id || s.id,
+        title: s.title || s.sessionTitle || "Session",
+        track: s.track || "Session",
+        startAt: start ? new Date(start).toISOString() : null,
+        endAt:   end   ? new Date(end).toISOString()   : null,
+        room: {
+          name: s?.room?.name || s?.roomName || "",
+          capacity: Number(s?.room?.capacity || 0),
+        },
+        seatsTaken: Number(s?.seatsTaken || 0),
+      };
+    });
+  }, [cleanSessions]);
   const toggleSess = (id) => {
     setCreateDraft((prev) => {
       const has = prev.sessionIds.includes(id);
@@ -234,7 +244,7 @@ export default function AdminAttendees() {
         email: createDraft.email.trim(),
         country: createDraft.country.trim().toUpperCase(), // ISO key for flag
       },
-      sessionIds: createDraft.sessionIds, // backend accepts sessionIds / sessionIds[]
+      sessionIds: createDraft.sessionIds,
     };
 
     try {
@@ -372,7 +382,7 @@ export default function AdminAttendees() {
                       onChange={(e) => setCreateDraft({ ...createDraft, country: e.target.value })}
                     >
                       <option value="">— Select —</option>
-                      {COUNTRIES.map((c) => (
+                      {ALL_COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>
                           {c.name} ({c.code})
                         </option>
@@ -510,11 +520,10 @@ export default function AdminAttendees() {
 /* ───────────────────────── Small components ───────────────────────── */
 
 function AttendeeRow({ item, onOpen }) {
-  // Support both “old list shape” and “new mapped list”
   const name = item?.personal?.fullName || item?.name || "—";
   const email = item?.personal?.email || item?.email || "—";
   const countryKey =
-    (item?.personal && item.personal.country) || item?.country || ""; // ISO key expected
+    (item?.personal && item.personal.country) || item?.country || ""; // ISO key expected OR full name
   const pic = item?.personal?.profilePic || item?.profilePic;
   const verified = !!(item?.verified ?? item?.verifiedEmail);
   const eventId = item?.id_event || item?.eventId || item?.event?._id;
@@ -522,14 +531,14 @@ function AttendeeRow({ item, onOpen }) {
   return (
     <button className="att-row" onClick={onOpen} title="Open">
       <div className="att-avatar">
-  {pic && !isDefaultPhoto(pic) ? (
-    <img className="att-img" src={imageLink(pic)} alt={name} />
-  ) : (
-    <span className="att-fallback">
-      {(name || email || "?").slice(0, 1).toUpperCase()}
-    </span>
-  )}
-</div>
+        {pic && !isDefaultPhoto(pic) ? (
+          <img className="att-img" src={imageLink(pic)} alt={name} />
+        ) : (
+          <span className="att-fallback">
+            {(name || email || "?").slice(0, 1).toUpperCase()}
+          </span>
+        )}
+      </div>
       <div className="att-meta">
         <div className="att-name line-1">{name}</div>
         <div className="att-sub line-1">{email}</div>
@@ -574,8 +583,6 @@ function Modal({ children, onClose }) {
 function ActorDetails({ actor }) {
   const navigate = useNavigate();
 
-  // The backend response you shared:
-  // { success, role, roleKind, data: {...}, sessions: [...], roles: [...] }
   const id = actor?.data?._id || actor?._id || getId(actor);
 
   const base = actor?.data || {};

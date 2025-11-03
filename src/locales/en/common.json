@@ -1,8 +1,117 @@
 {
-    "welcome": "Bienvenue",
-    "login": "Connexion",
-    "logout": "Déconnexion",
-    "register": "S'inscrire",
-    "Website": "Website",
-    "Profile Not Found": "Profile Not Found"
+  "international": "International",
+  "innoPreneursDays": "The InnoPreneurs Days – IPDAYS 2025",
+  "training": "Training",
+  "masterclass": "MasterClass",
+  "expo": "EXPO",
+  "networkingB2B": "Networking & B2B",
+  "registerNow": "Register Now",
+  "registerForEvent": "Register for event",
+  "joinAdventure": "Join the adventure IPDAYS × GITS 2025",
+  "reserveSpot": "Reserve your spot for the most inspiring entrepreneurial experience of 2025.",
+  "viewSchedule": "View Schedule",
+  "addToCalendar": "Add to Calendar",
+  "limitedSeats": "Limited seats available",
+  "eventHero": "Event hero",
+  "aboutHeading": "About IPDAYS X GITS 2025",
+  "aboutContent": "<p>An inclusive event aiming for sustainable impact. This edition seeks to open the doors of the Tunisian ecosystem to the outside world, highlighting opportunities for collaboration, export, strategic partnerships, and immersion in international markets. It will bring together startups, project leaders, investors, mentors, and experts to exchange, inspire, and co-create globally impactful solutions.</p>",
+  "ctaSignUp": "Register Now",
+  "aboutImageAlt": "About section illustration",
+  "impact": {
+    "f1Title": "1.5k+ participants",
+    "f1Desc": "International audience across Africa, MENA region & Europe.",
+    "f2Title": "400+ B2B Meetings",
+    "f2Desc": "Structured matchmaking with measurable results.",
+    "f3Title": "95% satisfaction",
+    "f3Desc": "Post-event survey: content, logistics, added value.",
+    "f4Title": "50+ exhibitors",
+    "f4Desc": "Startups, companies, and institutions.",
+    "f5Title": "50+ sessions",
+    "f5Desc": "Conferences, panels, workshops over 2 days.",
+    "f6Title": "Global coverage",
+    "f6Desc": "Media and social networks with international reach."
+  },
+  "impactHeading": "Impact & Outcomes",
+  "impactSubheading": "What the event has achieved for participants, exhibitors, and partners:",
+   "programme": "Program",
+  "clear": "Clear",
+  "formation": "Training",
+  "panel": "Panel",
+  "atelier": "Workshop",
+  "masterclass": "Masterclass",
+  "b2b": "B2B",
+  "demo": "Demo",
+  "days": {
+    "2025-11-12": "Wednesday, November 12, 2025",
+    "2025-11-13": "Thursday, November 13, 2025"
+  },
+  "program": {
+    "2025-11-12": {
+      "items": [
+        { "time": "09:00 - 16:00", "title": "Training 1", "speaker": "AfriStart", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Training 2", "speaker": "WIDU.AFRICA – GIZ", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Training 3", "speaker": "Women Go Green", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Training 4", "speaker": "Green Hubs", "type": "formation" }
+      ]
+    },
+    "2025-11-13": {
+      "sections": [
+        {
+          "title": "PLENARY",
+          "moderator": "Moderator: Mr. Wassim Laaribi - Journalist and host at Express FM",
+          "sessions": [
+            { "time": "09:00 - 09:30", "title": "Opening remarks", "type": "panel" },
+            { "time": "09:30 - 10:30", "title": "Panel 1 – International Market Access Strategy: Critical Issues and Operational Levers", "type": "panel" },
+            { "time": "10:30 - 11:30", "title": "Panel 2 - Think global, act local… with us", "type": "panel" },
+            { "time": "11:30 - 12:30", "title": "Panel 3 - Export 2.0: Master digital tools to conquer international markets", "type": "panel" },
+            { "time": "12:30 - 13:00", "title": "DEMO GITS THE PLATFORM", "type": "demo" }
+          ]
+        },
+        {
+          "title": "AFTERNOON - B2B & MATCHMAKING",
+          "sessions": [
+            { "time": "14:00 – 18:00", "title": "Afternoon - B2B & Matchmaking via GITS (physical and virtual)", "type": "b2b", "highlight": true }
+          ]
+        },
+        {
+          "title": "WORKSHOPS",
+          "sessions": [
+            { "time": "14:00 - 17:00", "title": "Workshop 1 – Go further, faster: digital platforms for your internationalization", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Workshop 2 – International contract negotiation", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Workshop 3 – Technical keys to open the doors to the world", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Workshop 4 – Export-oriented branding and communication", "type": "atelier" }
+          ]
+        },
+        {
+          "title": "MASTERCLASSES",
+          "sessions": [
+            { "time": "14:00 - 15:00", "title": "Masterclass 1 – How to finance your export activities?", "type": "masterclass" },
+            { "time": "15:00 - 16:00", "title": "Masterclass 2 – From local to global: maximize your reach with e-commerce and digital platforms, what role for AI?", "type": "masterclass" },
+            { "time": "16:00 - 17:00", "title": "Masterclass 3 – Go Global, the Right Way…", "type": "masterclass" },
+            { "time": "17:00 - 18:00", "title": "Masterclass 4 – GITS Community: what next?", "type": "masterclass" }
+          ]
+        }
+      ]
+    }
+  },
+  "featuresHeading": "Why Participate?",
+  "featuresSubheading": "Experiences designed to generate connections, learning, and business opportunities.",
+  "featuresFallback": [
+    {
+      "title": "Matchmaking Lounge",
+      "subtitle": "Curated B2B sessions",
+      "desc": "Sit down with buyers, partners, and investors. Our concierge matches you based on sector and intent."
+    },
+    {
+      "title": "Live Demos Zone",
+      "subtitle": "Product in action",
+      "desc": "Touch, try, and stress-test new tech—from enterprise software to robotics—guided by the teams who built it."
+    },
+    {
+      "title": "Gov/Enterprise Tracks",
+      "subtitle": "Real procurement paths",
+      "desc": "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready."
+    }
+  ]
+
 }
