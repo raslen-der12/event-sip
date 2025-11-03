@@ -26,13 +26,12 @@ export default function EventPage() {
   { label: "Schedule", href: `/event/${eventId}/schedule` },
   { label: "Tickets", href: `/event/${eventId}/tickets` },
 ];
-  const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
   return (
     <>
           <HeaderShell top={topbar} nav={nav} cta={cta} />
       <HeroEvent
         event={event?.event}
-        heroImage={`${base}/uploads/images/admin/DSC_2257.png`}
+        backgroundImage={`/uploads/images/admin/DSC_2257.png`}
       />
       <FeaturesShowcase />
 

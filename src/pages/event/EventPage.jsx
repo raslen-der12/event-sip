@@ -234,7 +234,7 @@ export default function EventPage() {
 
   return (
     <>
-          <HeaderShell top={topbar} nav={nav} cta={cta} />
+          <HeaderShell top={topbar} nav={nav} cta={cta} logo={imageLink("/default/IPDAYXGITS.png")} />
       <HeroEvent
         event={event?.event}
         heroImage={`${base}/uploads/images/admin/ipdays.jpg`}

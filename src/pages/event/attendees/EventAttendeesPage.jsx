@@ -6,6 +6,7 @@ import { topbar, cta, footerData } from "../../main.mock";
 import useAuth from "../../../lib/hooks/useAuth";
 import EventAttendeesBrowser from "../../../components/event/attendees/EventAttendeesBrowser";
 import { useGetAttendeesByEventQuery } from "../../../features/events/actorsApiSlice";
+import imageLink from "../../../utils/imageLink";
 
 export default function EventAttendeesPage() {
     console.log("test render");
@@ -64,12 +65,12 @@ export default function EventAttendeesPage() {
     { label: "Attendees", href: `/event/${eventId}/attendees` },
     { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
     { label: "Schedule", href: `/event/${eventId}/schedule` },
-    { label: "Tickets", href: `/event/${eventId}/tickets` },
+    // { label: "Tickets", href: `/event/${eventId}/tickets` },
   ];
 
   return (
     <>
-      <HeaderShell top={topbar} nav={nav} cta={cta} />
+      <HeaderShell top={topbar} nav={nav} cta={cta} logo={eventId === "68e6764bb4f9b08db3ccec04" ? imageLink("/default/IPDAYXGITS.png") : null} />
       <EventAttendeesBrowser
         heading="Attendees"
         subheading="Search, filter, preview, and explore the lineup."

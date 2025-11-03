@@ -1030,7 +1030,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                 <div className="absolute left-4 -bottom-8 md:left-6 md:-bottom-10">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-white border border-slate-100 flex items-center justify-center">
                     {logoUrl ? (
-                      <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+                      <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2  z-3 position-absolute" />
                     ) : (
                       <div className="text-slate-400 text-xs">No logo</div>
                     )}

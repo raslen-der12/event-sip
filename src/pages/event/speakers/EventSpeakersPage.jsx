@@ -6,6 +6,7 @@ import { topbar, cta, footerData } from "../../main.mock";
 import EventSpeakersBrowser from "../../../components/event/speakers/EventSpeakersBrowser";
 import { useGetSpeakersByEventQuery } from "../../../features/events/actorsApiSlice";
 import useAuth from "../../../lib/hooks/useAuth";
+import imageLink from "../../../utils/imageLink";
 
 export default function EventSpeakersPage() {
   const { eventId } = useParams();
@@ -51,12 +52,12 @@ export default function EventSpeakersPage() {
     { label: "Attendees", href: `/event/${eventId}/attendees` },
     { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
     { label: "Schedule", href: `/event/${eventId}/schedule` },
-    { label: "Tickets", href: `/event/${eventId}/tickets` },
+    // { label: "Tickets", href: `/event/${eventId}/tickets` },
   ];
 
   return (
     <>
-      <HeaderShell top={topbar} nav={nav} cta={cta} />
+      <HeaderShell top={topbar} nav={nav} cta={cta} logo={eventId === "68e6764bb4f9b08db3ccec04" ? imageLink("/default/IPDAYXGITS.png") : null} />
 
       <EventSpeakersBrowser
         heading="Speakers"

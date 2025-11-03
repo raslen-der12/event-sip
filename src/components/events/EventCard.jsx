@@ -21,7 +21,7 @@ function fmtRange(a, b) {
 function resolveUrl(u) {
   if (!u) return "";
   if (/^https?:\/\//i.test(u)) return u;
-  const base = process.env.REACT_APP_API_ORIGIN || process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
+  const base = process.env.REACT_APP_API_ORIGIN || process.env.REACT_APP_API_URL || "https://api.eventra.cloud";
   return `${base}${u.startsWith("/") ? "" : "/"}${u}`;
 }
 
@@ -112,18 +112,24 @@ export default function EventCard(incomingProps) {
   const badgeText = passed ? "FINISHED" : soldOut ? "SOLD OUT" : "OPEN";
 
   const showRegister = inFuture && !soldOut && !!registerHref;
-  const showSeeMore = !!href || !!id;
 
-  const pct = (Number.isFinite(total) && Number.isFinite(taken) && total > 0)
-    ? Math.round((Math.min(total, taken) / total) * 100)
-    : undefined;
+  /* ---------------- rule: special /old route for non-default events ---------------- */
+  const DEF_EVENT = "68e6764bb4f9b08db3ccec04";
+  // If event has an id and it's NOT the default, force /event/:id/old
+  // Otherwise keep the previous behavior (href if provided, else /event/:id)
+  const seeMoreUrl = (id && id !== DEF_EVENT)
+    ? `/event/${id}/old`
+    : (href || (id ? `/event/${id}` : ""));
+
+  const showSeeMore = !!seeMoreUrl;
 
   const goSeeMore = (e) => {
     e.stopPropagation();
-    if (href) {
-      window.location.assign(href);
-    } else if (id) {
-      navigate(`/event/${id}`);
+    if (!seeMoreUrl) return;
+    if (/^https?:\/\//i.test(seeMoreUrl)) {
+      window.location.assign(seeMoreUrl);
+    } else {
+      navigate(seeMoreUrl);
     }
   };
 
@@ -134,7 +140,7 @@ export default function EventCard(incomingProps) {
 
   return (
     <article className="ev-card" onClick={goSeeMore} role="button" tabIndex={0}>
-      <div className="ev-hero">
+      <div className="ev-hero aspect-video ">
         {cover ? (
           <img src={cover} alt={title} className="ev-img" loading="lazy" />
         ) : (
@@ -157,7 +163,6 @@ export default function EventCard(incomingProps) {
             </>
           )}
         </div>
-
 
         <div className="ev-ctas">
           {showRegister && (
@@ -208,3 +213,4 @@ EventCard.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
+  
