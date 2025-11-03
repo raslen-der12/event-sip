@@ -83,6 +83,8 @@ import AdminBpOverview from './pages/admin/bp/AdminBpOverview';
 import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
 import AdminBpTools from './pages/admin/bp/AdminBpTools';
 
+import ExhibitorsBusinessProfilesPage from './pages/businessProfile/ExhibitorsBusinessProfilesPage';
+
 function SocketBootstrap() {
   const s = useStore();
   useEffect(() => {
@@ -145,6 +147,7 @@ function App() {
         <Route path='/privacy-policy' element={<PrivacyPolicy />} />
         <Route path='/refund-policy' element={<RefundPolicy />} />
         <Route path='/terms' element={<TermsConditions/>} />
+        <Route path='/exhi' element={<ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />} />
         <Route element={<RequireAuth allowedRoles={['attendee', 'speaker', 'exhibitor']} />}>
           <Route path="/messages" element={<ActorsMessagesPage />} />
           <Route path="/sessions" element={<SessionsPage />} />

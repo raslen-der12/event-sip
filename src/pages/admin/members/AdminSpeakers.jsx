@@ -9,6 +9,7 @@ import {
   useGetActorsListAdminQuery,
   useGetAdminActorQuery,
   useCreateActorMutation,
+  useUploadActorPhotoMutation, // <-- new hook (add to your adminApiSlice)
 } from "../../../features/Actor/adminApiSlice";
 
 import {
@@ -19,26 +20,31 @@ import {
 import { useGetEventSessionsQuery } from "../../../features/events/scheduleApiSlice";
 import imageLink from "../../../utils/imageLink";
 
+/* ───────────────────────── i18n-iso-countries setup ───────────────────────── */
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+// Register locale once (module top-level)
+countries.registerLocale(enLocale);
+
+// Build an array of { code, name } sorted by name.
+// Do this at module init so it isn't recomputed per render.
+const ALL_COUNTRIES = Object.entries(countries.getNames("en", { select: "official" }))
+  .map(([code, name]) => ({ code, name }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
 /* ───────────────────────── Helpers / constants ───────────────────────── */
 
 const ROLE = "speaker";
 
-// ISO-3166-1 alpha-2 quick list
-const COUNTRIES = [
-  { code: "TN", name: "Tunisia" },
-  { code: "FR", name: "France" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "DE", name: "Germany" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "MA", name: "Morocco" },
-  { code: "DZ", name: "Algeria" },
-  { code: "EG", name: "Egypt" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "CA", name: "Canada" },
-];
+function normalizeToAlpha2(input) {
+  if (!input) return "";
+  const s = String(input).trim();
+  if (!s) return "";
+  if (s.length === 2) return s.toUpperCase();
+  const mapped = countries.getAlpha2Code(s, "en");
+  return mapped ? mapped.toUpperCase() : "";
+}
 
 function EventName({ id, fallback = "—" }) {
   const { data } = useGetEventQuery(id, { skip: !id });
@@ -46,15 +52,19 @@ function EventName({ id, fallback = "—" }) {
   return <>{title}</>;
 }
 
-function flagChip(code) {
-  if (!code) return "—";
-  const up = String(code).toUpperCase();
+function flagChip(codeOrName) {
+  if (!codeOrName) return "—";
+  const alpha2 = normalizeToAlpha2(codeOrName) || String(codeOrName).trim().slice(0, 2).toUpperCase();
+  if (!alpha2 || alpha2.length !== 2) {
+    return <span className="flag-chip" title={String(codeOrName)}>{String(codeOrName)}</span>;
+  }
   return (
-    <span className="flag-chip" title={up}>
-      <ReactCountryFlag svg countryCode={up} style={{ fontSize: "1em" }} />
+    <span className="flag-chip" title={alpha2}>
+      <ReactCountryFlag svg countryCode={alpha2} style={{ fontSize: "1em" }} />
     </span>
   );
 }
+
 function isDefaultPhoto(src) {
   if (!src) return false;
   try {
@@ -145,7 +155,8 @@ export default function AdminSpeakers() {
     }
   }, [searchParams, activeId]);
 
-  const { data: actor, isFetching: fetchingActor } = useGetAdminActorQuery(
+  // note: we need refetch to refresh modal after photo upload
+  const { data: actor, isFetching: fetchingActor, refetch: refetchActor } = useGetAdminActorQuery(
     activeId ? activeId : null,
     { skip: !activeId }
   );
@@ -172,8 +183,13 @@ export default function AdminSpeakers() {
     country: "",
     eventId: "",
     sessionIds: [],
+    photoFile: null,       // <-- added
+    photoPreview: null,    // <-- added
   });
   const [roleKind, setRoleKind] = React.useState(""); // optional “role-like”
+
+  // upload hook
+  const [uploadActorPhoto, { isLoading: uploadingPhoto }] = useUploadActorPhotoMutation();
 
   // Load sessions for selected event (exclude “Formation” track)
   const { data: sessionsPack, isFetching: fetchingSessions } = useGetEventSessionsQuery(
@@ -226,6 +242,18 @@ export default function AdminSpeakers() {
 
   const [createActor, { isLoading: creatingReq }] = useCreateActorMutation();
 
+  // cleanup previews when component unmounts or preview changes
+  React.useEffect(() => {
+    return () => {
+      if (createDraft.photoPreview) {
+        try {
+          URL.revokeObjectURL(createDraft.photoPreview);
+        } catch {}
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onCreateSubmit = async (e) => {
     e.preventDefault();
     if (!canCreate) return;
@@ -243,9 +271,22 @@ export default function AdminSpeakers() {
     };
 
     try {
-      await createActor(payload).unwrap();
+      const created = await createActor(payload).unwrap();
+      // determine created id from response (adjust if your backend shape differs)
+      const newId = created?.data?._id || created?._id || created?.id;
+      // If a photo was selected, upload it now
+      if (newId && createDraft.photoFile) {
+        try {
+          await uploadActorPhoto({ id: newId, file: createDraft.photoFile }).unwrap();
+        } catch (upErr) {
+          console.error("Photo upload failed:", upErr);
+          // still continue but notify admin
+          alert("Speaker created but image upload failed.");
+        }
+      }
+
       setCreating(false);
-      setCreateDraft({ fullName: "", email: "", country: "", eventId: "", sessionIds: [] });
+      setCreateDraft({ fullName: "", email: "", country: "", eventId: "", sessionIds: [], photoFile: null, photoPreview: null });
       setRoleKind("");
       refetch();
     } catch (err) {
@@ -394,7 +435,7 @@ export default function AdminSpeakers() {
                       }
                     >
                       <option value="">— Select —</option>
-                      {COUNTRIES.map((c) => (
+                      {ALL_COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>
                           {c.name} ({c.code})
                         </option>
@@ -483,8 +524,8 @@ export default function AdminSpeakers() {
             </div>
 
             <div className="att-create-actions">
-              <button className="btn brand" disabled={!canCreate || creatingReq}>
-                {creatingReq ? "Creating…" : "Create speaker"}
+              <button className="btn brand" disabled={!canCreate || creatingReq || uploadingPhoto}>
+                {creatingReq ? "Creating…" : uploadingPhoto ? "Uploading photo…" : "Create speaker"}
               </button>
               <span className="att-hint muted ml-8">
                 The speaker will be created and linked to the selected event sessions.
@@ -523,7 +564,7 @@ export default function AdminSpeakers() {
           {!actor || fetchingActor ? (
             <div className="muted">Loading speaker…</div>
           ) : (
-            <ActorDetails actor={actor} />
+            <ActorDetails actor={actor} refetchActor={refetchActor} />
           )}
         </Modal>
       )}
@@ -579,7 +620,7 @@ function Modal({ children, onClose }) {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-  return () => window.removeEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
     <div className="att-modal" onClick={onClose}>
@@ -593,16 +634,15 @@ function Modal({ children, onClose }) {
   );
 }
 
-function ActorDetails({ actor }) {
+function ActorDetails({ actor, refetchActor }) {
   const navigate = useNavigate();
-  // backend returns: { success, role, roleKind, data: {...}, sessions: [...], roles: [...] }
   const id = actor?.data?._id || actor?._id || getId(actor);
 
   const base = actor?.data || {};
   const A = base.personal || {};
   const B = base.organization || {};
-  const T = base.talk || {};           // speaker-specific
-  const I = base.b2bIntent || {};      // optional speaker B2B intent / matching
+  const T = base.talk || {};
+  const I = base.b2bIntent || {};
   const photo = A.profilePic;
   const hasRealPhoto = photo && !isDefaultPhoto(photo);
   const sess = Array.isArray(actor?.sessions) ? actor.sessions : [];
@@ -611,41 +651,125 @@ function ActorDetails({ actor }) {
   const goProfile = () => navigate(`/admin/members/speaker/${id}`);
   const goMessage = () => navigate(`/admin/messages?actor=${id}&role=speaker`);
 
-  const websiteUrl = fmtUrl(base?.links?.website);
-  const linkedinUrl = fmtUrl(base?.links?.linkedin);
+  // Local upload state for modal (admin can replace photo)
+  const [localFile, setLocalFile] = React.useState(null);
+  const [localPreview, setLocalPreview] = React.useState(null);
+  const [uploadErr, setUploadErr] = React.useState(null);
+  const [uploadInProgress, setUploadInProgress] = React.useState(false);
+
+  const [uploadActorPhoto] = useUploadActorPhotoMutation();
+
+  React.useEffect(() => {
+    return () => {
+      if (localPreview) {
+        try { URL.revokeObjectURL(localPreview); } catch {}
+      }
+    };
+  }, [localPreview]);
+
+  const onChooseFile = (e) => {
+    const f = e.target.files?.[0] || null;
+    if (!f) return;
+    if (!f.type.startsWith("image/") || f.size > 5 * 1024 * 1024) {
+      alert("Please select an image (max 5MB).");
+      e.target.value = "";
+      return;
+    }
+    setLocalFile(f);
+    setLocalPreview(URL.createObjectURL(f));
+    setUploadErr(null);
+  };
+
+  const onUpload = async () => {
+    if (!localFile) return;
+    setUploadErr(null);
+    setUploadInProgress(true);
+    try {
+      const realId = id;
+      await uploadActorPhoto({ id: realId, file: localFile }).unwrap();
+      setLocalFile(null);
+      setLocalPreview(null);
+      if (typeof refetchActor === "function") refetchActor();
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setUploadErr("Upload failed — check logs");
+    } finally {
+      setUploadInProgress(false);
+    }
+  };
 
   return (
-    <div className="att-detail">
-      <div className="att-d-head">
-        <button className="att-d-avatar" onClick={goProfile} title="Open full profile">
-          {hasRealPhoto ? (
-            <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
-          ) : (
-            <span className="att-fallback">
-              {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
-            </span>
-          )}
-        </button>
+    <div className="att-detail att-detail--with-scroll">
+      {/* header area: left fixed column + right flexible content */}
+      <div className="att-d-head att-d-head--split">
+        <div className="att-d-left">
+          <button className="att-d-avatar" onClick={goProfile} title="Open full profile" aria-label="Open profile">
+            {hasRealPhoto ? (
+              <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
+            ) : (
+              <span className="att-fallback">
+                {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
+              </span>
+            )}
+          </button>
+
+          <div className="att-upload-panel">
+            <div className="att-upload-row">
+              <label className="btn small att-upload-btn" htmlFor={`actor-photo-input-${id}`}>
+                Choose file
+              </label>
+              <input
+                id={`actor-photo-input-${id}`}
+                type="file"
+                accept="image/*"
+                onChange={onChooseFile}
+                className="att-upload-input visually-hidden"
+              />
+            </div>
+
+            {localPreview ? (
+              <div className="att-upload-preview">
+                <img src={localPreview} alt="preview" />
+                <div className="att-upload-actions">
+                  <button className="btn" onClick={onUpload} disabled={uploadInProgress}>
+                    {uploadInProgress ? "Uploading…" : "Upload"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ml-4"
+                    onClick={() => { setLocalFile(null); setLocalPreview(null); setUploadErr(null); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {uploadErr && <div className="muted att-upload-error">{uploadErr}</div>}
+              </div>
+            ) : (
+              <div className="att-upload-hint muted">PNG / JPG • max 5MB</div>
+            )}
+          </div>
+        </div>
+
         <div className="att-d-meta">
           <div className="att-d-top">
-            <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
-              {A.fullName || "—"}
-            </button>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
+                {A.fullName || "—"}
+              </button>
 
-            <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
-              {base.verified ? "Email verified" : "Unverified"}
-            </span>
+              <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
+                {base.verified ? "Email verified" : "Unverified"}
+              </span>
 
-            <span className={`pill-status big ${base.adminVerified || "pending"}`}>
-              {base.adminVerified || "pending"}
-            </span>
+              <span className={`pill-status big ${base.adminVerified || "pending"}`}>
+                {base.adminVerified || "pending"}
+              </span>
+            </div>
           </div>
 
-          <div className="att-d-sub">
-            <span className="muted">{A.email || "—"}</span>
-            <span className="muted">
-              {flagChip(A.country)} {A.city ? `, ${A.city}` : ""}
-            </span>
+          <div className="att-d-sub att-d-sub--wrap">
+            <div className="muted att-d-email">{A.email || "—"}</div>
+            <div className="muted att-d-country">{flagChip(A.country)} {A.city ? `, ${A.city}` : ""}</div>
           </div>
 
           <div className="att-d-sub">
@@ -653,7 +777,7 @@ function ActorDetails({ actor }) {
               Event: <EventName id={eid} fallback="—" />
             </span>
             {actor?.roleKind ? (
-              <span className="muted ml-10">Role-like: {actor.roleKind}</span>
+              <span className="muted ml-10">Role-like: <strong style={{whiteSpace:'normal'}}>{actor.roleKind}</strong></span>
             ) : null}
           </div>
 
@@ -662,13 +786,13 @@ function ActorDetails({ actor }) {
           </div>
 
           <div className="att-d-links">
-            {websiteUrl ? (
-              <a className="linklike mr-8" href={websiteUrl} target="_blank" rel="noreferrer">
+            {fmtUrl(base?.links?.website) ? (
+              <a className="linklike mr-8" href={fmtUrl(base.links.website)} target="_blank" rel="noreferrer">
                 Website
               </a>
             ) : null}
-            {linkedinUrl ? (
-              <a className="linklike" href={linkedinUrl} target="_blank" rel="noreferrer">
+            {fmtUrl(base?.links?.linkedin) ? (
+              <a className="linklike" href={fmtUrl(base.links.linkedin)} target="_blank" rel="noreferrer">
                 LinkedIn
               </a>
             ) : null}
@@ -686,7 +810,8 @@ function ActorDetails({ actor }) {
         </div>
       </div>
 
-      <div className="att-sections">
+      {/* content area: scrolls inside modal */}
+      <div className="att-sections att-sections--compact">
         <AttSection title="Talk">
           <KV k="Title" v={T.title} />
           <KV k="Language" v={T.language} />
@@ -743,6 +868,7 @@ function ActorDetails({ actor }) {
     </div>
   );
 }
+
 
 /* ───────────────────────── Shared UI ───────────────────────── */
 

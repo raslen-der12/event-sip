@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { FiZap } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 export default function AboutIntro({
   heading,
@@ -8,7 +9,8 @@ export default function AboutIntro({
   chips = [],
   ctaLabel,
   ctaHref,
-  imageSrc = "/assets/images/about.jpg", // ✅ add default image path
+  imageSrc = "/assets/images/about.jpg",
+  imageAlt = "About section illustration",
   className = "",
 }) {
   return (
@@ -67,7 +69,7 @@ export default function AboutIntro({
           <div className="relative overflow-hidden rounded-2xl ">
             <img
               src={imageSrc}
-              alt="About section illustration"
+              alt={imageAlt}
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
             <div className="absolute inset-0  rounded-2xl"></div>
@@ -85,5 +87,6 @@ AboutIntro.propTypes = {
   ctaLabel: PropTypes.string,
   ctaHref: PropTypes.string,
   imageSrc: PropTypes.string,
+  imageAlt: PropTypes.string,
   className: PropTypes.string,
 };

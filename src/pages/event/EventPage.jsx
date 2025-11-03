@@ -18,6 +18,9 @@ import imageLink from "../../utils/imageLink";
 import PlatformPillarsSplit from "../../components/showcase/PlatformPillars";
 import CommunityRow from "../../components/Cards/CommunityRow";
 import ActionRibbon from "../../components/event/FeaturesShowcase/ActionRibbon";
+import { useTranslation } from 'react-i18next';
+import React from "react";
+
 
 const attendees = [
   {
@@ -212,6 +215,23 @@ export default function EventPage() {
   { label: "Schedule", href: `/event/${eventId}/schedule` }
 ];
   const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
+    const { t } = useTranslation();  // <-- this is important
+  // Map impacts to translated titles & descriptions based on id or fallback
+  const impactsTranslated = React.useMemo(() => {
+    if (!data?.impacts?.length) return [];
+
+    return data.impacts.map((impact, idx) => {
+      // Construct fallback keys f1, f2,... for translation
+      const key = impact.id || `f${idx + 1}`;
+
+      return {
+        ...impact,
+        title: t(`impact.${key}Title`, impact.title || ""),
+        description: t(`impact.${key}Desc`, impact.description || ""),
+      };
+    });
+  }, [data?.impacts, t]);
+
   return (
     <>
           <HeaderShell top={topbar} nav={nav} cta={cta} />
@@ -220,98 +240,21 @@ export default function EventPage() {
         heroImage={`${base}/uploads/images/admin/ipdays.jpg`}
       />
     <AboutIntro
-      heading="À propos des IPDAYS X GITS 2025"
-      contentHtml="<p>Un événement inclusif à la recherche d’impact durable
-Cette édition vise à ouvrir les portes de l’écosystème tunisien vers l’extérieur, en mettant en lumière les opportunités de collaboration, d’export, de partenariats stratégiques et d’immersion dans les marchés internationaux. Elle réunira startups, porteurs de projets, investisseurs, mentors et experts pour échanger, inspirer et coconstruire des solutions à impact global.</p>"
-
-      ctaLabel="Je m’inscris"
+      heading={t("aboutHeading")}
+      contentHtml={t("aboutContent")}
+      ctaLabel={t("ctaSignUp")}
       ctaHref="/register"
-      imageSrc={`https://gits.seketak-eg.com/wp-content/uploads/2025/10/IPDAYS-X-GITS.png`}
+      imageSrc="https://gits.seketak-eg.com/wp-content/uploads/2025/10/IPDAYS-X-GITS.png"
+      imageAlt={t("aboutImageAlt")}
     />
 
 
-      <ImpactHighlights
-        heading="Impact & Outcomes"
-        subheading="Ce que l’événement a accompli pour les participants, exposants et partenaires :"
-        impacts={data?.impacts}        // from useGetFullEventQuery(eventId)
-        isLoading={isLoading}
-      />
-
-      {/* <PlatformPillarsSplit POINTS={[
-    {
-      id: "b2b",
-      icon: <I.network />,
-      title: "Pre-scheduled B2B meetings (onsite & virtual)",
-      desc: "",
-      img: {`${base}/uploads/images/admin/cover-ipdays.png",
-    },
-    {
-      id: "profiles",
-      icon: <I.idcard />,
-      title: "Instant chat between SMEs, investors, and buyers",
-      desc: "",
-      img: {`${base}/uploads/images/admin/ipdays-02.png",
-    },
-    {
-      id: "services",
-      icon: <I.briefcase />,
-      title: "AI-powered intelligent matchmaking",
-      desc: "",
-      img: {`${base}/uploads/images/admin/KH_03168.png",
-    },
-    {
-      id: "services",
-      icon: <I.network />,
-      title: "Multilingual support (FR / EN / AR)",
-      desc: "",
-      img: {`${base}/uploads/images/admin/KH_02938.png",
-    },
-  ]} /> */}
-      
-      {/* // With API: */}
-      {/* const { data: evt } = useGetFullEventQuery(eventId); */}
-      {/* <GalleryMasonry heading="Moments from the event" subheading="Highlights captured by our team and community." items={evt?.gallery} /> */}
-
-      {/* // Or render without props to preview fallback demo: */}
-      <ProgramMatrix sessions={data?.schedule} isLoading={isLoading} />
-      <GalleryMasonry />
-
-            {/* <main className="col-span-12 lg:col-span-8 mx-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CommunityRow
-            title="speakers"
-            seeAllHref="/community/students"
-            members={data?.speakers ?? data?.attendees ?? speakers}
-            wrapperClassName="max-w-7xl mx-auto"
-          />
-        </div>
-      </main>
-
-
-      <main className="col-span-12 lg:col-span-8 mx-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CommunityRow
-            title="Attendees"
-            seeAllHref="/community/students"
-            members={data?.attendees ?? data?.attendees ?? attendees}
-            wrapperClassName="max-w-7xl mx-auto"
-          />
-        </div>
-      </main>
-
-      <main className="col-span-12 lg:col-span-8 mx-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CommunityRow
-            title="Exhibitors"
-            seeAllHref="/community/students"
-            members={data?.exhibitors ?? data?.attendees ?? exhibitors}
-            wrapperClassName="max-w-7xl mx-auto"
-          />
-        </div>
-      </main> */}
-
-
-
+    <ImpactHighlights
+      heading={t("impactHeading")}
+      subheading={t("impactSubheading")}
+      impacts={impactsTranslated}
+      isLoading={isLoading}
+    />
       
       <FeaturesShowcase features={data?.features} />
         <PartnershipBlock

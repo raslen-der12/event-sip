@@ -1,45 +1,40 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FiChevronLeft, FiChevronRight, FiZap } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 import imageLink from "../../../utils/imageLink";
-    const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
 
-const FALLBACK = [
-  {
-    _id: "fx1",
-    title: "Matchmaking Lounge",
-    subtitle: "Curated B2B sessions",
-    desc: "Sit down with buyers, partners, and investors. Our concierge matches you based on sector and intent.",
-    image:
-      `${base}/uploads/images/admin/sans titre-50.png?q=80&w=1200`,
-  },
-  {
-    _id: "fx2",
-    title: "Live Demos Zone",
-    subtitle: "Product in action",
-    desc: "Touch, try, and stress-test new tech—from enterprise software to robotics—guided by the teams who built it.",
-    image:
-      `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
-  },
-  {
-    _id: "fx3",
-    title: "Gov/Enterprise Tracks",
-    subtitle: "Real procurement paths",
-    desc: "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready.",
-    image:
-      `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
-  },
-];
+const base = process.env.REACT_APP_API_URL || "https://api.eventra.cloud";
 
-export default function FeaturesShowcase({
-  heading = "Pourquoi Participer ?",
-  subheading = "Des expériences conçues pour générer des connexions, des apprentissages et des opportunités d’affaires.",
-  features,
-}) {
-  const items = useMemo(
-    () => (features && features.length ? features : FALLBACK),
-    [features]
-  );
+export default function FeaturesShowcase({ heading, subheading, features }) {
+  const { t } = useTranslation();
+
+  // Load fallback features from translation JSON if no features passed
+  const fallbackFeatures = t("featuresFallback", { returnObjects: true }) || [
+    {
+      _id: "fx1",
+      title: t("featuresFallback.0.title"),
+      subtitle: t("featuresFallback.0.subtitle"),
+      desc: t("featuresFallback.0.desc"),
+      image: `${base}/uploads/images/admin/sans titre-50.png?q=80&w=1200`,
+    },
+    {
+      _id: "fx2",
+      title: t("featuresFallback.1.title"),
+      subtitle: t("featuresFallback.1.subtitle"),
+      desc: t("featuresFallback.1.desc"),
+      image: `${base}/uploads/images/admin/sans titre-139.png?q=80&w=1600&auto=format&fit=crop`,
+    },
+    {
+      _id: "fx3",
+      title: t("featuresFallback.2.title"),
+      subtitle: t("featuresFallback.2.subtitle"),
+      desc: t("featuresFallback.2.desc"),
+      image: `${base}/uploads/images/admin/sans titre-260.png?q=80&w=1600&auto=format&fit=crop`,
+    },
+  ];
+
+  const items = useMemo(() => (features && features.length ? features : fallbackFeatures), [features, fallbackFeatures]);
 
   const trackRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
@@ -57,12 +52,12 @@ export default function FeaturesShowcase({
     updateArrows();
     const el = trackRef.current;
     if (!el) return;
-    const on = () => updateArrows();
-    el.addEventListener("scroll", on, { passive: true });
-    const ro = new ResizeObserver(on);
+    const onScroll = () => updateArrows();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    const ro = new ResizeObserver(onScroll);
     ro.observe(el);
     return () => {
-      el.removeEventListener("scroll", on);
+      el.removeEventListener("scroll", onScroll);
       ro.disconnect();
     };
   }, []);
@@ -84,11 +79,11 @@ export default function FeaturesShowcase({
               <span className="text-[#EB5434]">
                 <FiZap />
               </span>
-              {heading}
+              {heading || t("featuresHeading")}
             </h2>
-            {subheading && (
+            {(subheading || t("featuresSubheading")) && (
               <p className="text-gray-600 mt-2 text-base md:text-lg max-w-xl">
-                {subheading}
+                {subheading || t("featuresSubheading")}
               </p>
             )}
           </div>
@@ -127,7 +122,7 @@ export default function FeaturesShowcase({
         >
           {items.map((f, i) => {
             const key = f._id || `${f.title}-${i}`;
-            const bg = f.image || FALLBACK[i % FALLBACK.length].image;
+            const bg = f.image;
             return (
               <article
                 key={key}
@@ -143,17 +138,9 @@ export default function FeaturesShowcase({
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-[#1C3664] mb-1">
-                    {f.title}
-                  </h3>
-                  {f.subtitle && (
-                    <div className="text-[#EB5434] text-sm font-medium mb-2">
-                      {f.subtitle}
-                    </div>
-                  )}
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {f.desc}
-                  </p>
+                  <h3 className="text-xl font-semibold text-[#1C3664] mb-1">{f.title}</h3>
+                  {f.subtitle && <div className="text-[#EB5434] text-sm font-medium mb-2">{f.subtitle}</div>}
+                  <p className="text-gray-600 text-sm leading-relaxed">{f.desc}</p>
                 </div>
               </article>
             );

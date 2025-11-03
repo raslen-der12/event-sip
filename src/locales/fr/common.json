@@ -1,8 +1,117 @@
 {
-    "welcome": "Bienvenue",
-    "login": "Connexion",
-    "logout": "Déconnexion",
-    "register": "S'inscrire",
-    "Website": "Site Web",
-    "Profile Not Found": "Profil non trouvé"
+  "international": "L’international",
+  "innoPreneursDays": "Les InnoPreneurs Days – IPDAYS 2025",
+  "training": "Formation",
+  "masterclass": "MasterClass",
+  "expo": "EXPO",
+  "networkingB2B": "Networking & B2B",
+  "registerNow": "Je m’inscris",
+  "registerForEvent": "Je m’inscris pour l'événement",
+  "joinAdventure": "Rejoignez l’aventure IPDAYS × GITS 2025",
+  "reserveSpot": "Réservez votre place pour vivre l’expérience entrepreneuriale la plus inspirante de 2025.",
+  "viewSchedule": "Voir le programme",
+  "addToCalendar": "Ajouter au calendrier",
+  "limitedSeats": "Places limitées",
+  "eventHero": "Événement héros",
+  "aboutHeading": "À propos des IPDAYS X GITS 2025",
+  "aboutContent": "<p>Un événement inclusif à la recherche d’impact durable. Cette édition vise à ouvrir les portes de l’écosystème tunisien vers l’extérieur, en mettant en lumière les opportunités de collaboration, d’export, de partenariats stratégiques et d’immersion dans les marchés internationaux. Elle réunira startups, porteurs de projets, investisseurs, mentors et experts pour échanger, inspirer et coconstruire des solutions à impact global.</p>",
+  "ctaSignUp": "Je m’inscris",
+  "aboutImageAlt": "Illustration de la section À propos",
+  "impact": {
+    "f1Title": "1.5k+ participants",
+    "f1Desc": "Audience internationale Afrique, MENA region & Europe",
+    "f2Title": "400+ B2B Meetings",
+    "f2Desc": "Matchmaking structuré et résultats mesurables",
+    "f3Title": "95% de satisfaction",
+    "f3Desc": "Enquête post-événement : contenu, logistique, valeur ajoutée",
+    "f4Title": "50+ exposants",
+    "f4Desc": "Startups, entreprises et institutions",
+    "f5Title": "50+ sessions",
+    "f5Desc": "Conférences, panels, ateliers sur 2 jours",
+    "f6Title": "Couverture mondiale",
+    "f6Desc": "Médias et réseaux sociaux à portée internationale"
+  },
+  "impactHeading": "Impact & Résultats",
+  "impactSubheading": "Ce que l’événement a accompli pour les participants, exposants et partenaires :",
+  "programme": "Programme",
+  "clear": "Effacer",
+  "formation": "Formation",
+  "panel": "Panel",
+  "atelier": "Atelier",
+  "masterclass": "Masterclass",
+  "b2b": "B2B",
+  "demo": "Demo",
+  "days": {
+    "2025-11-12": "Mercredi 12 Novembre 2025",
+    "2025-11-13": "Jeudi 13 Novembre 2025"
+  },
+  "program": {
+    "2025-11-12": {
+      "items": [
+        { "time": "09:00 - 16:00", "title": "Formation 1", "speaker": "AfriStart", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Formation 2", "speaker": "WIDU.AFRICA – GIZ", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Formation 3", "speaker": "Women Go Green", "type": "formation" },
+        { "time": "09:00 - 16:00", "title": "Formation 4", "speaker": "Green Hubs", "type": "formation" }
+      ]
+    },
+    "2025-11-13": {
+      "sections": [
+        {
+          "title": "PLÉNIÈRE",
+          "moderator": "Modérateur : Mr. Wassim Laaribi - Journaliste et animateur Express FM",
+          "sessions": [
+            { "time": "09:00 - 09:30", "title": "Mots d'ouverture", "type": "panel" },
+            { "time": "09:30 - 10:30", "title": "Panel 1 – Stratégie d’accès aux marchés internationaux : enjeux critiques et leviers opérationnels", "type": "panel" },
+            { "time": "10:30 - 11:30", "title": "Panel 2 - Think global, act local… avec nous", "type": "panel" },
+            { "time": "11:30 - 12:30", "title": "Panel 3 - Export 2.0 : maîtrisez les outils digitaux pour conquérir l’international", "type": "panel" },
+            { "time": "12:30 - 13:00", "title": "DEMO GITS THE PLATFORM", "type": "demo" }
+          ]
+        },
+        {
+          "title": "APRÈS-MIDI - B2B & MATCHMAKING",
+          "sessions": [
+            { "time": "14:00 – 18:00", "title": "Après-midi - B2B & Matchmaking via GITS (physique et virtuel)", "type": "b2b", "highlight": true }
+          ]
+        },
+        {
+          "title": "ATELIERS",
+          "sessions": [
+            { "time": "14:00 - 17:00", "title": "Atelier 1 – Allez plus loin, plus vite : les plateformes digitales au service de votre internationalisation", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Atelier 2 – Négociation de contrats à l’international", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Atelier 3 – Clés techniques pour ouvrir les portes du monde", "type": "atelier" },
+            { "time": "14:00 - 17:00", "title": "Atelier 4 – Branding et communication orientés export", "type": "atelier" }
+          ]
+        },
+        {
+          "title": "MASTERCLASSES",
+          "sessions": [
+            { "time": "14:00 - 15:00", "title": "Masterclass 1 – Comment financer vos activités à l’export ?", "type": "masterclass" },
+            { "time": "15:00 - 16:00", "title": "Masterclass 2 – Du local au global : maximisez votre portée avec le e-commerce et les plateformes digitales, quelle place pour l’IA ?", "type": "masterclass" },
+            { "time": "16:00 - 17:00", "title": "Masterclass 3 – Go Global, the Right Way…", "type": "masterclass" },
+            { "time": "17:00 - 18:00", "title": "Masterclass 4 – GITS Community : what next ?", "type": "masterclass" }
+          ]
+        }
+      ]
+    }
+  },
+  "featuresHeading": "Pourquoi Participer ?",
+  "featuresSubheading": "Des expériences conçues pour générer des connexions, des apprentissages et des opportunités d’affaires.",
+  "featuresFallback": [
+    {
+      "title": "Matchmaking Lounge",
+      "subtitle": "Sessions B2B sur mesure",
+      "desc": "Asseyez-vous avec des acheteurs, partenaires, et investisseurs. Notre concierge vous met en relation selon votre secteur et vos intentions."
+    },
+    {
+      "title": "Zone de Démonstrations en Direct",
+      "subtitle": "Le produit en action",
+      "desc": "Touchez, testez et poussez à bout les nouvelles technologies — du logiciel d’entreprise à la robotique — guidé par les équipes qui les ont créées."
+    },
+    {
+      "title": "Parcours Gouvernementaux / Entreprises",
+      "subtitle": "Véritables chemins d’approvisionnement",
+      "desc": "Découvrez comment les grands acheteurs sélectionnent, testent, et déploient des solutions. Des étapes concrètes pour être prêt fournisseur."
+    }
+  ]
+
 }
