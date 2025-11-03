@@ -214,7 +214,7 @@ export default function EventPage() {
   const base = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud'
   return (
     <>
-          <HeaderShell top={topbar} nav={nav} cta={cta} />
+          <HeaderShell top={topbar} nav={nav} cta={cta} logo={imageLink("/default/IPDAYXGITS.png")} />
       <HeroEvent
         event={event?.event}
         heroImage={`${base}/uploads/images/admin/ipdays.jpg`}

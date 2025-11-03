@@ -265,10 +265,19 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
     if (cap != null && reg >= cap) return <span className="ag__chip -full">full</span>;
     return null;
   };
+   const nav = [
+    { label: "Home", href: "/" },
+    { label: "Event", href: `/event/${eventId}` },
+    { label: "Speakers", href: `/event/${eventId}/speakers` },
+    { label: "Attendees", href: `/event/${eventId}/attendees` },
+    { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
+    { label: "Schedule", href: `/event/${eventId}/schedule` },
+    // { label: "Tickets", href: `/event/${eventId}/tickets` },
+  ];
 
   return (
     <>
-      <HeaderShell top={topbar} nav={[]} cta={cta} />
+      <HeaderShell top={topbar} nav={nav} cta={cta} logo={eventId === "68e6764bb4f9b08db3ccec04" ? imageLink("/default/IPDAYXGITS.png") : null} />
 
       <section className="ag">
         <div className="container">

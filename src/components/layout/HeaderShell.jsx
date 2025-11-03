@@ -264,7 +264,7 @@ function NotificationBell({ actorId }) {
 NotificationBell.propTypes = { actorId: PropTypes.string };
 
 /* ── Main header ─────────────────────────────────── */
-export default function HeaderShell({ top, nav, cta }) {
+export default function HeaderShell({ top, nav, cta ,logo }) {
   const { i18n } = useTranslation();
   const curLang = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2);
   const setLang = (lng) => {
@@ -437,7 +437,7 @@ export default function HeaderShell({ top, nav, cta }) {
           <a className="brand" href="/">
             <img
               width={190}
-              src="https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png"
+              src={logo || "https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png"}
               alt="Brand"
             />
           </a>

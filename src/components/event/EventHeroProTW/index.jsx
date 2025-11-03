@@ -1,6 +1,7 @@
 // HeroEvent.jsx
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
+import imageLink from "../../../utils/imageLink";
 
 /**
  * Props:
@@ -12,7 +13,7 @@ import { motion } from "framer-motion";
 export default function HeroEvent({
   event = {},
   onRegisterHref,
-  backgroundImage = "/assets/ipdays-hero.jpg",
+  backgroundImage = "/uploads/images/admin/ipdayscover.png",
   highlights,
 }) {
   const {
@@ -73,19 +74,19 @@ export default function HeroEvent({
     ? highlights
     : ["Formation", "MasterClass", "EXPO", "Networking & B2B"];
   const baseAPI  = process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
-
+ console.log(imageLink(backgroundImage));
   return (
     <section
       className="relative text-white backdropFilter"
       style={{
-        backgroundImage: `url(${baseAPI}/uploads/images/admin/ipdayscover.png)`,
+        backgroundImage:  `url(${imageLink(backgroundImage)}` || `url(${baseAPI}/uploads/images/admin/ipdayscover.png)`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
       aria-label="Event hero"
     >
       {/* dark overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60  backdrop-blur-sm"  />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">

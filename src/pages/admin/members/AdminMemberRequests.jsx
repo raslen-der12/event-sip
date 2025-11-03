@@ -30,13 +30,9 @@ const pick = (obj, paths = []) => {
 
 /* ----------------------------- Field pickers ----------------------------- */
 const getId = (it) =>
-  pick(it, [
-    "_id",
-    "id",
-    "data._id",
-    "data.id",
-    // last-resort stable-ish combo
-  ]) || (pick(it, ["email", "data.email"]) + pick(it, ["createdAt", "data.createdAt", "ts", "data.ts"]));
+  pick(it, ["_id", "id", "data._id", "data.id"]) ||
+  (pick(it, ["email", "data.email"]) +
+    pick(it, ["createdAt", "data.createdAt", "ts", "data.ts"]));
 
 const getName = (it) =>
   pick(it, [
@@ -63,17 +59,20 @@ const getEmail = (it) =>
   ]) || "—";
 
 const getRole = (it) =>
-  String(
-    pick(it, ["data.role", "role"]) || "member"
-  ).toLowerCase();
+  String(pick(it, ["data.role", "role"]) || "member").toLowerCase();
 
 const getEmailVerified = (it) =>
-  !!pick(it, ["data.verifiedEmail", "verifiedEmail", "data.emailVerified", "emailVerified"]);
+  !!pick(it, [
+    "data.verifiedEmail",
+    "verifiedEmail",
+    "data.emailVerified",
+    "emailVerified",
+  ]);
 
+// Per your rule: we label the column "Phone" but fill it with *country*.
 const getCountryText = (it) =>
-  // we map this to the "Phone" column per your rule
   pick(it, [
-    "data.country",      // primary, as you asked
+    "data.country", // primary
     "country",
     "data.personal.country",
     "personal.country",
@@ -107,6 +106,7 @@ const getOrg = (it) =>
     "identity.exhibitorName",
     "data.orgName",
     "orgName",
+    "organization",
     "data.companyName",
     "companyName",
   ]);
@@ -140,7 +140,13 @@ const getEventTitle = (it) =>
   ]);
 
 const getAdminStatus = (it) =>
-  pick(it, ["data.adminVerified", "adminVerified", "data.adminVerify", "adminVerify", "status"]) || "pending";
+  pick(it, [
+    "data.adminVerified",
+    "adminVerified",
+    "data.adminVerify",
+    "adminVerify",
+    "status",
+  ]) || "pending";
 
 const getCreatedAt = (it) =>
   pick(it, ["data.createdAt", "createdAt", "data.ts", "ts"]);
@@ -203,7 +209,7 @@ function buildRows(items, eventTitleMap) {
     const email = getEmail(it) || "—";
     const role = getRole(it) || "member";
     const verified = getEmailVerified(it) ? "yes" : "no";
-    // Per your rule: label "Phone" but use data.country value (with fallbacks)
+    // label "Phone" but use country value
     const phone = getCountryText(it) || "—";
     const gender = getGender(it) || "—";
     const organization = getOrg(it) || "—";
@@ -212,7 +218,18 @@ function buildRows(items, eventTitleMap) {
       (evId && (eventTitleMap?.get(evId) || getEventTitle(it) || evId)) || "—";
     const admin = getAdminStatus(it) || "pending";
     const createdAt = fmtDate(getCreatedAt(it));
-    return { name, email, gender, role, verified, phone, event, organization, admin, createdAt };
+    return {
+      name,
+      email,
+      gender,
+      role,
+      verified,
+      phone,
+      event,
+      organization,
+      admin,
+      createdAt,
+    };
   });
 }
 
@@ -223,7 +240,7 @@ function exportXLS(fileLabel, rows) {
     "Gender",
     "Role",
     "Verified",
-    "Phone",        // label is Phone; value is country (data.country preferred)
+    "Phone", // label is Phone; value is country
     "Event",
     "Organization",
     "Admin",
@@ -248,7 +265,10 @@ function exportXLS(fileLabel, rows) {
     <head><meta charset="utf-8" /></head>
     <body>${tableSection(`Member requests — ${fileLabel}`, head, body)}</body>
   </html>`;
-  downloadBlob(new Blob([html], { type: "application/vnd.ms-excel" }), `member_requests_${fileLabel}.xls`);
+  downloadBlob(
+    new Blob([html], { type: "application/vnd.ms-excel" }),
+    `member_requests_${fileLabel}.xls`
+  );
 }
 
 /* ================================ Modal ================================== */
@@ -264,7 +284,9 @@ function Modal({ open, onClose, children, title = "Details" }) {
       >
         <div className="req-modal-head">
           <div className="req-modal-title">{title}</div>
-          <button className="btn tiny" onClick={onClose}>Close</button>
+          <button className="btn tiny" onClick={onClose}>
+            Close
+          </button>
         </div>
         <div className="req-modal-body">{children}</div>
       </div>
@@ -292,8 +314,9 @@ export default function AdminMemberRequests() {
     if (type) q.adminVerify = type;
     if (eventFilter) q.eventId = eventFilter;
     if (search.trim()) q.search = search.trim();
+    if (type && !search.trim()) q.limit = Number(limit) || 20;
     return q;
-  }, [type, eventFilter, search]);
+  }, [type, eventFilter, search, limit]);
 
   const { data: buckets, isLoading, isFetching, refetch } =
     useGetAdminRegisterRequestQuery(queryArgs);
@@ -305,10 +328,13 @@ export default function AdminMemberRequests() {
   const [updateReq, { isLoading: mutating }] =
     useUpdateAdminRegisterRequestMutation();
 
-  // Buckets (expected: { pending:[], yes:[], no:[] } somewhere under response root)
-  const pending = pick(buckets, ["pending", "data.pending"]) || [];
-  const accepted = pick(buckets, ["yes", "data.yes"]) || [];
-  const rejected = pick(buckets, ["no", "data.no"]) || [];
+  // Buckets (support both {pending,yes,no} or {data:{...}})
+  const pending =
+    pick(buckets, ["pending", "data.pending"]) || [];
+  const accepted =
+    pick(buckets, ["yes", "data.yes"]) || [];
+  const rejected =
+    pick(buckets, ["no", "data.no"]) || [];
 
   const allItems = React.useMemo(
     () => [...pending, ...accepted, ...rejected],
@@ -385,12 +411,18 @@ export default function AdminMemberRequests() {
   // Actions
   const accept = async () => {
     if (!selected) return;
-    await updateReq({ id: pick(selected, ["_id", "id", "data._id", "data.id"]), adminVerified: "yes" });
+    await updateReq({
+      id: pick(selected, ["_id", "id", "data._id", "data.id"]),
+      adminVerified: "yes",
+    });
     await refetch();
   };
   const reject = async () => {
     if (!selected) return;
-    await updateReq({ id: pick(selected, ["_id", "id", "data._id", "data.id"]), adminVerified: "no" });
+    await updateReq({
+      id: pick(selected, ["_id", "id", "data._id", "data.id"]),
+      adminVerified: "no",
+    });
     await refetch();
   };
   const openProfile = (item) => {
@@ -422,19 +454,20 @@ export default function AdminMemberRequests() {
       setExporting(bucketKey);
       const params = {
         adminVerify: bucketKey, // "pending" | "yes" | "no"
-        limit: 50000,           // BIG limit for export (server will cap if needed)
+        limit: 999999,          // BIG limit for export (independent from UI)
       };
       if (eventFilter) params.eventId = eventFilter;
-      // DO NOT pass search -> export ALL from that bucket
+      // DO NOT pass search -> export ALL from that bucket for the event
       const res = await triggerExport(params).unwrap();
       const dataNode =
-        res?.data && typeof res.data === "object" ? res.data : res; // handle {data:{...}} or {...}
+        res?.data && typeof res.data === "object" ? res.data : res; // tolerate both shapes
       const arr =
         (bucketKey === "yes" && (dataNode.yes || [])) ||
         (bucketKey === "no" && (dataNode.no || [])) ||
         (dataNode.pending || []);
       const rows = buildRows(arr, eventTitleMap);
-      const label = bucketKey === "yes" ? "accepted" : bucketKey === "no" ? "rejected" : "pending";
+      const label =
+        bucketKey === "yes" ? "accepted" : bucketKey === "no" ? "rejected" : "pending";
       exportXLS(label, rows);
     } catch (e) {
       console.error("Export failed", e);
@@ -476,7 +509,9 @@ export default function AdminMemberRequests() {
             >
               <option value="">All events</option>
               {eventOptions.map((ev) => (
-                <option key={ev.id} value={ev.id}>{ev.title}</option>
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
               ))}
             </select>
           </div>
@@ -501,7 +536,9 @@ export default function AdminMemberRequests() {
               title={type ? "Increase page size" : "Pick a tab first"}
             >
               {[10, 20, 30, 50, 100].map((n) => (
-                <option key={n} value={n}>{n}</option>
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
             </select>
           </div>
@@ -552,7 +589,9 @@ export default function AdminMemberRequests() {
             )}
           </div>
           <div className="req-more">
-            <button className="btn tiny" onClick={() => showMore("pending")}>Show more</button>
+            <button className="btn tiny" onClick={() => showMore("pending")}>
+              Show more
+            </button>
           </div>
         </section>
 
@@ -594,7 +633,9 @@ export default function AdminMemberRequests() {
             )}
           </div>
           <div className="req-more">
-            <button className="btn tiny" onClick={() => showMore("yes")}>Show more</button>
+            <button className="btn tiny" onClick={() => showMore("yes")}>
+              Show more
+            </button>
           </div>
         </section>
 
@@ -636,27 +677,43 @@ export default function AdminMemberRequests() {
             )}
           </div>
           <div className="req-more">
-            <button className="btn tiny" onClick={() => showMore("no")}>Show more</button>
+            <button className="btn tiny" onClick={() => showMore("no")}>
+              Show more
+            </button>
           </div>
         </section>
       </div>
 
       {/* ===== Modal details ===== */}
-      <Modal open={modalOpen && !!selected} onClose={() => setModalOpen(false)} title="Request details">
+      <Modal
+        open={modalOpen && !!selected}
+        onClose={() => setModalOpen(false)}
+        title="Request details"
+      >
         {!selected ? (
           <div className="muted">No selection.</div>
         ) : (
           <>
-            <HeaderBlock item={selected} onOpen={() => openProfile(selected)} eventTitleMap={eventTitleMap} />
+            <HeaderBlock
+              item={selected}
+              onOpen={() => openProfile(selected)}
+              eventTitleMap={eventTitleMap}
+            />
             <BasicDetails item={selected} eventTitleMap={eventTitleMap} />
             <div className="req-actions">
-              <button className="btn" onClick={() => openProfile(selected)}>Open full profile</button>
+              <button className="btn" onClick={() => openProfile(selected)}>
+                Open full profile
+              </button>
               <div className="grow" />
               {getAdminStatus(selected) !== "yes" && (
-                <button className="btn brand" onClick={accept} disabled={mutating}>Accept</button>
+                <button className="btn brand" onClick={accept} disabled={mutating}>
+                  Accept
+                </button>
               )}
               {getAdminStatus(selected) !== "no" && (
-                <button className="btn danger" onClick={reject} disabled={mutating}>Reject</button>
+                <button className="btn danger" onClick={reject} disabled={mutating}>
+                  Reject
+                </button>
               )}
             </div>
           </>

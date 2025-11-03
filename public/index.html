@@ -133,16 +133,8 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root" role="main" id="main"></div>
 
-    <!-- Optional: runtime public config injected before the app (for CRA) -->
-    <!--
-      If you want runtime (not build-time) config, uncomment and serve /env.js from your backend:
-      <script src="/env.js"></script>
-      window._env_ = window._env_ || { API_BASE_URL: "https://api.example.com" };
-    -->
-
-    <!-- Hide splash once React paints (simple safeguard) -->
+    
     <script>
-      // Remove splash as soon as the window finishes loading the CRA bundles
       window.addEventListener('load', function(){
         var s = document.getElementById('app-splash');
         if (s) { s.classList.add('fade-out'); setTimeout(function(){ s.remove(); }, 320); }

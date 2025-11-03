@@ -312,7 +312,7 @@ function EventCard({ ev }) {
     ev?.id !== ipdaysId ? `/event/${ev?.id}/old` : ev?.id ? `/event/${ev.id}` : ev?.slug ? `/event/${ev.slug}` : "#";
 
   return (
-    <article className={`ev-card ${ev?.isCancelled ? "-cancel" : ""}`}>
+    <article className={`mt-4 ev-card ${ev?.isCancelled ? "-cancel" : ""}`}>
       <Link
   to={viewHref}
   className="ev-media ev-media--link"

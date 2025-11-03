@@ -74,7 +74,7 @@ async function exportConfirmedXLSX(rows=[], eventId=''){
 function StatCard({ label, value, sub }) {
   return (
     <div className="rounded-2xl shadow-sm border p-4 bg-white">
-      <div className="text-xs uppercase text-slate-500">{label}</div>
+      <div className="text-xs uppercase text-slate-500">{label}</div> 
       <div className="text-2xl font-semibold">{value}</div>
       {sub ? <div className="text-xs text-slate-500 mt-1">{sub}</div> : null}
     </div>
