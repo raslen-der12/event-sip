@@ -27,16 +27,97 @@ export default function AboutUs() {
       <HeaderShell top={topbar} nav={nav} cta={cta} />
 
       <section className="bg-white text-gray-800 font-inter">
+        {/* HERO */}
         <div className="bg-gradient-to-br from-blue-50 to-purple-50 text-center py-20 px-6">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             About <span className="text-blue-600">Eventra</span>
           </h1>
           <p className="max-w-2xl mx-auto text-lg text-gray-600">
-            Empowering entrepreneurs, fostering innovation, and shaping sustainable futures
-            across the Middle East, Africa, and beyond.
+            Empowering global businesses with intelligent matchmaking, end-to-end event solutions,
+            and strategic trade enablement — accelerating cross-border collaboration, innovation,
+            and sustainable growth across the Middle East, Africa, and beyond.
           </p>
         </div>
 
+        {/* ABOUT EVENTRA */}
+        <div className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-10 items-center">
+          <div>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">Who We Are</h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              <strong>Eventra</strong> is a global B2B platform owned by{" "}
+              <strong>Seketak for Entrepreneurship Solutions</strong>, a multinational company
+              operating in partnership with{" "}
+              <strong>Falak Startups Venture Capital Fund</strong> — backed by Egypt’s Ministry of
+              International Cooperation and Ministry of Investment.
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              While headquartered in Egypt, Eventra serves clients and facilitates business
+              connections across the Middle East, Africa, and international markets through
+              integrated services including:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mt-3 space-y-1 text-sm">
+              <li>AI-powered B2B matchmaking</li>
+              <li>Market intelligence communities</li>
+              <li>End-to-end event & exhibition management</li>
+              <li>Export consultancy & trade missions</li>
+              <li>Private business delegations</li>
+              <li>Logistics and trade enablement solutions</li>
+            </ul>
+          </div>
+          <img
+            src="https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_5316-1.png"
+            alt="About Eventra"
+            className="rounded-2xl shadow-md"
+          />
+        </div>
+
+        {/* MISSION & VISION */}
+        <div className="bg-blue-50 py-16 px-6">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Our Mission</h2>
+              <p className="text-gray-600 leading-relaxed">
+                To empower global businesses with intelligent matchmaking, end-to-end event
+                solutions, and strategic trade enablement — accelerating cross-border collaboration,
+                innovation, and sustainable growth across the Middle East, Africa, and beyond.
+              </p>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Our Vision</h2>
+              <p className="text-gray-600 leading-relaxed">
+                To be the world’s most trusted B2B growth platform — where AI-driven connections,
+                curated market communities, and seamless logistics converge to unlock
+                entrepreneurial potential and transform regional economies.
+              </p>
+            </div>
+          </div>
+          <div className="text-center mt-12">
+            <h3 className="text-xl font-semibold text-purple-600 italic">
+              “Connect. Grow. Globalize.”
+            </h3>
+          </div>
+        </div>
+
+        {/* OUR IMPACT */}
+        <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-10 items-center">
+          <img
+            src="https://gits.seketak-eg.com/wp-content/uploads/2025/10/d6b7dc86-0885-4c9a-8a4a-222cf7974fe4-1.png"
+            alt="Impact"
+            className="rounded-2xl shadow-md order-2 md:order-1"
+          />
+          <div className="order-1 md:order-2">
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">Our Impact</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Our work is rooted in innovation, inclusivity, and collaboration. We design and manage
+              programs that transform ideas into scalable ventures. With extensive experience in
+              supporting NGO and government sectors, we empower organizations through training,
+              strategy, and technical expertise to strengthen frameworks and foster sustainable
+              development.
+            </p>
+          </div>
+        </div>
+
+        {/* FOUNDERS */}
         <div className="max-w-6xl mx-auto py-16 px-6 text-center">
           <h2 className="text-3xl font-semibold mb-8 text-gray-900">Our Founders</h2>
           <div className="grid sm:grid-cols-3 gap-10">
@@ -54,53 +135,25 @@ export default function AboutUs() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Who We Are</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Seketak for Entrepreneurship Solutions is a trailblazing multinational company
-              under <strong>Falak Startups Venture Capital Fund</strong>, the investment arm of 
-              Egypt’s Ministry of International Cooperation and Ministry of Investment.
-              <br /><br />
-              With a legacy spanning over 20 years, we are at the forefront of empowering entrepreneurs,
-              fostering sustainable development, and driving economic and social progress across the 
-              Middle East, Africa, and beyond.
-            </p>
-          </div>
-          <img src="https://seketak-eg.com/wp-content/uploads/2025/02/KH_03568.webp" alt="Mission" className="rounded-2xl shadow-md" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-10 items-center">
-          <img
-            src="https://seketak-eg.com/wp-content/uploads/2025/03/image-613-1024x682.png"
-            alt="Impact"
-            className="rounded-2xl shadow-md order-2 md:order-1"
-          />
-          <div className="order-1 md:order-2">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Our Impact</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Our work is rooted in innovation, inclusivity, and collaboration. We design and manage 
-              programs that transform ideas into scalable ventures.
-              <br /><br />
-              With extensive experience supporting NGO and government sectors, we empower organizations
-              through tailored training, strategic guidance, and technical expertise to strengthen 
-              frameworks and foster sustainable development.
-            </p>
-          </div>
-        </div>
-
+        {/* OUR VALUES */}
         <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Our Values</h2>
             <p className="text-gray-600 leading-relaxed">
               We champion diversity and inclusion with over <strong>50% female representation</strong>
-              on our board of directors. We believe entrepreneurship is a powerful tool for change — 
-              unlocking opportunities, fostering innovation, and building a future where everyone can succeed.
+              on our board of directors. We believe entrepreneurship is a powerful tool for change —
+              unlocking opportunities, fostering innovation, and building a future where everyone
+              can succeed.
             </p>
           </div>
-          <img src="https://gits.seketak-eg.com/wp-content/uploads/2025/05/DSC_5316-1.png" alt="Diversity" className="rounded-2xl shadow-md" />
+          <img
+            src="https://gits.seketak-eg.com/wp-content/uploads/2025/10/Rectangle-802.png"
+            alt="Values"
+            className="rounded-2xl shadow-md"
+          />
         </div>
 
+        {/* TWO PILLARS */}
         <div className="bg-blue-50 py-16 px-6 text-center">
           <h2 className="text-3xl font-semibold mb-6 text-gray-900">Our Two Pillars</h2>
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -109,7 +162,7 @@ export default function AboutUs() {
                 Entrepreneurship & Innovation
               </h3>
               <p className="text-gray-600">
-                We empower startups, SMEs, and innovators with resources, mentorship, and networks 
+                We empower startups, SMEs, and innovators with resources, mentorship, and networks
                 to build sustainable ventures.
               </p>
             </div>
@@ -118,7 +171,7 @@ export default function AboutUs() {
                 Capacity Building & Development
               </h3>
               <p className="text-gray-600">
-                Through training and partnerships, we enable NGOs and government entities to design 
+                Through training and partnerships, we enable NGOs and government entities to design
                 and deliver impactful programs that drive inclusive growth.
               </p>
             </div>

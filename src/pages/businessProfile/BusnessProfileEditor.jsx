@@ -1054,81 +1054,397 @@ async function onRemoveGalleryImage(image) {
         {/* Main grid */}
         <main className="bpe-main container">
           {/* Identity */}
-<section className="bg-slate-50">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="md:flex md:items-center">
+        <section className="bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="md:flex md:items-center">
 
-        {/* Banner */}
-        <div className="relative md:w-1/3 w-full h-48 md:h-56 bg-slate-100">
-          {bannerUrl ? (
-            <div
-              className="absolute inset-0 bg-center bg-cover"
-              style={{ backgroundImage: `url(${bannerUrl})` }}
-              aria-hidden="true"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-              No banner
-            </div>
-          )}
-        </div>
+                {/* Banner */}
+                <div className="relative md:w-1/3 w-full h-48 md:h-56 bg-slate-100">
+                  {bannerUrl ? (
+                    <div
+                      className="absolute inset-0 bg-center bg-cover"
+                      style={{ backgroundImage: `url(${bannerUrl})` }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                      No banner
+                    </div>
+                  )}
+                </div>
 
-        {/* Content */}
-        <div className="flex-1 md:pl-10 px-4 py-8">
-          {/* Logo + Name + Tagline + Description */}
-          <div className="flex items-start gap-4 flex-wrap">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                className="h-40 w-40 rounded-md object-contain border border-slate-100 bg-white p-1"
-              />
-            ) : (
-              <div className="h-10 w-10 rounded-md border border-slate-100 flex items-center justify-center text-xs text-slate-400 bg-white">
-                No logo
+                {/* Content */}
+                <div className="flex-1 md:pl-10 px-4 py-8">
+                  {/* Logo + Name + Tagline + Description */}
+                  <div className="flex items-start gap-4 flex-wrap">
+                    {logoUrl ? (
+                      <img
+                        src={logoUrl}
+                        alt="Logo"
+                        className="h-40 w-40 rounded-md object-contain border border-slate-100 bg-white p-1"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-md border border-slate-100 flex items-center justify-center text-xs text-slate-400 bg-white">
+                        No logo
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-[200px]">
+                      <h2 className="text-2xl font-semibold text-slate-800">
+                        {name || "Your company name"}
+                      </h2>
+                      <p className="text-sm text-slate-500">
+                        {tagline || "Your company tagline or short description"}
+                      </p>
+                      {about && (
+                        <p className="mt-2 text-slate-600 text-sm leading-relaxed">
+                          {about.length > 400 ? about.slice(0, 400) + "..." : about}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* CTA buttons */}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <a
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white"
+                      style={{ backgroundColor: "#3379BD" }}
+                      href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}
+                    >
+                      View public page
+                    </a>
+
+                    <button
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
+                      onClick={copyShareUrl}
+                      disabled={!profile?._id}
+                    >
+                      Copy share link
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
-
-            <div className="flex-1 min-w-[200px]">
-              <h2 className="text-2xl font-semibold text-slate-800">
-                {name || "Your company name"}
-              </h2>
-              <p className="text-sm text-slate-500">
-                {tagline || "Your company tagline or short description"}
-              </p>
-              {about && (
-                <p className="mt-2 text-slate-600 text-sm leading-relaxed">
-                  {about.length > 400 ? about.slice(0, 400) + "..." : about}
-                </p>
-              )}
             </div>
           </div>
+        </section>
+        {/* Identity editor*/}
+        <section className="bg-white rounded-2xl shadow-md p-6 mb-5">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800">Identity</h3>
+                <p className="text-sm text-slate-500">
+                  Fill out your company details — visible on your public profile.
+                </p>
+              </div>
+            </div>
 
-          {/* CTA buttons */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ backgroundColor: "#3379BD" }}
-              href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}
-            >
-              View public page
-            </a>
+            {/* === BASIC INFO === */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                {TextInput ? (
+                  <TextInput value={name} onChange={setName} placeholder="Company / Brand name" />
+                ) : (
+                  <input
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Company / Brand name"
+                  />
+                )}
+              </div>
 
-            <button
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
-              onClick={copyShareUrl}
-              disabled={!profile?._id}
-            >
-              Copy share link
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+              {/* Team size */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Team size</label>
+                {Select ? (
+                  <Select
+                    value={size}
+                    onChange={setSize}
+                    options={["1-10", "11-50", "51-200", "201-500", "500+"]}
+                  />
+                ) : (
+                  <select
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-100"
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="1-10">1-10</option>
+                    <option value="11-50">11-50</option>
+                    <option value="51-200">51-200</option>
+                    <option value="201-500">201-500</option>
+                    <option value="500+">500+</option>
+                  </select>
+                )}
+              </div>
 
+              {/* Tagline */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Tagline</label>
+                {TextInput ? (
+                  <TextInput value={tagline} onChange={setTagline} placeholder="Short one-liner" />
+                ) : (
+                  <input
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    placeholder="Short one-liner"
+                  />
+                )}
+              </div>
+
+              {/* About */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">About</label>
+                {TextArea ? (
+                  <TextArea
+                    rows={6}
+                    value={about}
+                    onChange={setAbout}
+                    placeholder="Tell visitors what you do, who you help, and why you're different."
+                  />
+                ) : (
+                  <textarea
+                    rows={6}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
+                    placeholder="Tell visitors what you do, who you help, and why you're different."
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* === SECTOR & SUBSECTOR === */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {/* Sector */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Sector</label>
+                <select
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-100"
+                  disabled={taxFetching}
+                  value={sector}
+                  onChange={(e) => {
+                    setSector(e.target.value);
+                    setSubsectors([]);
+                  }}
+                >
+                  <option value="">{taxFetching ? "Loading…" : "Select a sector"}</option>
+                  {sectorOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {typeof titleize === "function" ? titleize(opt.label) : opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subsectors */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Subsectors</label>
+                {MultiSelect ? (
+                  <MultiSelect values={subsectors} onChange={setSubsectors} options={subsectorOptions} />
+                ) : (
+                  <select
+                    multiple
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-100"
+                    value={subsectors || []}
+                    onChange={(e) =>
+                      setSubsectors(Array.from(e.target.selectedOptions).map((o) => o.value))
+                    }
+                  >
+                    {subsectorOptions.map((opt) => (
+                      <option key={opt._id || opt.value} value={opt._id || opt.value}>
+                        {opt.name || opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {subsectors?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {subsectors.map((s) => {
+                      const found = subsectorOptions.find((o) => (o._id || o.value) === s);
+                      return (
+                        <span
+                          key={s}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm font-medium"
+                        >
+                          {found ? found.name || found.label : s}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* === COUNTRIES & LANGUAGES === */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {/* Countries */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Countries</label>
+                <div className="w-full rounded-lg border border-slate-200 px-3 py-3 bg-slate-50 min-h-[48px] flex flex-wrap gap-2">
+                  {countries && countries.length > 0 ? (
+                    [...countries]
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((c) => {
+                        const country = countryOptions.find((opt) => opt.value === c);
+                        const name =
+                          country && country.label
+                            ? country.label.charAt(0).toUpperCase() + country.label.slice(1)
+                            : c.charAt(0).toUpperCase() + c.slice(1);
+                        return (
+                          <span
+                            key={c}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium border border-indigo-200"
+                          >
+                            🌍 {name}
+                          </span>
+                        );
+                      })
+                  ) : (
+                    <span className="text-slate-400 text-sm">No countries selected</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Languages */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Languages</label>
+                {MultiSelect ? (
+                  <MultiSelect values={languages} onChange={setLanguages} options={languageOptions} />
+                ) : (
+                  <select
+                    multiple
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-100"
+                    value={languages || []}
+                    onChange={(e) => setLanguages(Array.from(e.target.selectedOptions).map((o) => o.value))}
+                  >
+                    {languageOptions.map((l) => (
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Emoji display of selected languages */}
+                {languages?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {languages.map((lang) => {
+                      const option = languageOptions.find((l) => l.value === lang);
+                      const emoji =
+                        option?.emoji ||
+                        (lang === "en"
+                          ? "🇬🇧"
+                          : lang === "fr"
+                          ? "🇫🇷"
+                          : lang === "es"
+                          ? "🇪🇸"
+                          : lang === "ar"
+                          ? "🇸🇦"
+                          : "🗣️");
+                      return (
+                        <span
+                          key={lang}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-sm font-medium border border-green-200"
+                        >
+                          {emoji} {option?.label || lang.toUpperCase()}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* === OFFERING / SEEKING / INNOVATION === */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              {/* Offering */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Offering</label>
+                {ArrayInput ? (
+                  <ArrayInput values={offering} onChange={setOffering} />
+                ) : (
+                  <input
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={(offering || []).join(", ")}
+                    onChange={(e) =>
+                      setOffering(
+                        String(e.target.value)
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                    placeholder="comma separated offerings"
+                  />
+                )}
+              </div>
+
+              {/* Seeking */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Seeking</label>
+                {ArrayInput ? (
+                  <ArrayInput values={seeking} onChange={setSeeking} />
+                ) : (
+                  <input
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={(seeking || []).join(", ")}
+                    onChange={(e) =>
+                      setSeeking(
+                        String(e.target.value)
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                    placeholder="comma separated seeking"
+                  />
+                )}
+              </div>
+
+              {/* Innovation */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Innovation / Keywords</label>
+                {ArrayInput ? (
+                  <ArrayInput values={innovation} onChange={setInnovation} />
+                ) : (
+                  <input
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-100"
+                    value={(innovation || []).join(", ")}
+                    onChange={(e) =>
+                      setInnovation(
+                        String(e.target.value)
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                    placeholder="comma separated keywords"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div className="mt-6 flex justify-end">
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  busy
+                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                }`}
+                onClick={saveBasics}
+                disabled={busy}
+              >
+                Save identity
+              </button>
+            </div>
+          </section>
 
           {/* Media */}
           <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
