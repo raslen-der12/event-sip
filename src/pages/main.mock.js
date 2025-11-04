@@ -73,9 +73,9 @@ export const nav = [
 export const cta = { href: "/login", label: "Log In" };
 export const heroV2 = {
   eyebrow: "UPCOMING • 2025",
-  title: "Host, discover, and grow",
+  title: "Connect. Grow. Globalize",
   highlight: "together",
-  subtitle: "Eventra event platform for devs and creators",
+  subtitle: "AI-powered B2B matchmaking",
   metaDate: "22–24 May 2025",
   metaLocation: "Queenbay Hall, USA",
   desc: "Hands-on sessions, real projects, and a community that ships. MERN, AI, cloud, and more.",

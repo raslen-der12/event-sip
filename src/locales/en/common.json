@@ -142,14 +142,51 @@
     "imageAlt": "Simplified Event Management Experience",
     "imageCaption": "Connecting Local Innovation to Global Opportunities"
   },
-    "attendeeRegister": {
-    "eventNotFound": "Event not found",
-    "chooseRoleTitle": "Choose your actor type",
-    "chooseRoleHint": "By selecting a role, the form appears below. Changing role resets the form and session choices.",
-    "formTitle": "Attendee details",
-    "formHint": "All fields marked",
-    "formRequired": "are required",
-    "labels": {
+ "attendeeRegister": {
+    "role": {
+      "selectTitle": "Choose your actor type",
+      "selectHelp": "Selecting shows the form below. Changing the type resets the form and session choices.",
+      "BusinessOwner": {
+        "title": "Business owner",
+        "desc": "Owns or co-owns a company. Can create a full profile later, set sectors, products and services."
+      },
+      "Consultant": {
+        "title": "Consultant",
+        "desc": "Advises businesses. Ideal if you sell expertise and want to list services later."
+      },
+      "Employee": {
+        "title": "Employee",
+        "desc": "Represents an organisation. Can network and schedule meetings."
+      },
+      "Expert": {
+        "title": "Expert",
+        "desc": "Specialist in a field. Great for workshops, mentoring and B2B opportunities."
+      },
+      "Investor": {
+        "title": "Investor",
+        "desc": "Angel, VC or corporate investor. Can indicate interests and connect with startups/exhibitors."
+      },
+      "Student": {
+        "title": "Student",
+        "desc": "Early career. Learns, networks and discovers opportunities."
+      }
+    },
+    "lang": {
+      "en": "English",
+      "fr": "French",
+      "ar": "Arabic"
+    },
+    "objective": {
+      "networking": "Networking",
+      "findPartners": "Find partners",
+      "findInvestors": "Find investors",
+      "findClients": "Find clients",
+      "learnTrends": "Learn trends"
+    },
+    "form": {
+      "title": "Attendee details",
+      "help": "All fields marked",
+      "requiredSuffix": "are required",
       "fullName": "Full name",
       "email": "Email",
       "phone": "Phone",
@@ -159,80 +196,204 @@
       "organization": "Organization",
       "jobTitle": "Job title",
       "password": "Password",
-      "confirmPassword": "Confirm password",
-      "website": "Website / Social…",
+      "confirmPwd": "Confirm password",
+      "website": "Website / Facebook / Instagram…",
       "linkedin": "LinkedIn",
       "inviteCode": "Invite code",
-      "preferredLanguages": "Preferred languages",
-      "subRoles": "Your specialties (multi-select)",
+      "languages": "Preferred languages",
+      "subRolesLabel": "Your specialty sector (multi-select)",
       "objective": "Objective",
       "openToMeetings": "Available for meetings?",
-      "allowB2B": "Yes, allow B2B requests",
-      "meetingMode": "Meeting mode",
-      "photo": "Profile photo (optional)"
+      "openToMeetingsText": "Yes, allow B2B requests",
+      "virtualMeetLabel": "Meeting mode",
+      "physical": "Physical (in-person)",
+      "virtual": "Virtual",
+      "photoLabel": "Profile photo (optional)"
     },
     "placeholders": {
       "selectCountry": "Select country",
-      "pwd": "At least 8 characters",
+      "pwdPlaceholder": "At least 8 characters",
       "confirmPwd": "Repeat your password",
-      "optional": "optional if you had one",
-      "allTracks": "All tracks"
+      "linkedin": "https://linkedin.com/in/…",
+      "invite": "optional if you had one"
     },
     "hints": {
       "loadingCountries": "Loading countries…",
-      "subRole": "Select all options that apply."
+      "subRoles": "Select all options that apply.",
+      "maxLang": "You can only select up to 3 languages"
     },
-    "photo": {
-      "emptyTitle": "Drop an image here or click to choose",
-      "emptyHint": "PNG/JPG, under 5 MB (optional)",
+    "dragdrop": {
+      "title": "Drop an image here or click to choose",
+      "hint": "PNG/JPG, under 5 MB (optional)"
+    },
+    "buttons": {
       "change": "Change",
-      "remove": "Remove"
+      "remove": "Remove",
+      "continue": "Continue",
+      "info": "Info",
+      "select": "Select",
+      "selected": "Selected",
+      "sending": "Sending…",
+      "submit": "Submit",
+      "close": "Close",
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "alerts": {
+      "chooseAtLeastOne": "Please choose at least one session (one per timeslot and track family)."
+    },
+    "labels": {
+      "room": "Room",
+      "location": "Location",
+      "locShort": "Loc",
+      "capacity": "Capacity",
+      "registered": "registered",
+      "registeredShort": "registered",
+      "capacityShort": "capacity",
+      "waitlisted": "waitlisted",
+      "waitlistedShort": "waitlisted",
+      "speakers": "Speakers"
+    },
+    "sessions": {
+      "selectTitle": "Select your sessions",
+      "help": "Parallel tracks: you may choose one masterclass and one atelier in the same timeslot, but not two from the same family.",
+      "trackPlaceholder": "All tracks",
+      "none": "No sessions available at the moment."
     },
     "errors": {
       "required": "Required",
-      "minLength": "Min 8 characters",
+      "min8": "Min 8 characters",
       "pwdMismatch": "Passwords do not match",
       "invalidEmail": "Invalid email",
-      "chooseLanguage": "Choose at least 1 language",
+      "minLang": "Choose at least 1 language",
       "photoTooLarge": "Image too large (max 5 MB)",
-      "notImage": "File is not an image"
+      "notImage": "File is not an image",
+      "eventNotFound": "Event not found"
     },
-    "notifications": {
+    "popups": {
       "successTitle": "Registration complete",
       "successBody": "Start your B2B journey",
-      "goToLogin": "Go to login",
+      "loginLabel": "Go to login",
+      "registrationFailed": "Registration failed",
       "failTitle": "Registration failed",
-      "photoInvalid": "Invalid image",
-      "photoTooLarge": "Image exceeds 5 MB. Please choose a smaller image.",
-      "fileNotSupported": "File not supported",
-      "selectImage": "Please select an image (PNG/JPG)."
+      "imageInvalidTitle": "Invalid image",
+      "imageTooLargeBody": "The photo exceeds 5 MB. Please choose a smaller image.",
+      "unsupportedFileTitle": "Unsupported file",
+      "unsupportedFileBody": "Please select an image (PNG/JPG)."
     },
-    "alerts": {
-      "chooseSession": "Please choose at least one session (one per slot and track family)."
+    "finish": {
+      "received": "Registration received. We have also shown a popup with a quick link.",
+      "viewAccount": "Visit your B2B account"
     },
-    "sessions": {
-      "title": "Select your sessions",
-      "hint": "Parallel tracks: you may pick a masterclass and an atelier in the same slot, but not two from the same family.",
-      "empty": "No sessions available at the moment.",
-      "registered": "registered",
-      "capacity": "capacity",
-      "waitlisted": "waitlisted"
+    "session": {
+      "defaultTitle": "Session",
+      "defaultTrack": "Session"
     },
-    "buttons": {
-      "continue": "Continue",
-      "info": "Info",
-      "selected": "Selected",
-      "select": "Select",
-      "sending": "Sending…",
-      "submit": "Submit"
+    "a11y": {
+      "showPwd": "Show password",
+      "hidePwd": "Hide password"
+    }
+  },
+   "profileShell": {
+    "popups": {
+      "verifySentTitle": "Verification e-mail sent",
+      "verifySentBody": "We sent a new verification link to {{email}}.",
+      "verifyFailTitle": "Could not send verification",
+      "verifyFailBody": "Please try again in a moment."
+    },
+    "verifyPopup": {
+      "title": "Verify your e-mail",
+      "body": "Your account is not verified yet.\n\nClick the button below to receive a new verification e-mail.\nIt includes your PDF with sessions, QR code, and the verification token.",
+      "linkLabel": "Send verification"
+    },
+    "defaults": {
+      "yourEmail": "your email"
     },
     "aria": {
-      "hidePwd": "Hide password",
-      "showPwd": "Show password"
+      "changeProfilePic": "Change profile picture"
     },
-    "finished": {
-      "message": "Registration received. A popup with a quick link was also shown.",
-      "button": "View your B2B account"
+    "alt": {
+      "profile": "Profile"
+    },
+    "errors": {
+      "ppFailed": "Failed to update profile picture."
+    },
+    "buttons": {
+      "businessProfile": "Business profile",
+      "createBusinessProfile": "Create business profile",
+      "publicProfile": "Public profile",
+      "qr": "QR code"
+    },
+    "titles": {
+      "missingId": "Missing id"
+    },
+    "qr": {
+      "showTitle": "Show QR code",
+      "missingUrl": "Missing URL",
+      "ariaLabel": "Public profile QR",
+      "close": "Close",
+      "title": "Scan to open public profile",
+      "alt": "QR code for public profile"
+    },
+    "summary": {
+      "eventLabel": "Event",
+      "noEvent": "No event linked",
+      "accountLabel": "Account",
+      "validatedBy": "Validated by Event's Admin ✓",
+      "pending": "Please Wait Event's Admin Validation...",
+      "refused": "Refused by Event's Admin X",
+      "roleLabel": "Role",
+      "exhibitorProfile": "Exhibitor profile",
+      "speakerProfile": "Speaker profile",
+      "attendeeProfile": "Attendee profile"
+    },
+    "join": {
+      "joined": "Joined"
+    },
+    "loadError": "We couldn’t load everything. You can still view & edit available sections.",
+    "tabs": {
+      "aria": "Profile sections"
+    },
+    "status": {
+      "validated": "Validated",
+      "notValidated": "Not Validated"
+    }
+  },
+   "identityPanel": {
+    "empty": "—",
+    "placeholders": {
+      "url": "https://…"
+    },
+    "badges": {
+      "notAllowed": "Not TN/FR"
+    },
+    "titles": {
+      "visible": "Visible information",
+      "private": "Private information",
+      "presentation": "Presentation"
+    },
+    "labels": {
+      "fullName": "Full name",
+      "organization": "Organization",
+      "roleTitle": "Role / Title",
+      "country": "Country",
+      "city": "City",
+      "exhibitorName": "Exhibitor name",
+      "website": "Website",
+      "linkedin": "LinkedIn",
+      "jobTitle": "Job title",
+      "contactName": "Contact name",
+      "accountEmail": "Account email",
+      "registrationEmail": "Registration email",
+      "phone": "Phone"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "links": {
+      "viewSlides": "View uploaded slides"
     }
   }
 

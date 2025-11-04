@@ -378,5 +378,106 @@
   font-weight:600;
   color:#334155;
 }
+/* frosted very-light-blue photo drop */
+.att-photo-drop {
+  position: relative;
+  overflow: hidden;                /* keeps the frosted sheen inside the card */
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  /* VERY light blue translucent background */
+  background: rgba(225, 240, 255, 0.55);
+  /* the blur */
+  -webkit-backdrop-filter: blur(14px) saturate(110%);
+  backdrop-filter: blur(14px) saturate(110%);
+  /* subtle border and lift */
+  border: 1px solid rgba(180, 210, 255, 0.6);
+  box-shadow: 0 8px 30px rgba(16, 24, 40, 0.06);
+}
+
+/* sheen to make it feel glassy */
+.att-photo-drop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* a very faint diagonal sheen */
+  background: linear-gradient(120deg,
+              rgba(255,255,255,0.30) 0%,
+              rgba(255,255,255,0.08) 30%,
+              rgba(255,255,255,0.02) 60%,
+              rgba(255,255,255,0) 100%);
+  transform: translateZ(0);
+  mix-blend-mode: overlay;
+  filter: blur(6px);
+  opacity: 0.9;
+}
+
+/* hover / active polish */
+.att-photo-drop:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(16,24,40,0.09);
+  background: rgba(225, 245, 255, 0.6);
+}
+
+/* empty state icon and texts */
+.att-photo-empty .ico {
+  font-size: 2.25rem;
+  opacity: 0.95;
+  margin-bottom: 8px;
+}
+.att-photo-empty .t {
+  font-weight: 600;
+  color: #0f172a; /* slate-900 for contrast */
+}
+.att-photo-empty .h {
+  color: #64748b; /* hint text */
+  margin-top: 6px;
+}
+
+/* preview img */
+.att-photo-prev img {
+  max-width: 180px;
+  height: auto;
+  border-radius: 10px;
+  display: inline-block;
+  box-shadow: 0 8px 30px rgba(16,24,40,0.12);
+  border: 1px solid rgba(255,255,255,0.45);
+}
+
+/* action buttons */
+.att-photo-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-line {
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.6);
+  color: #0f172a;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all .15s ease;
+}
+.btn-line:hover {
+  background: rgba(255,255,255,0.6);
+  color: #0b57d0;
+  transform: translateY(-1px);
+}
+
+/* empty fallback message */
+.cs-empty, .att-photo-drop .hint { color: #64748b; }
+
+/* OPTIONAL: amplify the frosted look by giving the page a subtle background gradient.
+   Paste this into your global styles if you want the blur to be clearly visible. */
+body.with-frosty-bg {
+  background: linear-gradient(180deg, #eaf6ff 0%, #ffffff 60%);
+}
+
+
 
 /* NOTE: radios reuse the existing .lang-grid / .lang-item styles from GenderSelect */

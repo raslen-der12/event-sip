@@ -125,14 +125,51 @@
     "imageAlt": "Une expérience simplifiée de gestion d’événements",
     "imageCaption": "Relier l’innovation locale aux opportunités mondiales"
   },
-  "attendeeRegister": {
-    "eventNotFound": "Événement introuvable",
-    "chooseRoleTitle": "Choisissez votre type d'acteur",
-    "chooseRoleHint": "En sélectionnant un rôle, le formulaire apparaît ci-dessous. Changer le rôle réinitialise le formulaire et les choix de sessions.",
-    "formTitle": "Détails des participants",
-    "formHint": "Tous les champs marqués",
-    "formRequired": "sont obligatoires",
-    "labels": {
+"attendeeRegister": {
+    "role": {
+      "selectTitle": "Choisissez votre type d'acteur",
+      "selectHelp": "En sélectionnant, le formulaire s’affiche juste en dessous. Changer le type réinitialise le formulaire et les choix de sessions.",
+      "BusinessOwner": {
+        "title": "Chef d’entreprise",
+        "desc": "Possède ou co-détient une entreprise. Peut ensuite créer un profil complet, définir les secteurs, produits et services."
+      },
+      "Consultant": {
+        "title": "Consultant",
+        "desc": "Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard."
+      },
+      "Employee": {
+        "title": "Employé",
+        "desc": "Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous."
+      },
+      "Expert": {
+        "title": "Expert",
+        "desc": "Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B."
+      },
+      "Investor": {
+        "title": "Investisseur",
+        "desc": "Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants."
+      },
+      "Student": {
+        "title": "Étudiant",
+        "desc": "Début de carrière. Apprend, développe son réseau et découvre des opportunités."
+      }
+    },
+    "lang": {
+      "en": "Anglais",
+      "fr": "Français",
+      "ar": "Arabe"
+    },
+    "objective": {
+      "networking": "Networking",
+      "findPartners": "Trouver des partenaires",
+      "findInvestors": "Trouver des investisseurs",
+      "findClients": "Trouver des clients",
+      "learnTrends": "Apprendre les tendances"
+    },
+    "form": {
+      "title": "Détails des participants",
+      "help": "Tous les champs marqués",
+      "requiredSuffix": "sont obligatoires",
       "fullName": "Nom complet",
       "email": "Email",
       "phone": "Téléphone",
@@ -142,80 +179,204 @@
       "organization": "Organisation",
       "jobTitle": "Intitulé du poste",
       "password": "Mot de passe",
-      "confirmPassword": "Confirmer le mot de passe",
-      "website": "Website / Social…",
+      "confirmPwd": "Confirmer le mot de passe",
+      "website": "Website / Facebook / Instagram…",
       "linkedin": "LinkedIn",
       "inviteCode": "Code d'invitation",
-      "preferredLanguages": "Langues préférées",
-      "subRoles": "Votre secteur de spécialité (multi-select)",
+      "languages": "Langues préférées",
+      "subRolesLabel": "Votre secteur de spécialité (multi-select)",
       "objective": "Objectif",
       "openToMeetings": "Disponible pour des rendez-vous ?",
-      "allowB2B": "Oui, autoriser les demandes B2B",
-      "meetingMode": "Mode des rendez-vous",
-      "photo": "Photo de profil (optionnelle)"
+      "openToMeetingsText": "Oui, autoriser les demandes B2B",
+      "virtualMeetLabel": "Mode des rendez-vous",
+      "physical": "Présentiel (physique)",
+      "virtual": "Virtuel",
+      "photoLabel": "Photo de profil (optionnelle)"
     },
     "placeholders": {
-      "selectCountry": "Sélectionner un pays",
-      "pwd": "Au moins 8 caractères",
+      "selectCountry": "Sélectionnez un pays",
+      "pwdPlaceholder": "Au moins 8 caractères",
       "confirmPwd": "Répétez votre mot de passe",
-      "optional": "optionnel si vous en avez un",
-      "allTracks": "Toutes les pistes"
+      "linkedin": "https://linkedin.com/in/…",
+      "invite": "optionnel si vous en aviez un"
     },
     "hints": {
       "loadingCountries": "Chargement des pays…",
-      "subRole": "Sélectionnez toutes les options qui s'appliquent."
+      "subRoles": "Sélectionnez toutes les options qui s'appliquent.",
+      "maxLang": "Vous pouvez sélectionner jusqu'à 3 langues"
     },
-    "photo": {
-      "emptyTitle": "Déposez une image ici ou cliquez pour choisir",
-      "emptyHint": "PNG/JPG, moins de 5 Mo (optionnel)",
+    "dragdrop": {
+      "title": "Déposez une image ici ou cliquez pour choisir",
+      "hint": "PNG/JPG, moins de 5 Mo (optionnel)"
+    },
+    "buttons": {
       "change": "Changer",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "continue": "Continuer",
+      "info": "Info",
+      "select": "Sélectionner",
+      "selected": "Sélectionné",
+      "sending": "Envoi en cours…",
+      "submit": "Soumettre",
+      "close": "Fermer",
+      "show": "Afficher",
+      "hide": "Masquer"
+    },
+    "alerts": {
+      "chooseAtLeastOne": "Veuillez choisir au moins une session (une par créneau horaire et par famille de piste)."
+    },
+    "labels": {
+      "room": "Salle",
+      "location": "Localisation",
+      "locShort": "Loc",
+      "capacity": "Capacité",
+      "registered": "inscrits",
+      "registeredShort": "inscrits",
+      "capacityShort": "capacité",
+      "waitlisted": "liste d’attente",
+      "waitlistedShort": "liste d’attente",
+      "speakers": "Intervenants"
+    },
+    "sessions": {
+      "selectTitle": "Sélectionnez vos sessions",
+      "help": "Pistes parallèles: vous pouvez choisir une masterclass et un atelier sur le même créneau, mais pas deux de la même famille.",
+      "trackPlaceholder": "Toutes les pistes",
+      "none": "Aucune session disponible pour le moment."
     },
     "errors": {
       "required": "Requis",
-      "minLength": "Min 8 caractères",
+      "min8": "Min 8 caractères",
       "pwdMismatch": "Les mots de passe ne correspondent pas",
       "invalidEmail": "Email invalide",
-      "chooseLanguage": "Choisissez au moins 1 langue",
+      "minLang": "Choisissez au moins 1 langue",
       "photoTooLarge": "Image trop volumineuse (max 5 Mo)",
-      "notImage": "Fichier non image"
+      "notImage": "Fichier non image",
+      "eventNotFound": "Événement introuvable"
     },
-    "notifications": {
+    "popups": {
       "successTitle": "Inscription terminée",
       "successBody": "Commencez votre parcours B2B",
-      "goToLogin": "Aller à la connexion",
+      "loginLabel": "Aller à la connexion",
+      "registrationFailed": "Échec de l’inscription",
       "failTitle": "Échec de l’inscription",
-      "photoInvalid": "Image invalide",
-      "photoTooLarge": "La photo dépasse 5 Mo. Veuillez choisir une image plus petite.",
-      "fileNotSupported": "Fichier non pris en charge",
-      "selectImage": "Veuillez sélectionner une image (PNG/JPG)."
+      "imageInvalidTitle": "Image invalide",
+      "imageTooLargeBody": "La photo dépasse 5 Mo. Veuillez choisir une image plus petite.",
+      "unsupportedFileTitle": "Fichier non pris en charge",
+      "unsupportedFileBody": "Veuillez sélectionner une image (PNG/JPG)."
     },
-    "alerts": {
-      "chooseSession": "Veuillez choisir au moins une session (une par créneau horaire et par famille de piste)."
+    "finish": {
+      "received": "Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.",
+      "viewAccount": "Découvrez votre compte B2B"
     },
-    "sessions": {
-      "title": "Sélectionnez vos sessions",
-      "hint": "Pistes parallèles : vous pouvez choisir une masterclass et un atelier sur le même créneau, mais pas deux de la même famille.",
-      "empty": "Aucune session disponible pour le moment.",
-      "registered": "inscrits",
-      "capacity": "capacité",
-      "waitlisted": "liste d’attente"
+    "session": {
+      "defaultTitle": "Session",
+      "defaultTrack": "Session"
     },
-    "buttons": {
-      "continue": "Continuer",
-      "info": "Info",
-      "selected": "Sélectionné",
-      "select": "Sélectionner",
-      "sending": "Envoi en cours…",
-      "submit": "Soumettre"
+    "a11y": {
+      "showPwd": "Afficher le mot de passe",
+      "hidePwd": "Masquer le mot de passe"
+    }
+  },
+  "profileShell": {
+    "popups": {
+      "verifySentTitle": "E-mail de vérification envoyé",
+      "verifySentBody": "Nous avons envoyé un nouveau lien de vérification à {{email}}.",
+      "verifyFailTitle": "Impossible d'envoyer la vérification",
+      "verifyFailBody": "Veuillez réessayer dans un instant."
+    },
+    "verifyPopup": {
+      "title": "Vérifiez votre e-mail",
+      "body": "Votre compte n'est pas encore vérifié.\n\nCliquez sur le bouton ci-dessous pour recevoir un nouvel e-mail de vérification.\nIl contient votre PDF avec les sessions, le QR code et le jeton de vérification.",
+      "linkLabel": "Envoyer la vérification"
+    },
+    "defaults": {
+      "yourEmail": "votre e-mail"
     },
     "aria": {
-      "hidePwd": "Masquer le mot de passe",
-      "showPwd": "Afficher le mot de passe"
+      "changeProfilePic": "Changer la photo de profil"
     },
-    "finished": {
-      "message": "Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.",
-      "button": "Découvrez votre compte B2B"
+    "alt": {
+      "profile": "Profil"
+    },
+    "errors": {
+      "ppFailed": "Échec de la mise à jour de la photo de profil."
+    },
+    "buttons": {
+      "businessProfile": "Profil entreprise",
+      "createBusinessProfile": "Créer un profil entreprise",
+      "publicProfile": "Profil public",
+      "qr": "QR code"
+    },
+    "titles": {
+      "missingId": "Identifiant manquant"
+    },
+    "qr": {
+      "showTitle": "Afficher le QR code",
+      "missingUrl": "URL manquante",
+      "ariaLabel": "QR du profil public",
+      "close": "Fermer",
+      "title": "Scannez pour ouvrir le profil public",
+      "alt": "QR code du profil public"
+    },
+    "summary": {
+      "eventLabel": "Événement",
+      "noEvent": "Aucun événement lié",
+      "accountLabel": "Compte",
+      "validatedBy": "Validé par l'administrateur de l'événement ✓",
+      "pending": "Veuillez attendre la validation par l'administrateur de l'événement...",
+      "refused": "Refusé par l'administrateur de l'événement X",
+      "roleLabel": "Rôle",
+      "exhibitorProfile": "Profil exposant",
+      "speakerProfile": "Profil intervenant",
+      "attendeeProfile": "Profil participant"
+    },
+    "join": {
+      "joined": "Inscrit le"
+    },
+    "loadError": "Nous n'avons pas pu tout charger. Vous pouvez toujours voir et modifier les sections disponibles.",
+    "tabs": {
+      "aria": "Sections du profil"
+    },
+    "status": {
+      "validated": "Validé",
+      "notValidated": "Non validé"
+    }
+  },
+  "identityPanel": {
+    "empty": "—",
+    "placeholders": {
+      "url": "https://…"
+    },
+    "badges": {
+      "notAllowed": "Pas TN/FR"
+    },
+    "titles": {
+      "visible": "Informations visibles",
+      "private": "Informations privées",
+      "presentation": "Présentation"
+    },
+    "labels": {
+      "fullName": "Nom complet",
+      "organization": "Organisation",
+      "roleTitle": "Rôle / Poste",
+      "country": "Pays",
+      "city": "Ville",
+      "exhibitorName": "Nom de l'exposant",
+      "website": "Site web",
+      "linkedin": "LinkedIn",
+      "jobTitle": "Intitulé du poste",
+      "contactName": "Nom du contact",
+      "accountEmail": "Email du compte",
+      "registrationEmail": "Email d'inscription",
+      "phone": "Téléphone"
+    },
+    "buttons": {
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    },
+    "links": {
+      "viewSlides": "Voir les slides téléchargées"
     }
   }
 
