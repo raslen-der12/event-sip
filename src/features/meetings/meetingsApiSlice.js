@@ -150,19 +150,35 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: "Whitelist", id: "MY" }],
     }),
     adminScanActorAttend: builder.mutation({
-      query: (body) => ({ url: `meets/admin/scan/actor-attend`, method: 'POST', body }),
+      query: (body) => ({ url: `/meets/admin/scan/actor-attend`, method: 'POST', body }),
     }),
     adminScanSession: builder.mutation({
-      query: (body) => ({ url: `meets/admin/scan/session`, method: 'POST', body }),
+      query: (body) => ({
+        url: "/meets/admin/scan/session",
+        method: "POST",
+        body,
+      }),
     }),
     adminScanMeet: builder.mutation({
-      query: (body) => ({ url: `meets/admin/scan/meet`, method: 'POST', body }),
+      query: (body) => ({
+        url: "/meets/admin/scan/meet",
+        method: "POST",
+        body,
+      }),
     }),
+
 
     // ───────────── Export ─────────────
     exportConfirmedMeets: builder.query({
       // returns a URL we can navigate to (download)
       query: ({ eventId }) => `/admin/meets/export/confirmed?eventId=${encodeURIComponent(eventId)}`,
+    }),
+    listEventSessionsMini: builder.query({
+      // takes eventId string
+      query: (eventId) => ({
+        url: `meets/admin/events/${eventId}/sessions-mini`,
+        method: "GET",
+      }),
     }),
     })
 })
@@ -188,5 +204,6 @@ export const {
     useAdminScanActorAttendMutation,
     useAdminScanSessionMutation,
     useAdminScanMeetMutation,
-    useExportConfirmedMeetsQuery,
+    useExportConfirmedMeetsQuery, 
+    useListEventSessionsMiniQuery
 } = toolsApiSlice

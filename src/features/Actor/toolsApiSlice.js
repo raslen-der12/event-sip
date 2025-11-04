@@ -228,6 +228,19 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       transformResponse: (res) => res?.data || res,
       providesTags: (_res, _err, args) => [{ type: "Share", id: `${args.actorId}_${args.eventId}` }],
     }),
+    listSpeakerSessions: builder.query({
+      query: ({ speakerId, eventId } = {}) => ({
+        url: `/actors/speakers/${speakerId}/sessions`,
+        method: "GET",
+        params: eventId ? { eventId } : undefined,
+      }),
+      // normalize to always return an array in .data
+      transformResponse: (res) => (Array.isArray(res?.data) ? res : { ...res, data: [] }),
+      providesTags: (result, error, args) => [
+        { type: "SpeakerSessions", id: args?.speakerId || "LIST" },
+      ],
+      keepUnusedDataFor: 60,
+    }),
   }),
 });
 
@@ -250,4 +263,5 @@ export const {
   useAckActorNotificationMutation,
   useGetMeetingPrefsQuery,
   useResolveShareLinkQuery,
+  useListSpeakerSessionsQuery
 } = toolsApiSlice;
