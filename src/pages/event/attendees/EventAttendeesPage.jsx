@@ -9,7 +9,7 @@ import { useGetAttendeesByEventQuery } from "../../../features/events/actorsApiS
 import imageLink from "../../../utils/imageLink";
 
 export default function EventAttendeesPage() {
-    console.log("test render");
+  console.log("test render");
 
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -32,7 +32,6 @@ export default function EventAttendeesPage() {
   // ----- server-driven controls -----
   const [q, setQ] = React.useState("");
   const [onlyOpen, setOnlyOpen] = React.useState(false);
-  const [limit, setLimit] = React.useState(24);
 
   // debounce search
   const [debouncedQ, setDebouncedQ] = React.useState(q);
@@ -41,17 +40,22 @@ export default function EventAttendeesPage() {
     return () => clearTimeout(t);
   }, [q]);
 
-  // fetch attendees with params
+  // Very large limit so the backend returns all (or a very large chunk).
+  // If your backend refuses huge numbers, change this to a value that fits (e.g. 5000).
+  const LIMIT = 100000;
+
+  // fetch attendees (no paging)
   const { data, isLoading, isError, error } = useGetAttendeesByEventQuery(
     {
       eventId,
       q: debouncedQ || undefined,
-      limit: Number(limit) || undefined,
+      limit: Number(LIMIT) || undefined,
       open: onlyOpen ? 1 : undefined,
     },
     { skip: !eventId }
   );
 
+  // Normalize returned shapes
   const items =
     (Array.isArray(data) && data) ||
     (Array.isArray(data?.items) && data.items) ||
@@ -65,32 +69,45 @@ export default function EventAttendeesPage() {
     { label: "Attendees", href: `/event/${eventId}/attendees` },
     { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
     { label: "Schedule", href: `/event/${eventId}/schedule` },
-    // { label: "Tickets", href: `/event/${eventId}/tickets` },
   ];
 
   return (
     <>
-      <HeaderShell top={topbar} nav={nav} cta={cta} logo={eventId === "68e6764bb4f9b08db3ccec04" ? imageLink("/default/IPDAYXGITS.png") : null} />
+      <HeaderShell
+        top={topbar}
+        nav={nav}
+        cta={cta}
+        logo={
+          eventId === "68e6764bb4f9b08db3ccec04"
+            ? imageLink("/default/IPDAYXGITS.png")
+            : null
+        }
+      />
+
       <EventAttendeesBrowser
         heading="Attendees"
         subheading="Search, filter, preview, and explore the lineup."
 
+        // server mode: we supply the full list and the component will render it
         serverMode
+
         items={items}
         isLoading={isLoading}
         errorText={isError ? (error?.data?.message || "Failed to load attendees") : ""}
 
-        // controlled (server) toolbar state
+        // controlled toolbar state
         query={q}
         onQueryChange={setQ}
         onlyOpen={onlyOpen}
         onOnlyOpenChange={setOnlyOpen}
-        limit={limit}
-        onLimitChange={setLimit}
+
+        // hide the "per page" control and do NOT provide any load-more props
+        showLimitControl={false}
 
         isLoggedIn={isLoggedIn}
         onBook={onBook}
       />
+
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}

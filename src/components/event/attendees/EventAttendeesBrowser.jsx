@@ -36,6 +36,12 @@ export default function EventAttendeesBrowser({
   onOnlyOpenChange,
   limit,
   onLimitChange,
+
+  // server pagination props (new)
+  onLoadMore,
+  hasMore = false,
+  isFetchingMore = false,
+  showLimitControl = true,
 }) {
   const safe = Array.isArray(items) ? items : [];
 
@@ -143,7 +149,6 @@ export default function EventAttendeesBrowser({
     typeof modalIndex === "number" && modalIndex < shown.length - 1
       ? () => setModalIndex((i) => i + 1)
       : undefined;
-  const readMoreHref = (s) => `/profile/${s?._id || s?.id || ""}`;
 
   // Compare handlers
   const selectedIds = React.useMemo(
@@ -309,8 +314,8 @@ export default function EventAttendeesBrowser({
                   </>
                 ) : null}
 
-                {/* Limit (server mode only) */}
-                {serverMode ? (
+                {/* Limit (server mode only) - hidden when showLimitControl === false */}
+                {serverMode && showLimitControl !== false ? (
                   <select
                     className="esb-select"
                     value={String(limitVal)}
@@ -352,6 +357,33 @@ export default function EventAttendeesBrowser({
             onToggleSelect={toggleSelect}
             sentinelRef={serverMode ? undefined : sentinelRef}
           />
+
+          {/* Server-mode pagination: Load more button */}
+          {serverMode ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: 20 }}>
+              {isFetchingMore ? (
+                <div style={{ color: "#666" }}>Loading…</div>
+              ) : hasMore ? (
+                <button
+                  type="button"
+                  onClick={() => onLoadMore?.()}
+                  className="esb-loadmore"
+                  aria-label="Load more attendees"
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 8,
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Load more
+                </button>
+              ) : (
+                <div style={{ color: "#666" }}>No more attendees</div>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -369,11 +401,11 @@ export default function EventAttendeesBrowser({
           if (href && href !== "#") window.location.assign(href);
         }}
         onBook={(id) => {
-          const href = `/meeting/${id}`;;
+          const href = `/meeting/${id}`;
           window.location.assign(href);
         }}
         onMessage={(id) => {
-          const href = `/messages?member=${id}`;;
+          const href = `/messages?member=${id}`;
           window.location.assign(href);
         }}
         isLoggedIn={isLoggedIn}
@@ -407,4 +439,25 @@ EventAttendeesBrowser.propTypes = {
   onOnlyOpenChange: PropTypes.func,
   limit: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onLimitChange: PropTypes.func,
+
+  // new pagination props
+  onLoadMore: PropTypes.func,
+  hasMore: PropTypes.bool,
+  isFetchingMore: PropTypes.bool,
+  showLimitControl: PropTypes.bool,
+};
+
+EventAttendeesBrowser.defaultProps = {
+  items: [],
+  isLoading: false,
+  errorText: "",
+  isLoggedIn: false,
+  serverMode: false,
+  query: "",
+  onlyOpen: false,
+  limit: 120,
+  onLoadMore: null,
+  hasMore: false,
+  isFetchingMore: false,
+  showLimitControl: true,
 };

@@ -22,122 +22,6 @@ import { useTranslation } from 'react-i18next';
 import React from "react";
 
 
-const attendees = [
-  {
-    id: 1,
-    name: "Amira Trabelsi",
-    type: "Attendee",
-    category: "Students",
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
-  },
-  {
-    id: 2,
-    name: "Youssef Mejri",
-    type: "Attendee",
-    category: "Professionals",
-    image: "https://randomuser.me/api/portraits/men/22.jpg",
-  },
-  {
-    id: 3,
-    name: "Sana Kacem",
-    type: "Attendee",
-    category: "Entrepreneurs",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    id: 4,
-    name: "Ahmed Bouaziz",
-    type: "Attendee",
-    category: "Developers",
-    image: "https://randomuser.me/api/portraits/men/55.jpg",
-  },
-  {
-    id: 5,
-    name: "Leila Gharbi",
-    type: "Attendee",
-    category: "Researchers",
-    image: "https://randomuser.me/api/portraits/women/32.jpg",
-  },
-];
-
-const speakers = [
-  {
-    id: 1,
-    name: "Dr. Karim Haddad",
-    type: "Expert / Consultant",
-    category: "Experts & Consultants",
-    image: "https://randomuser.me/api/portraits/men/72.jpg",
-  },
-  {
-    id: 2,
-    name: "Henda Jlassi",
-    type: "Coach / Trainer",
-    category: "Coaches & Trainers",
-    image: "https://randomuser.me/api/portraits/women/24.jpg",
-  },
-  {
-    id: 3,
-    name: "Moez Ben Youssef",
-    type: "Entrepreneur",
-    category: "Entrepreneurs & Startups",
-    image: "https://randomuser.me/api/portraits/men/68.jpg",
-  },
-  {
-    id: 4,
-    name: "Nour Arfaoui",
-    type: "Researcher",
-    category: "Researchers",
-    image: "https://randomuser.me/api/portraits/women/47.jpg",
-  },
-  {
-    id: 5,
-    name: "Tarek Sassi",
-    type: "Engineer",
-    category: "Developers & Engineers",
-    image: "https://randomuser.me/api/portraits/men/39.jpg",
-  },
-];
-
-const exhibitors = [
-  {
-    id: 1,
-    name: "BioTech Solutions",
-    type: "Business Owner",
-    category: "Entrepreneurs & Startups",
-    image: "https://randomuser.me/api/portraits/men/11.jpg",
-  },
-  {
-    id: 2,
-    name: "GreenWave Cosmetics",
-    type: "Business Owner",
-    category: "Marketing & Communication",
-    image: "https://randomuser.me/api/portraits/women/56.jpg",
-  },
-  {
-    id: 3,
-    name: "Tunis AI Labs",
-    type: "Company",
-    category: "AI, IoT & Emerging Tech",
-    image: "https://randomuser.me/api/portraits/men/61.jpg",
-  },
-  {
-    id: 4,
-    name: "LegalBridge Consulting",
-    type: "Consultancy",
-    category: "Legal & Lawyers",
-    image: "https://randomuser.me/api/portraits/women/41.jpg",
-  },
-  {
-    id: 5,
-    name: "Creative Hub Studio",
-    type: "Agency",
-    category: "Audiovisual & Creative Industries",
-    image: "https://randomuser.me/api/portraits/men/36.jpg",
-  },
-];
-
-
-
 const I = {
   network: () => (
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -232,9 +116,11 @@ export default function EventPage() {
     });
   }, [data?.impacts, t]);
 
+  
+
   return (
     <>
-          <HeaderShell top={topbar} nav={nav} cta={cta} logo={imageLink("/default/IPDAYXGITS.png")} />
+    <HeaderShell top={topbar} nav={nav} cta={cta} logo={imageLink("/default/IPDAYXGITS.png")} />
       <HeroEvent
         event={event?.event}
         heroImage={`${base}/uploads/images/admin/ipdays.jpg`}
@@ -257,9 +143,8 @@ export default function EventPage() {
     />
       
       <FeaturesShowcase features={data?.features} />
-        <PartnershipBlock
-          imageSrc={imageLink(`${base}/uploads/default/IPDAYXGITS.png`)}
-        />
+      <PartnershipBlock imageSrc={imageLink(`${base}/uploads/default/IPDAYXGITS.png`)} />
+
 <EventOrganizers
   heading="Event Partners"
   subheading="Event Partners Merci à tous nos soutiens :"

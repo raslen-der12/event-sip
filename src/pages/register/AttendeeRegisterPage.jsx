@@ -1,10 +1,8 @@
-// src/pages/register/AttendeeRegisterPage.jsx
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ReactCountryFlag from 'react-country-flag';
 import "./attendee-register.css";
-
 /** RTK hooks */
 import { useGetEventQuery } from "../../features/events/eventsApiSlice";
 import { useAttendeeRegisterMutation } from "../../features/auth/authApiSlice";
@@ -15,25 +13,23 @@ import { cta, footerData, nav, topbar } from '../main.mock';
 import Footer from '../../components/footer/Footer';
 import useCountries from '../../lib/hooks/useCountries';
 import CountrySelect from '../../components/CountrySelect';
+import { useTranslation } from 'react-i18next';
 /* === Helpers === */
 const toISODate = v => (v ? new Date(v).toLocaleDateString() : '');
 const required = v => (typeof v === 'string' ? v.trim() : v) ? true : false;
-
 /* Catalog of “actor types” (FR) */
 const ROLE_TYPES = [
   { key: 'BusinessOwner', title: 'Chef d’entreprise', desc: 'Possède ou co-détient une entreprise. Peut ensuite créer un profil complet, définir les secteurs, produits et services.' },
-  { key: 'Consultant',    title: 'Consultant',        desc: 'Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard.' },
-  { key: 'Employee',      title: 'Employé',           desc: 'Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous.' },
-  { key: 'Expert',        title: 'Expert',            desc: 'Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B.' },
-  { key: 'Investor',      title: 'Investisseur',      desc: 'Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants.' },
-  { key: 'Student',       title: 'Étudiant',          desc: 'Début de carrière. Apprend, développe son réseau et découvre des opportunités.' },
+  { key: 'Consultant', title: 'Consultant', desc: 'Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard.' },
+  { key: 'Employee', title: 'Employé', desc: 'Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous.' },
+  { key: 'Expert', title: 'Expert', desc: 'Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B.' },
+  { key: 'Investor', title: 'Investisseur', desc: 'Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants.' },
+  { key: 'Student', title: 'Étudiant', desc: 'Début de carrière. Apprend, développe son réseau et découvre des opportunités.' },
 ];
-
 /* Track constants + family logic (lets Masterclass & Atelier be parallel) */
 const TRACK_B2B_NAME = "B2B";
 const MASTERCLASS = "masterclass";
 const ATELIER = "atelier";
-
 function familyOfTrack(track) {
   const t = String(track || '').toLowerCase();
   if (t.includes('masterclass')) return MASTERCLASS;
@@ -51,7 +47,6 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
   }
    return e.error || e.message || "Registration failed";
 }
-
  function acceptPhotoFile(file, { onOK, onTooLarge, onNotImage }) {
    if (!file) return;
    if (!(file.type || "").startsWith("image/")) { onNotImage?.(); return; }
@@ -64,7 +59,6 @@ const SUBROLE_OPTIONS = [
   'Marketing & Communication','Audit, Accounting & Finance','Investment & Banking','Insurance & Microfinance','Legal & Lawyers','AI, IoT & Emerging Tech',
   'Audiovisual & Creative Industries','Media & Journalists','Universities & Academies','NGOs & Civil Society','Public Sector & Government'
 ];
-
 function triggerPopup({ title, body, type = "success", link }) {
   try {
     const item = {
@@ -83,43 +77,37 @@ function triggerPopup({ title, body, type = "success", link }) {
     });
   } catch {}
 }
-
 /* Country list (trimmed) */
 const COUNTRIES = [
   { code: 'TN', name: 'Tunisia' }, { code: 'FR', name: 'France' }, { code: 'US', name: 'United States' },
-  { code: 'DE', name: 'Germany' }, { code: 'IT', name: 'Italy' },  { code: 'ES', name: 'Spain' },
+  { code: 'DE', name: 'Germany' }, { code: 'IT', name: 'Italy' }, { code: 'ES', name: 'Spain' },
   { code: 'MA', name: 'Morocco' }, { code: 'DZ', name: 'Algeria' },{ code: 'EG', name: 'Egypt' },
   { code: 'SA', name: 'Saudi Arabia' }, { code: 'AE', name: 'United Arab Emirates' },
   { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
 ];
-
 /* Language list (max 3) */
 const LANGS = [
   { code: 'en', label: 'English' },
-  { code: 'fr', label: 'French'  },
-  { code: 'ar', label: 'Arabic'  },
+  { code: 'fr', label: 'French' },
+  { code: 'ar', label: 'Arabic' },
 ];
-
 /* Objective chips (checkbox-like) */
 const OBJECTIVES = [
-  { code: 'networking',     label: 'Networking' },
-  { code: 'find-partners',  label: 'Réseautage' },
+  { code: 'networking', label: 'Networking' },
+  { code: 'find-partners', label: 'Réseautage' },
   { code: 'find-investors', label: 'Trouver des investisseurs' },
-  { code: 'find-clients',   label: 'Trouver des clients' },
-  { code: 'learn-trends',   label: 'Apprendre les tendances' },
+  { code: 'find-clients', label: 'Trouver des clients' },
+  { code: 'learn-trends', label: 'Apprendre les tendances' },
 ];
-
 /* ===== Small controls reused ===== */
-
-
 function LanguageSelect({ value = [], onChange, max = 3 }) {
+  const { t } = useTranslation('common');
   const toggle = (code) => {
     const has = value.includes(code);
     if (has) onChange(value.filter(v => v !== code));
     else if (value.length < max) onChange([...value, code]);
   };
   const remove = (code) => onChange(value.filter(v => v !== code));
-
   return (
     <div>
       <div className="lang-chips">
@@ -142,7 +130,7 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
               key={l.code}
               className={`lang-item ${active ? 'active':''} ${disabled ? 'disabled':''}`}
               onClick={() => { if (!disabled || active) toggle(l.code); }}
-              title={disabled ? 'You can only select up to 3 languages' : ''}
+              title={disabled ? t('partnership.langLimit', 'You can only select up to 3 languages') : ''}
             >
               {l.label}
             </div>
@@ -152,19 +140,16 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
     </div>
   );
 }
-function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes les pistes' }) {
+function TrackSelect({ options = [], value = '', onChange, placeholder }) {
+  const { t } = useTranslation('common');
   const [open, setOpen] = React.useState(false);
   const wrapRef = React.useRef(null);
-
-  // close on outside click
   React.useEffect(() => {
     const onDoc = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
-
-  const label = value || placeholder;
-
+  const label = value || placeholder || t('partnership.allTracks', 'All tracks');
   return (
     <div className="sel-wrap" ref={wrapRef}>
       <div className="sel-head" onClick={() => setOpen(v => !v)}>
@@ -173,7 +158,7 @@ function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes
       </div>
       {open && (
         <div className="sel-pop">
-          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>Toutes</div>
+          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>{t('partnership.all', 'All')}</div>
           {options.map(opt => (
             <div key={opt} className="sel-item" onClick={() => { onChange(opt); setOpen(false); }}>
               {opt}
@@ -184,8 +169,8 @@ function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes
     </div>
   );
 }
-
 function GenderSelect({ value = '', onChange, name = 'gender' }) {
+  const { t } = useTranslation('common');
   const Item = ({ val, label }) => {
     const active = value === val;
     return (
@@ -202,24 +187,21 @@ function GenderSelect({ value = '', onChange, name = 'gender' }) {
       </label>
     );
   };
-
   return (
     <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
-      <Item val="male" label="Homme" />
-      <Item val="female" label="Femme" />
+      <Item val="male" label={t('partnership.male', 'Male')} />
+      <Item val="female" label={t('partnership.female', 'Female')} />
     </div>
   );
 }
-
 function ObjectiveSelect({ values = [], onChange }) {
+  const { t } = useTranslation('common');
   const toggle = (code) => {
     const has = values.includes(code);
     if (has) onChange(values.filter(v => v !== code));
     else onChange([...values, code]);
   };
-
   const remove = (code) => onChange(values.filter(v => v !== code));
-
   return (
     <div>
       <div className="objective-grid">
@@ -231,18 +213,17 @@ function ObjectiveSelect({ values = [], onChange }) {
               className={`lang-item ${active ? 'active' : ''}`}
               onClick={() => toggle(o.code)}
             >
-              {o.label}
+              {t(`partnership.objectives.${o.code}`, o.label)}
             </div>
           );
         })}
       </div>
-
       <div className="lang-chips" style={{ marginTop: 8 }}>
         {values.map(code => {
           const item = OBJECTIVES.find(x => x.code === code);
           return (
             <span key={code} className="lang-chip">
-              {item?.label || code}
+              {t(`partnership.objectives.${code}`, item?.label || code)}
               <span className="x" onClick={() => remove(code)}>×</span>
             </span>
           );
@@ -251,7 +232,6 @@ function ObjectiveSelect({ values = [], onChange }) {
     </div>
   );
 }
-
 /* SubRole checkbox grid */
 function SubRoleSelect({ values = [], onChange, options = [] }) {
   const toggle = (val) => {
@@ -277,11 +257,10 @@ function SubRoleSelect({ values = [], onChange, options = [] }) {
     </div>
   );
 }
-
 /* ===== Session helpers (normalize & group) ===== */
 const normSession = (s) => {
   const start = s.startAt || s.startTime || s.start || s.timeStart || s.startsAt;
-  const end   = s.endAt   || s.endTime   || s.end   || s.timeEnd   || s.endsAt;
+  const end = s.endAt || s.endTime || s.end || s.timeEnd || s.endsAt;
   const startISO = start ? new Date(start).toISOString() : '';
   const dayISO = start ? startISO.slice(0,10) : 'unknown';
   return {
@@ -303,7 +282,6 @@ const normSession = (s) => {
     dayISO,
   };
 };
-
 function orderTracksWithEarliestFirst(groups) {
   const entries = Object.entries(groups).map(([track, items]) => {
     const earliest = items.reduce((min, s) => {
@@ -312,7 +290,6 @@ function orderTracksWithEarliestFirst(groups) {
     }, Infinity);
     return { track, items, earliest };
   });
-
   entries.sort((a, b) => {
     const aIsB2B = a.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
     const bIsB2B = b.track?.trim().toLowerCase() === TRACK_B2B_NAME.toLowerCase();
@@ -321,10 +298,8 @@ function orderTracksWithEarliestFirst(groups) {
     if (a.earliest !== b.earliest) return a.earliest - b.earliest;
     return String(a.track || "").localeCompare(String(b.track || ""), undefined, { sensitivity: "base" });
   });
-
   return entries;
 }
-
 const groupByDayAndSlot = (raw) => {
   const sessions = raw.map(normSession).filter(x => x.startISO);
   const dayMap = new Map();
@@ -335,7 +310,6 @@ const groupByDayAndSlot = (raw) => {
     if (!slot.has(slotKey)) slot.set(slotKey, []);
     slot.get(slotKey).push(s);
   }
-
   const days = Array.from(dayMap.entries())
     .sort((a,b) => new Date(a[0]) - new Date(b[0]))
     .map(([dayISO, slotMap]) => ({
@@ -345,12 +319,11 @@ const groupByDayAndSlot = (raw) => {
         .sort((a,b) => new Date(a[0]) - new Date(b[0]))
         .map(([startISO, items]) => ({ startISO, items })),
     }));
-
   return { sessions, days };
 };
-
 /* ===== Modal (portal) ===== */
 function SessionModal({ open, onClose, session, counts }) {
+  const { t } = useTranslation('common');
   useEffect(() => {
     if (open) {
       const prev = document.body.style.overflow;
@@ -358,16 +331,13 @@ function SessionModal({ open, onClose, session, counts }) {
       return () => { document.body.style.overflow = prev; };
     }
   }, [open]);
-
   if (!open || !session) return null;
-
   const regFromSession = typeof session?.seatsTaken === 'number' ? session.seatsTaken : NaN;
   const reg = Number.isFinite(regFromSession) ? regFromSession : Number(counts?.[session?._id]?.registered || 0);
   const wait = Number(counts?.[session?._id]?.waitlisted || 0);
-  const cap  = session?.roomCapacity || 0;
-  const pct  = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
-  const title = session.title || session.sessionTitle || 'Session';
-
+  const cap = session?.roomCapacity || 0;
+  const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
+  const title = session.title || session.sessionTitle || t('partnership.session', 'Session');
   const node = (
     <div className="reg-modal-backdrop" onClick={onClose}>
       <div
@@ -378,9 +348,8 @@ function SessionModal({ open, onClose, session, counts }) {
       >
         <div className="reg-modal-head">
           <div className="t">{title}</div>
-          <button className="btn-line sm" onClick={onClose}>Close</button>
+          <button className="btn-line sm" onClick={onClose}>{t('partnership.close', 'Close')}</button>
         </div>
-
         {session.cover ? (
           <img
             src={session.cover}
@@ -388,20 +357,18 @@ function SessionModal({ open, onClose, session, counts }) {
             style={{ width:'100%', height:220, objectFit:'cover', borderRadius:12, border:'1px solid #e5e7eb' }}
           />
         ) : null}
-
         <div className="reg-modal-body">
           <div className="meta-row">
-            <span className="badge">{session.track || 'Session'}</span>
-            {session.roomName && <span className="chip">Room: {session.roomName}</span>}
-            {session.roomLocation && <span className="chip">Location: {session.roomLocation}</span>}
+            <span className="badge">{session.track || t('partnership.session', 'Session')}</span>
+            {session.roomName && <span className="chip">{t('partnership.room', 'Room')}: {session.roomName}</span>}
+            {session.roomLocation && <span className="chip">{t('partnership.location', 'Location')}: {session.roomLocation}</span>}
             <span className="chip">
               {new Date(session.startISO).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })} – {session.endISO ? new Date(session.endISO).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '—'}
             </span>
           </div>
-
           {!!session.speakers?.length && (
             <div className="speakers-row">
-              <div className="subt">Speakers</div>
+              <div className="subt">{t('partnership.speakers', 'Speakers')}</div>
               <div className="speakers-list">
                 {session.speakers.map((sp, i) => (
                   <span key={i} className="chip">{(sp && (sp.name || sp.fullName)) || sp}</span>
@@ -409,25 +376,22 @@ function SessionModal({ open, onClose, session, counts }) {
               </div>
             </div>
           )}
-
           {!!session.tags?.length && (
             <div className="tag-row">
               {session.tags.map((t, i) => <span key={i} className="tag">{t}</span>)}
             </div>
           )}
-
           {session.summary && (
             <p className="descr">{session.summary}</p>
           )}
-
           {(cap || reg || wait) ? (
             <div className="capacity-row">
-              <div className="subt">Capacity</div>
+              <div className="subt">{t('partnership.capacity', 'Capacity')}</div>
               <div className="cap-line"><div className="cap-bar" style={{ width: `${pct}%` }} /></div>
               <div className="cap-meta">
-                <span><b>{reg}</b> registered</span>
-                {cap ? <span>• <b>{cap}</b> capacity</span> : null}
-                {wait ? <span>• <b>{wait}</b> waitlisted</span> : null}
+                <span><b>{reg}</b> {t('partnership.registered', 'registered')}</span>
+                {cap ? <span>• <b>{cap}</b> {t('partnership.capacity', 'capacity')}</span> : null}
+                {wait ? <span>• <b>{wait}</b> {t('partnership.waitlisted', 'waitlisted')}</span> : null}
               </div>
             </div>
           ) : null}
@@ -435,12 +399,11 @@ function SessionModal({ open, onClose, session, counts }) {
       </div>
     </div>
   );
-
   return ReactDOM.createPortal(node, document.body);
 }
-
 /* ===== Main (single-page progressive flow) ===== */
 export default function AttendeeRegisterPage() {
+  const { t } = useTranslation('common');
   const { countries, loading: countriesLoading } = useCountries({ locale: 'en' });
    const safeCountries = useMemo(
      () => (Array.isArray(countries) && countries.length ? countries : COUNTRIES),
@@ -448,25 +411,19 @@ export default function AttendeeRegisterPage() {
    );
   const [params] = useSearchParams();
   const navigate = useNavigate();
-
   const eventId = params.get('eventId') || '68e6764bb4f9b08db3ccec04';
   const { data: event, isLoading: evLoading, isError: evErr } = useGetEventQuery(eventId, { skip: !eventId });
-
   // progressive reveal
   const [roleType, setRoleType] = useState('');
   const [showSessions, setShowSessions] = useState(false);
   const [finished, setFinished] = useState(false);
-
   // sessions filter
   const [track, setTrack] = useState('');
-
   const { data: schedulePack, isFetching: schedFetching } = useGetEventSessionsQuery(
     { eventId, track, includeCounts: 1 },
     { skip: !eventId || !showSessions },
   );
-
   const [attendeeRegister, { isLoading: regLoading }] = useAttendeeRegisterMutation();
-
   /* Photo (optional) */
   const fileRef = useRef(null);
   const [photoFile, setPhotoFile] = useState(null);
@@ -479,8 +436,7 @@ export default function AttendeeRegisterPage() {
     }
     setPhotoUrl('');
   }, [photoFile]);
-
-  // initial form factory (role can affect requireds later if you want)
+  // initial form factory
   const makeInitialForm = () => ({
     fullName: '',
     email: '',
@@ -501,15 +457,12 @@ export default function AttendeeRegisterPage() {
     openToMeetings: true,
     subRoles: [],
   });
-
   const [form, setForm] = useState(makeInitialForm());
   const setField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const [errs, setErrs] = useState({});
-
   const isStudent = roleType === 'Student';
   const showSubRoles = roleType && roleType !== 'BusinessOwner';
   const shouldShowOrgFields = !isStudent;
-
   // Changing role resets everything below + sessions
   const handlePickRole = (key) => {
     if (key === roleType) return;
@@ -522,79 +475,61 @@ export default function AttendeeRegisterPage() {
     setFinished(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   /* Track-aware selection (parallel families) */
-  const [selectedBySlot, setSelectedBySlot] = useState({}); // { compositeKey: session }
+  const [selectedBySlot, setSelectedBySlot] = useState({});
   const compositeKeyFor = (session) => {
     const fam = familyOfTrack(session.track);
     const base = session.startISO;
     if (fam === MASTERCLASS || fam === ATELIER) return `${fam}|${base}`;
     return `*|${base}`;
   };
-
   const [modalSession, setModalSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-
   const counts = schedulePack?.counts || {};
-
   /* Normalize sessions */
   const { sessions } = useMemo(() => {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return groupByDayAndSlot(Array.isArray(raw) ? raw : []);
   }, [schedulePack]);
-
-  // --- place right after:  const { sessions } = useMemo(...);
-
-// find earliest day (day 1)
-const earliestDayISO = useMemo(() => {
-  const ds = Array.from(new Set((sessions || []).map(s => s.dayISO).filter(Boolean)));
-  ds.sort((a, b) => new Date(a) - new Date(b));
-  return ds[0] || null;
-}, [sessions]);
-
-// sessions to actually display (no day 1, no "Formation")
-const displaySessions = useMemo(() => {
-  const rxFormation = /^\s*formation\s*$/i;
-  return (sessions || []).filter(s => {
-    if (earliestDayISO && s.dayISO === earliestDayISO) return false;   // drop day 1
-    if (rxFormation.test(s.track || '')) return false;                  // drop "Formation"
-    return true;
-  });
-}, [sessions, earliestDayISO]);
-
-// Track/day options (filter list too)
-const uniqueTracks = useMemo(() => {
-  const t = new Set();
-  displaySessions.forEach(s => { if (s.track) t.add(s.track); });
-  return Array.from(t);
-}, [displaySessions]);
-
-// Compact sections (use filtered sessions)
-const trackSections = useMemo(() => {
-  if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
-
-  const group = {};
-  for (const s of displaySessions) {
-    if (track && s.track !== track) continue;
-    const key = (s.track || "Autre").trim();
-    if (!group[key]) group[key] = [];
-    group[key].push(s);
-  }
-  for (const t of Object.keys(group)) {
-    group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
-  }
-
-  const ordered = orderTracksWithEarliestFirst(group);
-  return ordered.map(({ track, items }) => ({ track, items }));
-}, [displaySessions, track]);
-
+  const earliestDayISO = useMemo(() => {
+    const ds = Array.from(new Set((sessions || []).map(s => s.dayISO).filter(Boolean)));
+    ds.sort((a, b) => new Date(a) - new Date(b));
+    return ds[0] || null;
+  }, [sessions]);
+  const displaySessions = useMemo(() => {
+    const rxFormation = /^\s*formation\s*$/i;
+    return (sessions || []).filter(s => {
+      if (earliestDayISO && s.dayISO === earliestDayISO) return false;
+      if (rxFormation.test(s.track || '')) return false;
+      return true;
+    });
+  }, [sessions, earliestDayISO]);
+  const uniqueTracks = useMemo(() => {
+    const t = new Set();
+    displaySessions.forEach(s => { if (s.track) t.add(s.track); });
+    return Array.from(t);
+  }, [displaySessions]);
+  const trackSections = useMemo(() => {
+    if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
+    const group = {};
+    for (const s of displaySessions) {
+      if (track && s.track !== track) continue;
+      const key = (s.track || t('partnership.other', 'Other')).trim();
+      if (!group[key]) group[key] = [];
+      group[key].push(s);
+    }
+    for (const t of Object.keys(group)) {
+      group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
+    }
+    const ordered = orderTracksWithEarliestFirst(group);
+    return ordered.map(({ track, items }) => ({ track, items }));
+  }, [displaySessions, track, t]);
   useEffect(() => {
     setModalOpen(false);
     setModalSession(null);
     setSelectedBySlot({});
   }, [track]);
-
   const toggleSession = (session) => {
     const key = compositeKeyFor(session);
     setSelectedBySlot(prev => {
@@ -607,45 +542,40 @@ const trackSections = useMemo(() => {
       return { ...prev, [key]: session };
     });
   };
-
   const selectedSessionIds = useMemo(
     () => Object.values(selectedBySlot).map(s => s._id),
     [selectedBySlot]
   );
-
   /* Validate & reveal sessions */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
-    if (!required(form.pwd)) e2.pwd = 'Requis';
-    else if ((form.pwd || '').length < 8) e2.pwd = 'Min 8 caractères';
-    if (form.pwd2 !== form.pwd) e2.pwd2 = 'Les mots de passe ne correspondent pas';
-
-    if (!required(form.fullName)) e2.fullName = 'Requis';
-    if (!required(form.email)) e2.email = 'Requis';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Email invalide';
-    if (!required(form.country)) e2.country = 'Requis';
-    if (!form.languages?.length) e2.languages = 'Choisissez au moins 1 langue';
-    if (!form.gender) e2.gender = 'Requis';
+    if (!required(form.pwd)) e2.pwd = t('partnership.required', 'Required');
+    else if ((form.pwd || '').length < 8) e2.pwd = t('partnership.min8Chars', 'Min 8 characters');
+    if (form.pwd2 !== form.pwd) e2.pwd2 = t('partnership.passwordsDontMatch', 'Passwords do not match');
+    if (!required(form.fullName)) e2.fullName = t('partnership.required', 'Required');
+    if (!required(form.email)) e2.email = t('partnership.required', 'Required');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = t('partnership.invalidEmail', 'Invalid email');
+    if (!required(form.country)) e2.country = t('partnership.required', 'Required');
+    if (!form.languages?.length) e2.languages = t('partnership.chooseAtLeastOneLang', 'Choose at least 1 language');
+    if (!form.gender) e2.gender = t('partnership.required', 'Required');
     if (shouldShowOrgFields) {
-      if (!required(form.orgName)) e2.orgName = 'Requis';
-      if (!required(form.jobTitle)) e2.jobTitle = 'Requis';
+      if (!required(form.orgName)) e2.orgName = t('partnership.required', 'Required');
+      if (!required(form.jobTitle)) e2.jobTitle = t('partnership.required', 'Required');
     }
-    if (form.virtualMeet !== true && form.virtualMeet !== false) e2.virtualMeet = 'Requis';
+    if (form.virtualMeet !== true && form.virtualMeet !== false) e2.virtualMeet = t('partnership.required', 'Required');
     setErrs(e2);
     if (Object.keys(e2).length) return;
-
     setShowSessions(true);
     setTimeout(() => {
       const anchor = document.getElementById('sessions-anchor');
       if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 40);
   };
-
   /* Submit all */
   const finishAll = async () => {
     if (!selectedSessionIds.length) {
-      alert('Veuillez choisir au moins une session (une par créneau horaire et par famille de piste).');
+      alert(t('partnership.selectAtLeastOneSession', 'Please choose at least one session (one per time slot and track family).'));
       return;
     }
     const fd = new FormData();
@@ -660,12 +590,10 @@ const trackSections = useMemo(() => {
     fd.append('personal.country', (form.country || '').toUpperCase());
     fd.append('personal.city', form.city);
     fd.append('personal.profilePic', '');
-
     if (shouldShowOrgFields) {
       fd.append('organization.orgName', form.orgName);
       fd.append('organization.jobTitle', form.jobTitle);
     }
-
     fd.append('businessProfile.preferredLanguages', form.languages.join(','));
     fd.append('matchingIntent.objective', Array.isArray(form.objective) ? form.objective.join(',') : form.objective);
     fd.append('matchingIntent.openToMeetings', String(!!form.openToMeetings));
@@ -676,17 +604,15 @@ const trackSections = useMemo(() => {
     if (Array.isArray(form.subRoles)) {
       form.subRoles.forEach(v => fd.append('subRole[]', v));
     }
-
     selectedSessionIds.forEach(id => fd.append('sessionIds[]', id));
     if (photoFile) fd.append('photo', photoFile);
-
     try {
       await attendeeRegister(fd).unwrap();
       triggerPopup({
-        title: "Inscription terminée",
-        body: "Commencez votre parcours B2B",
+        title: t('partnership.registrationComplete', 'Registration complete'),
+        body: t('partnership.startB2BJourney', 'Start your B2B journey'),
         type: "success",
-        link: { href: "/login", label: "Aller à la connexion" }
+        link: { href: "/login", label: t('partnership.goToLogin', 'Go to login') }
       });
       setFinished(true);
       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60);
@@ -694,18 +620,13 @@ const trackSections = useMemo(() => {
     } catch (e) {
         const msg = extractError(e);
         triggerPopup({
-          title: "Échec de l’inscription",
+          title: t('partnership.registrationFailed', 'Registration failed'),
           body: msg,
           type: "error"
         });
-        // optionally surface near the submit button as well
         setErrs(prev => ({ ...prev, _submit: msg }));
       }
   };
-
-  /* Compact sessions data (space-efficient) */
-
-  /* ===== UI ===== */
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
@@ -715,7 +636,7 @@ const trackSections = useMemo(() => {
           {evLoading ? (
             <div className="reg-skel" />
           ) : evErr || !event ? (
-            <div className="reg-empty">Event not found</div>
+            <div className="reg-empty">{t('partnership.eventNotFound', 'Event not found')}</div>
           ) : (
             <>
               <img
@@ -738,14 +659,12 @@ const trackSections = useMemo(() => {
             </>
           )}
         </header>
-
         {/* ===== SECTION 1: Role (always visible) ===== */}
         <section className="anim-in">
           <div className="att-section-head">
-            <div className="t">Choisissez votre type d'acteur</div>
-            <div className="h">En sélectionnant, le formulaire s’affiche juste en dessous. Changer le type réinitialise le formulaire et les choix de sessions.</div>
+            <div className="t">{t('partnership.chooseActorType', 'Choose your actor type')}</div>
+            <div className="h">{t('partnership.selectRoleHint', 'By selecting, the form appears below. Changing the type resets the form and session choices.')}</div>
           </div>
-
           <div className="role-grid">
             {ROLE_TYPES.map(r => {
               const active = roleType === r.key;
@@ -754,153 +673,139 @@ const trackSections = useMemo(() => {
                   key={r.key}
                   onClick={() => handlePickRole(r.key)}
                   className={`role-card ${active ? 'active' : ''}`}
-                  title={r.title}
+                  title={t(`partnership.roles.${r.key}.title`, r.title)}
                 >
-                  <div className="role-title">{r.title}</div>
-                  <div className="role-desc">{r.desc}</div>
+                  <div className="role-title">{t(`partnership.roles.${r.key}.title`, r.title)}</div>
+                  <div className="role-desc">{t(`partnership.roles.${r.key}.desc`, r.desc)}</div>
                 </article>
               );
             })}
           </div>
         </section>
-
         {/* ===== SECTION 2: Form (appears after role picked) ===== */}
         {roleType && !finished && (
           <form className="anim-in reg-card" onSubmit={submitForm} style={{ marginTop: 14 }}>
             <div className="att-section-head">
-              <div className="t">Détails des participants</div>
-              <div className="h">Tous les champs marqués <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> sont obligatoires</div>
+              <div className="t">{t('partnership.participantDetails', 'Participant details')}</div>
+              <div className="h">{t('partnership.requiredFields', 'All fields marked')} <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> {t('partnership.areRequired', 'are required')}</div>
             </div>
-
             <div className="att-form-grid">
               <div className="att-field">
-                <label>Nom complet <span className="req">*</span></label>
+                <label>{t('partnership.fullName', 'Full name')} <span className="req">*</span></label>
                 <input value={form.fullName} onChange={e=>setField('fullName', e.target.value)} />
                 {errs.fullName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.fullName}</div>}
               </div>
-
               <div className="att-field">
-                <label>Email <span className="req">*</span></label>
+                <label>{t('partnership.email', 'Email')} <span className="req">*</span></label>
                 <input type="email" value={form.email} onChange={e=>setField('email', e.target.value)} />
                 {errs.email && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.email}</div>}
               </div>
-
               <div className="att-field">
-                <label>Téléphone</label>
+                <label>{t('partnership.phone', 'Phone')}</label>
                 <input value={form.phone} onChange={e=>setField('phone', e.target.value)} />
               </div>
-
               <div className="att-field">
               <label className="mp-field">
-                <span className="mp-label">Pays</span>
+                <span className="mp-label">{t('partnership.country', 'Country')}</span>
                 <CountrySelect
    value={form.country || ""}
    onChange={(v) => setField("country", v?.target ? v.target.value : v)}
    options={safeCountries}
-   placeholder="Select country"
+   placeholder={t('partnership.selectCountry', 'Select country')}
  />
- {countriesLoading && <div className="hint">Loading countries…</div>}
+ {countriesLoading && <div className="hint">{t('partnership.loadingCountries', 'Loading countries…')}</div>}
               </label>
                 {errs.country && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.country}</div>}
               </div>
-
               <div className="att-field">
-                <label>Ville</label>
+                <label>{t('partnership.city', 'City')}</label>
                 <input value={form.city} onChange={e=>setField('city', e.target.value)} />
               </div>
               <div className="att-field">
-                <label>Genre<span className="req"> *</span></label>
+                <label>{t('partnership.gender', 'Gender')}<span className="req"> *</span></label>
                 <GenderSelect value={form.gender} onChange={v => setField('gender', v)} />
               </div>
                             {shouldShowOrgFields && (
                 <>
                   <div className="att-field">
-                    <label>Organisation <span className="req">*</span></label>
+                    <label>{t('partnership.organization', 'Organization')} <span className="req">*</span></label>
                     <input value={form.orgName} onChange={e=>setField('orgName', e.target.value)} />
                     {errs.orgName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.orgName}</div>}
                   </div>
-
                   <div className="att-field">
-                    <label>Intitulé du poste <span className="req">*</span></label>
+                    <label>{t('partnership.jobTitle', 'Job title')} <span className="req">*</span></label>
                     <input value={form.jobTitle} onChange={e=>setField('jobTitle', e.target.value)} />
                     {errs.jobTitle && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.jobTitle}</div>}
                   </div>
                 </>
               )}
-
               <div className="att-field">
-                <label>Mot de passe <span className="req">*</span></label>
+                <label>{t('partnership.password', 'Password')} <span className="req">*</span></label>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:8 }}>
                   <input
                     type={showPwd ? 'text' : 'password'}
                     value={form.pwd}
                     onChange={e => setField('pwd', e.target.value)}
-                    placeholder="Au moins 8 caractères"
+                    placeholder={t('partnership.atLeast8Chars', 'At least 8 characters')}
                   />
                   <button
                     type="button"
                     className="btn-line"
                     onClick={() => setShowPwd(v => !v)}
-                    aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    aria-label={showPwd ? t('partnership.hidePassword', 'Hide password') : t('partnership.showPassword', 'Show password')}
                   >
-                    {showPwd ? 'Masquer' : 'Afficher'}
+                    {showPwd ? t('partnership.hide', 'Hide') : t('partnership.show', 'Show')}
                   </button>
                 </div>
                 {errs.pwd && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd}</div>}
               </div>
-
               <div className="att-field">
-                <label>Confirmer le mot de passe <span className="req">*</span></label>
+                <label>{t('partnership.confirmPassword', 'Confirm password')} <span className="req">*</span></label>
                 <input
                   type={showPwd ? 'text' : 'password'}
                   value={form.pwd2}
                   onChange={e => setField('pwd2', e.target.value)}
-                  placeholder="Répétez votre mot de passe"
+                  placeholder={t('partnership.repeatPassword', 'Repeat your password')}
                 />
                 {errs.pwd2 && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd2}</div>}
               </div>
-
               <div className="att-field">
-                <label>Website / Facebook / Instagram…</label>
+                <label>{t('partnership.website', 'Website / Facebook / Instagram…')}</label>
                 <input placeholder="https://…" value={form.website} onChange={e=>setField('website', e.target.value)} />
               </div>
-
               <div className="att-field">
-                <label>LinkedIn</label>
+                <label>{t('partnership.linkedin', 'LinkedIn')}</label>
                 <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
               </div>
               <div className="att-field">
-                <label>Invite code</label>
-                <input placeholder="optional if you had one" value={form.inviteCode} onChange={e=>setField('inviteCode', e.target.value)} />
+                <label>{t('partnership.inviteCode', 'Invite code')}</label>
+                <input placeholder={t('partnership.optionalInvite', 'optional if you had one')} value={form.inviteCode} onChange={e=>setField('inviteCode', e.target.value)} />
               </div>
-
               <div className="att-field full">
-                <label>Langues préférées <span className="req">*</span></label>
+                <label>{t('partnership.preferredLanguages', 'Preferred languages')} <span className="req">*</span></label>
                 <LanguageSelect value={form.languages} onChange={v => setField('languages', v)} max={3} />
                 {errs.languages && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.languages}</div>}
               </div>
-
-              {showSubRoles  && (
+              {showSubRoles && (
                 <div className="att-field full">
-                  <label>Votre secteur de spécialité (multi-select)</label>
+                  <label>{t('partnership.specialtySector', 'Your specialty sector (multi-select)')}</label>
                   <SubRoleSelect
                     values={form.subRoles}
                     onChange={v => setField('subRoles', v)}
                     options={SUBROLE_OPTIONS}
                   />
-                  <div className="hint">Sélectionnez toutes les options qui s'appliquent.</div>
+                  <div className="hint">{t('partnership.selectAllThatApply', 'Select all that apply.')}</div>
                 </div>
               )}
-
               <div className="att-field full">
-                <label>Objectif</label>
+                <label>{t('partnership.objective', 'Objective')}</label>
                 <ObjectiveSelect
                   values={form.objective}
                   onChange={(v) => setField('objective', v)}
                 />
               </div>
               <div className="att-field full" style={{ alignItems:'flex-start' }}>
-                <label>Disponible pour des rendez-vous ?</label>
+                <label>{t('partnership.availableForMeetings', 'Available for meetings?')}</label>
                 <label className="chk-inline as-switch">
                   <input
                     type="checkbox"
@@ -908,11 +813,11 @@ const trackSections = useMemo(() => {
                     onChange={e=>setField('openToMeetings', e.target.checked)}
                   />
                   <span className="sw" aria-hidden="true"><span className="knob" /></span>
-                  <span className="txt">Oui, autoriser les demandes B2B</span>
+                  <span className="txt">{t('partnership.yesAllowB2B', 'Yes, allow B2B requests')}</span>
                 </label>
               </div>
               <div className="att-field full">
-                <label>Mode des rendez-vous <span className="req">*</span></label>
+                <label>{t('partnership.meetingMode', 'Meeting mode')} <span className="req">*</span></label>
                 <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
                   <label className={`lang-item ${form.virtualMeet === false ? 'active' : ''}`} style={{ cursor:'pointer' }}>
                     <input
@@ -923,9 +828,8 @@ const trackSections = useMemo(() => {
                       onChange={() => setField('virtualMeet', false)}
                       style={{ display:'none' }}
                     />
-                    <span>Présentiel (physique)</span>
+                    <span>{t('partnership.inPerson', 'In-person (physical)')}</span>
                   </label>
-
                   <label className={`lang-item ${form.virtualMeet === true ? 'active' : ''}`} style={{ cursor:'pointer' }}>
                     <input
                       type="radio"
@@ -935,14 +839,14 @@ const trackSections = useMemo(() => {
                       onChange={() => setField('virtualMeet', true)}
                       style={{ display:'none' }}
                     />
-                    <span>Virtuel</span>
+                    <span>{t('partnership.virtual', 'Virtual')}</span>
                   </label>
                 </div>
                 {errs.virtualMeet && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.virtualMeet}</div>}
               </div>
               {/* Photo (OPTIONNELLE) */}
               <div className="att-field full">
-                <label>Photo de profil (optionnelle)</label>
+                <label>{t('partnership.profilePhoto', 'Profile photo (optional)')}</label>
                 <div
                   className="att-photo-drop"
                   onClick={() => fileRef.current?.click()}
@@ -954,13 +858,13 @@ const trackSections = useMemo(() => {
                     onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
                     onTooLarge: () => {
                       setPhotoFile(null);
-                      setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
-                      triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
+                      setErrs(p => ({ ...p, photo: t('partnership.imageTooLarge', 'Image too large (max 5 MB)') }));
+                      triggerPopup({ type:"error", title:t('partnership.invalidImage', 'Invalid image'), body:t('partnership.photoExceeds5MB', 'The photo exceeds 5 MB. Please choose a smaller image.') });
                     },
                     onNotImage: () => {
                       setPhotoFile(null);
-                      setErrs(p => ({ ...p, photo: "Fichier non image" }));
-                      triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
+                      setErrs(p => ({ ...p, photo: t('partnership.notAnImage', 'Not an image file') }));
+                      triggerPopup({ type:"error", title:t('partnership.unsupportedFile', 'Unsupported file'), body:t('partnership.selectImagePNGJPG', 'Please select an image (PNG/JPG).') });
                     }
                 });
                 }}
@@ -968,15 +872,15 @@ const trackSections = useMemo(() => {
                   {!photoUrl ? (
                     <div className="att-photo-empty">
                       <div className="ico">📷</div>
-                      <div className="t">Déposez une image ici ou cliquez pour choisir</div>
-                      <div className="h">PNG/JPG, moins de 5 Mo (optionnel)</div>
+                      <div className="t">{t('partnership.dropImageHere', 'Drop an image here or click to choose')}</div>
+                      <div className="h">{t('partnership.pngJpgLess5MB', 'PNG/JPG, less than 5 MB (optional)')}</div>
                     </div>
                   ) : (
                     <div className="att-photo-prev">
-                      <img src={photoUrl} alt="preview" />
+                      <img src={photoUrl} alt={t('partnership.preview', 'preview')} />
                       <div className="att-photo-actions">
-                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Changer</button>
-                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Supprimer</button>
+                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>{t('partnership.change', 'Change')}</button>
+                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>{t('partnership.delete', 'Delete')}</button>
                       </div>
                     </div>
                   )}
@@ -991,13 +895,13 @@ const trackSections = useMemo(() => {
                         onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
                         onTooLarge: () => {
                           setPhotoFile(null);
-                          setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
-                          triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
+                          setErrs(p => ({ ...p, photo: t('partnership.imageTooLarge', 'Image too large (max 5 MB)') }));
+                          triggerPopup({ type:"error", title:t('partnership.invalidImage', 'Invalid image'), body:t('partnership.photoExceeds5MB', 'The photo exceeds 5 MB. Please choose a smaller image.') });
                         },
                         onNotImage: () => {
                           setPhotoFile(null);
-                          setErrs(p => ({ ...p, photo: "Fichier non image" }));
-                          triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
+                          setErrs(p => ({ ...p, photo: t('partnership.notAnImage', 'Not an image file') }));
+                          triggerPopup({ type:"error", title:t('partnership.unsupportedFile', 'Unsupported file'), body:t('partnership.selectImagePNGJPG', 'Please select an image (PNG/JPG).') });
                         }
                       });
                     }}
@@ -1006,51 +910,42 @@ const trackSections = useMemo(() => {
                 {errs.photo && <div style={{ color:'#ef4444', fontWeight:800, marginTop:8 }}>{errs.photo}</div>}
               </div>
             </div>
-
             <div className="att-actions" style={{ justifyContent:'flex-end' }}>
-              <button type="submit" className="btn">Continuer</button>
+              <button type="submit" className="btn">{t('partnership.continue', 'Continue')}</button>
             </div>
           </form>
         )}
-
         {/* ===== SECTION 3: Sessions (appears after form is valid) ===== */}
         {roleType && showSessions && !finished && (
           <section className="anim-in" id="sessions-anchor" style={{ marginTop: 16 }}>
             <div className="att-section-head">
-              <div className="t">Sélectionnez vos sessions</div>
-              <div className="h">Pistes parallèles: vous pouvez choisir une <b>masterclass</b> et un <b>atelier</b> sur le même créneau, mais pas deux de la même famille.</div>
+              <div className="t">{t('partnership.selectSessions', 'Select your sessions')}</div>
+              <div className="h">{t('partnership.parallelTracksHint', 'Parallel tracks: you can choose a <b>masterclass</b> and an <b>atelier</b> in the same slot, but not two from the same family.')}</div>
             </div>
-
-            {/* Compact filter bar */}
             <div className="filter-bar">
-               <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder="Toutes les pistes" />
+               <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder={t('partnership.allTracks', 'All tracks')} />
             </div>
-
-
             {schedFetching ? (
               <div className="reg-skel" style={{ height: 160 }} />
             ) : !trackSections.length ? (
-              <div className="reg-empty">Aucune session disponible pour le moment.</div>
+              <div className="reg-empty">{t('partnership.noSessionsAvailable', 'No sessions available at the moment.')}</div>
             ) : (
               <div className="att-session-list-v2">
                 {trackSections.map(section => (
                   <div key={section.track} className="att-track-section-v2">
                     <div className="att-track-sep-v2">{section.track}</div>
-
                     {section.items?.map(s => {
                       const compositeKey = compositeKeyFor(s);
                       const isSelected = selectedBySlot[compositeKey]?._id === s._id;
-                      const c   = counts?.[s._id] || {};
+                      const c = counts?.[s._id] || {};
                       const reg = Number(
                         (typeof s.seatsTaken === 'number' ? s.seatsTaken : NaN)
                       );
                       const regSafe = Number.isFinite(reg) ? reg : Number(c.registered || 0);
-                      console.log("reg:", regSafe, "s:", s);
                       const cap = s.roomCapacity || 0;
                       const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
-                      const title = s.title || s.sessionTitle || 'Session';
+                      const title = s.title || s.sessionTitle || t('partnership.session', 'Session');
                       const when = new Date(s.startISO);
-
                       return (
                         <article
                           key={s._id}
@@ -1060,9 +955,9 @@ const trackSections = useMemo(() => {
                         >
                           <div className="session-head-v2">
                             <div className="session-chipline-v2">
-                              {s.track ? <span className="badge">{s.track}</span> : <span className="chip">Session</span>}
-                              {s.roomName ? <span className="chip">Salle: {s.roomName}</span> : null}
-                              {s.roomLocation ? <span className="chip">Loc: {s.roomLocation}</span> : null}
+                              {s.track ? <span className="badge">{s.track}</span> : <span className="chip">{t('partnership.session', 'Session')}</span>}
+                              {s.roomName ? <span className="chip">{t('partnership.room', 'Room')}: {s.roomName}</span> : null}
+                              {s.roomLocation ? <span className="chip">{t('partnership.loc', 'Loc')}: {s.roomLocation}</span> : null}
                               <span className="chip">
                                 {when.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • {when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
@@ -1074,38 +969,35 @@ const trackSections = useMemo(() => {
                               </div>
                             )}
                           </div>
-
                           {s.summary ? (
                             <div className="session-summary-v2">
                               {s.summary.length > 220 ? `${s.summary.slice(0, 220)}…` : s.summary}
                             </div>
                           ) : null}
-
                           {(cap || reg) ? (
                             <div className="cap-mini-v2">
                               <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
                               <div className="cap-mini-meta">
-                                <span><b>{regSafe}</b> inscrits</span>
-                                {cap ? <span>• <b>{cap}</b> capacité</span> : null}
-                                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
+                                <span><b>{regSafe}</b> {t('partnership.registered', 'registered')}</span>
+                                {cap ? <span>• <b>{cap}</b> {t('partnership.capacity', 'capacity')}</span> : null}
+                                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> {t('partnership.waitlist', 'waitlist')}</span> : null}
                               </div>
                             </div>
                           ) : null}
-
                           <div className="session-actions-v2">
                             <button
                               type="button"
                               className="btn-line sm"
                               onClick={(e) => { e.stopPropagation(); setModalSession(s); setModalOpen(true); }}
                             >
-                              Info
+                              {t('partnership.info', 'Info')}
                             </button>
                             <button
                               type="button"
                               className={`btn sm`}
                               onClick={(e) => { e.stopPropagation(); toggleSession(s); }}
                             >
-                              {isSelected ? 'Sélectionné' : 'Sélectionner'}
+                              {isSelected ? t('partnership.selected', 'Selected') : t('partnership.select', 'Select')}
                             </button>
                           </div>
                         </article>
@@ -1115,32 +1007,29 @@ const trackSections = useMemo(() => {
                 ))}
               </div>
             )}
-
             <div className="att-actions" style={{ marginTop: 16 }}>
               <button
                 className="btn"
                 disabled={regLoading}
                 onClick={finishAll}
               >
-                {regLoading ? 'Envoi en cours…' : 'Soumettre'}
+                {regLoading ? t('partnership.sending', 'Sending…') : t('partnership.submit', 'Submit')}
               </button>
             </div>
           </section>
         )}
-
         {/* ===== DONE ===== */}
         {finished && (
           <div className="anim-in">
             <div className="reg-empty" style={{ borderStyle:'solid', color:'#111827' }}>
-              ✅ Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.
+              ✅ {t('partnership.registrationReceived', 'Registration received. We also displayed a popup with a quick link.')}
               <div style={{ marginTop: 8 }}>
-                <a className="btn" href="/login">Découvrez votre compte B2B</a>
+                <a className="btn" href="/login">{t('partnership.discoverYourAccount', 'Discover your B2B account')}</a>
               </div>
             </div>
           </div>
         )}
       </div>
-
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}
@@ -1148,7 +1037,6 @@ const trackSections = useMemo(() => {
         actions={footerData.actions}
         bottomLinks={footerData.bottomLinks}
       />
-
       <SessionModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
