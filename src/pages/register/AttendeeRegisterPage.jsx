@@ -3,6 +3,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ReactCountryFlag from 'react-country-flag';
+import { useTranslation } from 'react-i18next';
 import "./attendee-register.css";
 
 /** RTK hooks */
@@ -15,21 +16,16 @@ import { cta, footerData, nav, topbar } from '../main.mock';
 import Footer from '../../components/footer/Footer';
 import useCountries from '../../lib/hooks/useCountries';
 import CountrySelect from '../../components/CountrySelect';
-/* === Helpers === */
+
+/**
+ * AttendeeRegisterPage
+ * - Uses i18next (defaultNS: "common") and keys under "attendeeRegister".
+ * - All default English text is kept inside the code as fallbacks; translations go to JSON.
+ */
+
 const toISODate = v => (v ? new Date(v).toLocaleDateString() : '');
 const required = v => (typeof v === 'string' ? v.trim() : v) ? true : false;
 
-/* Catalog of “actor types” (FR) */
-const ROLE_TYPES = [
-  { key: 'BusinessOwner', title: 'Chef d’entreprise', desc: 'Possède ou co-détient une entreprise. Peut ensuite créer un profil complet, définir les secteurs, produits et services.' },
-  { key: 'Consultant',    title: 'Consultant',        desc: 'Conseille les entreprises. Idéal si vous vendez votre expertise et souhaitez lister vos services plus tard.' },
-  { key: 'Employee',      title: 'Employé',           desc: 'Représente une organisation sans en être le propriétaire. Peut réseauter et planifier des rendez-vous.' },
-  { key: 'Expert',        title: 'Expert',            desc: 'Spécialiste dans un domaine. Parfait pour les ateliers, le mentorat et les opportunités B2B.' },
-  { key: 'Investor',      title: 'Investisseur',      desc: 'Business angel, VC ou investisseur corporate. Peut indiquer ses intérêts et se connecter avec des startups/exposants.' },
-  { key: 'Student',       title: 'Étudiant',          desc: 'Début de carrière. Apprend, développe son réseau et découvre des opportunités.' },
-];
-
-/* Track constants + family logic (lets Masterclass & Atelier be parallel) */
 const TRACK_B2B_NAME = "B2B";
 const MASTERCLASS = "masterclass";
 const ATELIER = "atelier";
@@ -41,50 +37,35 @@ function familyOfTrack(track) {
   return 'other';
 }
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
- function extractError(e) {
-   if (!e) return "Registration failed";
-   const d = e.data;
-   if (typeof d === "string") return d;
-   if (d?.message) return d.message;
-   if (Array.isArray(d?.errors) && d.errors.length) {
-     return d.errors.map(x => x.msg || x.message || `${x.field || "field"} invalid`).join("\n");
+
+function extractError(e) {
+  if (!e) return "Registration failed";
+  const d = e.data;
+  if (typeof d === "string") return d;
+  if (d?.message) return d.message;
+  if (Array.isArray(d?.errors) && d.errors.length) {
+    return d.errors.map(x => x.msg || x.message || `${x.field || "field"} invalid`).join("\n");
   }
-   return e.error || e.message || "Registration failed";
+  return e.error || e.message || "Registration failed";
 }
 
- function acceptPhotoFile(file, { onOK, onTooLarge, onNotImage }) {
-   if (!file) return;
-   if (!(file.type || "").startsWith("image/")) { onNotImage?.(); return; }
-   if (file.size > MAX_PHOTO_BYTES) { onTooLarge?.(file.size); return; }
+function acceptPhotoFile(file, { onOK, onTooLarge, onNotImage }) {
+  if (!file) return;
+  if (!(file.type || "").startsWith("image/")) { onNotImage?.(); return; }
+  if (file.size > MAX_PHOTO_BYTES) { onTooLarge?.(file.size); return; }
   onOK?.(file);
 }
-/* SubRole options (checkbox list) */
-const SUBROLE_OPTIONS = [
-  'Researchers','Students','Coaches & Trainers','Experts & Consultants','Employees & Professionals','Entrepreneurs & Startups','Developers & Engineers',
-  'Marketing & Communication','Audit, Accounting & Finance','Investment & Banking','Insurance & Microfinance','Legal & Lawyers','AI, IoT & Emerging Tech',
-  'Audiovisual & Creative Industries','Media & Journalists','Universities & Academies','NGOs & Civil Society','Public Sector & Government'
+
+/* --- Static data (English) — keep these in English inside code as requested --- */
+const ROLE_TYPES = [
+  { key: 'BusinessOwner', title: 'Business owner', desc: 'Owns or co-owns a company. Can create a full business profile, add sectors, products and services.' },
+  { key: 'Consultant',    title: 'Consultant',    desc: 'Provides advisory services. Ideal if you sell expertise and later want to list your services.' },
+  { key: 'Employee',      title: 'Employee',      desc: 'Represents an organization without owning it. Can network and schedule meetings.' },
+  { key: 'Expert',        title: 'Expert',        desc: 'Specialist in a field. Great for workshops, mentoring, and B2B opportunities.' },
+  { key: 'Investor',      title: 'Investor',      desc: 'Angel, VC or corporate investor. Can indicate interests and connect with startups/exhibitors.' },
+  { key: 'Student',       title: 'Student',       desc: 'Early career. Learns, builds a network and discovers opportunities.' },
 ];
 
-function triggerPopup({ title, body, type = "success", link }) {
-  try {
-    const item = {
-      type, status: type,
-      title: title || "Notification",
-      body: body || "",
-      message: body || "",
-      ts: Date.now(),
-      showOnce: true,
-      link: link ? { href: link.href, label: link.label || "Open" } : null,
-      _source: "local",
-    };
-    localStorage.setItem("popup", JSON.stringify([item]));
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new CustomEvent("app:popup:ready"));
-    });
-  } catch {}
-}
-
-/* Country list (trimmed) */
 const COUNTRIES = [
   { code: 'TN', name: 'Tunisia' }, { code: 'FR', name: 'France' }, { code: 'US', name: 'United States' },
   { code: 'DE', name: 'Germany' }, { code: 'IT', name: 'Italy' },  { code: 'ES', name: 'Spain' },
@@ -93,24 +74,27 @@ const COUNTRIES = [
   { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
 ];
 
-/* Language list (max 3) */
 const LANGS = [
   { code: 'en', label: 'English' },
   { code: 'fr', label: 'French'  },
   { code: 'ar', label: 'Arabic'  },
 ];
 
-/* Objective chips (checkbox-like) */
 const OBJECTIVES = [
   { code: 'networking',     label: 'Networking' },
-  { code: 'find-partners',  label: 'Réseautage' },
-  { code: 'find-investors', label: 'Trouver des investisseurs' },
-  { code: 'find-clients',   label: 'Trouver des clients' },
-  { code: 'learn-trends',   label: 'Apprendre les tendances' },
+  { code: 'find-partners',  label: 'Find partners' },
+  { code: 'find-investors', label: 'Find investors' },
+  { code: 'find-clients',   label: 'Find clients' },
+  { code: 'learn-trends',   label: 'Learn trends' },
 ];
 
-/* ===== Small controls reused ===== */
+const SUBROLE_OPTIONS = [
+  'Researchers','Students','Coaches & Trainers','Experts & Consultants','Employees & Professionals','Entrepreneurs & Startups','Developers & Engineers',
+  'Marketing & Communication','Audit, Accounting & Finance','Investment & Banking','Insurance & Microfinance','Legal & Lawyers','AI, IoT & Emerging Tech',
+  'Audiovisual & Creative Industries','Media & Journalists','Universities & Academies','NGOs & Civil Society','Public Sector & Government'
+];
 
+/* ===== Reusable small controls (they render English labels inside code; translations are provided in JSON) ===== */
 
 function LanguageSelect({ value = [], onChange, max = 3 }) {
   const toggle = (code) => {
@@ -152,11 +136,11 @@ function LanguageSelect({ value = [], onChange, max = 3 }) {
     </div>
   );
 }
-function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes les pistes' }) {
+
+function TrackSelect({ options = [], value = '', onChange, placeholder = 'All tracks' }) {
   const [open, setOpen] = React.useState(false);
   const wrapRef = React.useRef(null);
 
-  // close on outside click
   React.useEffect(() => {
     const onDoc = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', onDoc);
@@ -173,7 +157,7 @@ function TrackSelect({ options = [], value = '', onChange, placeholder = 'Toutes
       </div>
       {open && (
         <div className="sel-pop">
-          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>Toutes</div>
+          <div className="sel-item" onClick={() => { onChange(''); setOpen(false); }}>All</div>
           {options.map(opt => (
             <div key={opt} className="sel-item" onClick={() => { onChange(opt); setOpen(false); }}>
               {opt}
@@ -205,8 +189,8 @@ function GenderSelect({ value = '', onChange, name = 'gender' }) {
 
   return (
     <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
-      <Item val="male" label="Homme" />
-      <Item val="female" label="Femme" />
+      <Item val="male" label="Male" />
+      <Item val="female" label="Female" />
     </div>
   );
 }
@@ -252,7 +236,6 @@ function ObjectiveSelect({ values = [], onChange }) {
   );
 }
 
-/* SubRole checkbox grid */
 function SubRoleSelect({ values = [], onChange, options = [] }) {
   const toggle = (val) => {
     const has = values.includes(val);
@@ -278,7 +261,7 @@ function SubRoleSelect({ values = [], onChange, options = [] }) {
   );
 }
 
-/* ===== Session helpers (normalize & group) ===== */
+/* ===== Session helpers (unchanged logic) ===== */
 const normSession = (s) => {
   const start = s.startAt || s.startTime || s.start || s.timeStart || s.startsAt;
   const end   = s.endAt   || s.endTime   || s.end   || s.timeEnd   || s.endsAt;
@@ -439,13 +422,14 @@ function SessionModal({ open, onClose, session, counts }) {
   return ReactDOM.createPortal(node, document.body);
 }
 
-/* ===== Main (single-page progressive flow) ===== */
+/* ===== Main Component ===== */
 export default function AttendeeRegisterPage() {
+  const { t } = useTranslation(); // defaultNS: "common"
   const { countries, loading: countriesLoading } = useCountries({ locale: 'en' });
-   const safeCountries = useMemo(
-     () => (Array.isArray(countries) && countries.length ? countries : COUNTRIES),
-     [countries]
-   );
+  const safeCountries = useMemo(
+    () => (Array.isArray(countries) && countries.length ? countries : COUNTRIES),
+    [countries]
+  );
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
@@ -480,7 +464,6 @@ export default function AttendeeRegisterPage() {
     setPhotoUrl('');
   }, [photoFile]);
 
-  // initial form factory (role can affect requireds later if you want)
   const makeInitialForm = () => ({
     fullName: '',
     email: '',
@@ -510,7 +493,6 @@ export default function AttendeeRegisterPage() {
   const showSubRoles = roleType && roleType !== 'BusinessOwner';
   const shouldShowOrgFields = !isStudent;
 
-  // Changing role resets everything below + sessions
   const handlePickRole = (key) => {
     if (key === roleType) return;
     setRoleType(key);
@@ -523,8 +505,7 @@ export default function AttendeeRegisterPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /* Track-aware selection (parallel families) */
-  const [selectedBySlot, setSelectedBySlot] = useState({}); // { compositeKey: session }
+  const [selectedBySlot, setSelectedBySlot] = useState({});
   const compositeKeyFor = (session) => {
     const fam = familyOfTrack(session.track);
     const base = session.startISO;
@@ -538,56 +519,49 @@ export default function AttendeeRegisterPage() {
 
   const counts = schedulePack?.counts || {};
 
-  /* Normalize sessions */
   const { sessions } = useMemo(() => {
     const raw = (schedulePack?.data || schedulePack?.sessions || schedulePack || []);
     return groupByDayAndSlot(Array.isArray(raw) ? raw : []);
   }, [schedulePack]);
 
-  // --- place right after:  const { sessions } = useMemo(...);
+  const earliestDayISO = useMemo(() => {
+    const ds = Array.from(new Set((sessions || []).map(s => s.dayISO).filter(Boolean)));
+    ds.sort((a, b) => new Date(a) - new Date(b));
+    return ds[0] || null;
+  }, [sessions]);
 
-// find earliest day (day 1)
-const earliestDayISO = useMemo(() => {
-  const ds = Array.from(new Set((sessions || []).map(s => s.dayISO).filter(Boolean)));
-  ds.sort((a, b) => new Date(a) - new Date(b));
-  return ds[0] || null;
-}, [sessions]);
+  const displaySessions = useMemo(() => {
+    const rxFormation = /^\s*formation\s*$/i;
+    return (sessions || []).filter(s => {
+      if (earliestDayISO && s.dayISO === earliestDayISO) return false;
+      if (rxFormation.test(s.track || '')) return false;
+      return true;
+    });
+  }, [sessions, earliestDayISO]);
 
-// sessions to actually display (no day 1, no "Formation")
-const displaySessions = useMemo(() => {
-  const rxFormation = /^\s*formation\s*$/i;
-  return (sessions || []).filter(s => {
-    if (earliestDayISO && s.dayISO === earliestDayISO) return false;   // drop day 1
-    if (rxFormation.test(s.track || '')) return false;                  // drop "Formation"
-    return true;
-  });
-}, [sessions, earliestDayISO]);
+  const uniqueTracks = useMemo(() => {
+    const tset = new Set();
+    displaySessions.forEach(s => { if (s.track) tset.add(s.track); });
+    return Array.from(tset);
+  }, [displaySessions]);
 
-// Track/day options (filter list too)
-const uniqueTracks = useMemo(() => {
-  const t = new Set();
-  displaySessions.forEach(s => { if (s.track) t.add(s.track); });
-  return Array.from(t);
-}, [displaySessions]);
+  const trackSections = useMemo(() => {
+    if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
 
-// Compact sections (use filtered sessions)
-const trackSections = useMemo(() => {
-  if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
+    const group = {};
+    for (const s of displaySessions) {
+      if (track && s.track !== track) continue;
+      const key = (s.track || "Other").trim();
+      if (!group[key]) group[key] = [];
+      group[key].push(s);
+    }
+    for (const t of Object.keys(group)) {
+      group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
+    }
 
-  const group = {};
-  for (const s of displaySessions) {
-    if (track && s.track !== track) continue;
-    const key = (s.track || "Autre").trim();
-    if (!group[key]) group[key] = [];
-    group[key].push(s);
-  }
-  for (const t of Object.keys(group)) {
-    group[t].sort((a, b) => new Date(a.startISO) - new Date(b.startISO));
-  }
-
-  const ordered = orderTracksWithEarliestFirst(group);
-  return ordered.map(({ track, items }) => ({ track, items }));
-}, [displaySessions, track]);
+    const ordered = orderTracksWithEarliestFirst(group);
+    return ordered.map(({ track, items }) => ({ track, items }));
+  }, [displaySessions, track]);
 
   useEffect(() => {
     setModalOpen(false);
@@ -613,25 +587,24 @@ const trackSections = useMemo(() => {
     [selectedBySlot]
   );
 
-  /* Validate & reveal sessions */
   const submitForm = (e) => {
     e.preventDefault();
     const e2 = {};
-    if (!required(form.pwd)) e2.pwd = 'Requis';
-    else if ((form.pwd || '').length < 8) e2.pwd = 'Min 8 caractères';
-    if (form.pwd2 !== form.pwd) e2.pwd2 = 'Les mots de passe ne correspondent pas';
+    if (!required(form.pwd)) e2.pwd = t('attendeeRegister.errors.required', 'Required');
+    else if ((form.pwd || '').length < 8) e2.pwd = t('attendeeRegister.errors.minLength', 'Min 8 characters');
+    if (form.pwd2 !== form.pwd) e2.pwd2 = t('attendeeRegister.errors.pwdMismatch', 'Passwords do not match');
 
-    if (!required(form.fullName)) e2.fullName = 'Requis';
-    if (!required(form.email)) e2.email = 'Requis';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = 'Email invalide';
-    if (!required(form.country)) e2.country = 'Requis';
-    if (!form.languages?.length) e2.languages = 'Choisissez au moins 1 langue';
-    if (!form.gender) e2.gender = 'Requis';
+    if (!required(form.fullName)) e2.fullName = t('attendeeRegister.errors.required', 'Required');
+    if (!required(form.email)) e2.email = t('attendeeRegister.errors.required', 'Required');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email || '')) e2.email = t('attendeeRegister.errors.invalidEmail', 'Invalid email');
+    if (!required(form.country)) e2.country = t('attendeeRegister.errors.required', 'Required');
+    if (!form.languages?.length) e2.languages = t('attendeeRegister.errors.chooseLanguage', 'Choose at least 1 language');
+    if (!form.gender) e2.gender = t('attendeeRegister.errors.required', 'Required');
     if (shouldShowOrgFields) {
-      if (!required(form.orgName)) e2.orgName = 'Requis';
-      if (!required(form.jobTitle)) e2.jobTitle = 'Requis';
+      if (!required(form.orgName)) e2.orgName = t('attendeeRegister.errors.required', 'Required');
+      if (!required(form.jobTitle)) e2.jobTitle = t('attendeeRegister.errors.required', 'Required');
     }
-    if (form.virtualMeet !== true && form.virtualMeet !== false) e2.virtualMeet = 'Requis';
+    if (form.virtualMeet !== true && form.virtualMeet !== false) e2.virtualMeet = t('attendeeRegister.errors.required', 'Required');
     setErrs(e2);
     if (Object.keys(e2).length) return;
 
@@ -642,10 +615,9 @@ const trackSections = useMemo(() => {
     }, 40);
   };
 
-  /* Submit all */
   const finishAll = async () => {
     if (!selectedSessionIds.length) {
-      alert('Veuillez choisir au moins une session (une par créneau horaire et par famille de piste).');
+      alert(t('attendeeRegister.alerts.chooseSession', 'Please choose at least one session (one per slot and track family).'));
       return;
     }
     const fd = new FormData();
@@ -683,39 +655,34 @@ const trackSections = useMemo(() => {
     try {
       await attendeeRegister(fd).unwrap();
       triggerPopup({
-        title: "Inscription terminée",
-        body: "Commencez votre parcours B2B",
+        title: t('attendeeRegister.notifications.successTitle', 'Registration complete'),
+        body: t('attendeeRegister.notifications.successBody', 'Start your B2B journey'),
         type: "success",
-        link: { href: "/login", label: "Aller à la connexion" }
+        link: { href: "/login", label: t('attendeeRegister.notifications.goToLogin', 'Go to login') }
       });
       setFinished(true);
       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60);
       setTimeout(() => navigate('/'), 1400);
     } catch (e) {
-        const msg = extractError(e);
-        triggerPopup({
-          title: "Échec de l’inscription",
-          body: msg,
-          type: "error"
-        });
-        // optionally surface near the submit button as well
-        setErrs(prev => ({ ...prev, _submit: msg }));
-      }
+      const msg = extractError(e);
+      triggerPopup({
+        title: t('attendeeRegister.notifications.failTitle', 'Registration failed'),
+        body: msg,
+        type: "error"
+      });
+      setErrs(prev => ({ ...prev, _submit: msg }));
+    }
   };
 
-  /* Compact sessions data (space-efficient) */
-
-  /* ===== UI ===== */
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
       <div className="reg-wrap">
-        {/* Event header */}
         <header className="anim-in" style={{ display:'grid', gridTemplateColumns:'140px 1fr', gap:12, alignItems:'center' }}>
           {evLoading ? (
             <div className="reg-skel" />
           ) : evErr || !event ? (
-            <div className="reg-empty">Event not found</div>
+            <div className="reg-empty">{t('attendeeRegister.eventNotFound', 'Event not found')}</div>
           ) : (
             <>
               <img
@@ -739,11 +706,11 @@ const trackSections = useMemo(() => {
           )}
         </header>
 
-        {/* ===== SECTION 1: Role (always visible) ===== */}
+        {/* SECTION 1: Role */}
         <section className="anim-in">
           <div className="att-section-head">
-            <div className="t">Choisissez votre type d'acteur</div>
-            <div className="h">En sélectionnant, le formulaire s’affiche juste en dessous. Changer le type réinitialise le formulaire et les choix de sessions.</div>
+            <div className="t">{t('attendeeRegister.chooseRoleTitle','Choose your actor type')}</div>
+            <div className="h">{t('attendeeRegister.chooseRoleHint','By selecting a role, the form appears below. Changing role resets the form and session choices.')}</div>
           </div>
 
           <div className="role-grid">
@@ -764,64 +731,66 @@ const trackSections = useMemo(() => {
           </div>
         </section>
 
-        {/* ===== SECTION 2: Form (appears after role picked) ===== */}
+        {/* SECTION 2: Form */}
         {roleType && !finished && (
           <form className="anim-in reg-card" onSubmit={submitForm} style={{ marginTop: 14 }}>
             <div className="att-section-head">
-              <div className="t">Détails des participants</div>
-              <div className="h">Tous les champs marqués <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> sont obligatoires</div>
+              <div className="t">{t('attendeeRegister.formTitle','Attendee details')}</div>
+              <div className="h">{t('attendeeRegister.formHint','All fields marked')} <span className="req" style={{ color:'#ef4444', fontWeight:800 }}>*</span> {t('attendeeRegister.formRequired','are required')}</div>
             </div>
 
             <div className="att-form-grid">
               <div className="att-field">
-                <label>Nom complet <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.fullName','Full name')} <span className="req">*</span></label>
                 <input value={form.fullName} onChange={e=>setField('fullName', e.target.value)} />
                 {errs.fullName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.fullName}</div>}
               </div>
 
               <div className="att-field">
-                <label>Email <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.email','Email')} <span className="req">*</span></label>
                 <input type="email" value={form.email} onChange={e=>setField('email', e.target.value)} />
                 {errs.email && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.email}</div>}
               </div>
 
               <div className="att-field">
-                <label>Téléphone</label>
+                <label>{t('attendeeRegister.labels.phone','Phone')}</label>
                 <input value={form.phone} onChange={e=>setField('phone', e.target.value)} />
               </div>
 
               <div className="att-field">
-              <label className="mp-field">
-                <span className="mp-label">Pays</span>
-                <CountrySelect
-   value={form.country || ""}
-   onChange={(v) => setField("country", v?.target ? v.target.value : v)}
-   options={safeCountries}
-   placeholder="Select country"
- />
- {countriesLoading && <div className="hint">Loading countries…</div>}
-              </label>
+                <label className="mp-field">
+                  <span className="mp-label">{t('attendeeRegister.labels.country','Country')}</span>
+                  <CountrySelect
+                    value={form.country || ""}
+                    onChange={(v) => setField("country", v?.target ? v.target.value : v)}
+                    options={safeCountries}
+                    placeholder={t('attendeeRegister.placeholders.selectCountry','Select country')}
+                  />
+                  {countriesLoading && <div className="hint">{t('attendeeRegister.hints.loadingCountries','Loading countries…')}</div>}
+                </label>
                 {errs.country && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.country}</div>}
               </div>
 
               <div className="att-field">
-                <label>Ville</label>
+                <label>{t('attendeeRegister.labels.city','City')}</label>
                 <input value={form.city} onChange={e=>setField('city', e.target.value)} />
               </div>
+
               <div className="att-field">
-                <label>Genre<span className="req"> *</span></label>
+                <label>{t('attendeeRegister.labels.gender','Gender')}<span className="req"> *</span></label>
                 <GenderSelect value={form.gender} onChange={v => setField('gender', v)} />
               </div>
-                            {shouldShowOrgFields && (
+
+              {shouldShowOrgFields && (
                 <>
                   <div className="att-field">
-                    <label>Organisation <span className="req">*</span></label>
+                    <label>{t('attendeeRegister.labels.organization','Organization')} <span className="req">*</span></label>
                     <input value={form.orgName} onChange={e=>setField('orgName', e.target.value)} />
                     {errs.orgName && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.orgName}</div>}
                   </div>
 
                   <div className="att-field">
-                    <label>Intitulé du poste <span className="req">*</span></label>
+                    <label>{t('attendeeRegister.labels.jobTitle','Job title')} <span className="req">*</span></label>
                     <input value={form.jobTitle} onChange={e=>setField('jobTitle', e.target.value)} />
                     {errs.jobTitle && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.jobTitle}</div>}
                   </div>
@@ -829,78 +798,80 @@ const trackSections = useMemo(() => {
               )}
 
               <div className="att-field">
-                <label>Mot de passe <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.password','Password')} <span className="req">*</span></label>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:8 }}>
                   <input
                     type={showPwd ? 'text' : 'password'}
                     value={form.pwd}
                     onChange={e => setField('pwd', e.target.value)}
-                    placeholder="Au moins 8 caractères"
+                    placeholder={t('attendeeRegister.placeholders.pwd','At least 8 characters')}
                   />
                   <button
                     type="button"
                     className="btn-line"
                     onClick={() => setShowPwd(v => !v)}
-                    aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    aria-label={showPwd ? t('attendeeRegister.aria.hidePwd','Hide password') : t('attendeeRegister.aria.showPwd','Show password')}
                   >
-                    {showPwd ? 'Masquer' : 'Afficher'}
+                    {showPwd ? t('attendeeRegister.buttons.hide','Hide') : t('attendeeRegister.buttons.show','Show')}
                   </button>
                 </div>
                 {errs.pwd && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd}</div>}
               </div>
 
               <div className="att-field">
-                <label>Confirmer le mot de passe <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.confirmPassword','Confirm password')} <span className="req">*</span></label>
                 <input
                   type={showPwd ? 'text' : 'password'}
                   value={form.pwd2}
                   onChange={e => setField('pwd2', e.target.value)}
-                  placeholder="Répétez votre mot de passe"
+                  placeholder={t('attendeeRegister.placeholders.confirmPwd','Repeat your password')}
                 />
                 {errs.pwd2 && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.pwd2}</div>}
               </div>
 
               <div className="att-field">
-                <label>Website / Facebook / Instagram…</label>
+                <label>{t('attendeeRegister.labels.website','Website / Social…')}</label>
                 <input placeholder="https://…" value={form.website} onChange={e=>setField('website', e.target.value)} />
               </div>
 
               <div className="att-field">
-                <label>LinkedIn</label>
+                <label>{t('attendeeRegister.labels.linkedin','LinkedIn')}</label>
                 <input placeholder="https://linkedin.com/in/…" value={form.linkedin} onChange={e=>setField('linkedin', e.target.value)} />
               </div>
+
               <div className="att-field">
-                <label>Invite code</label>
-                <input placeholder="optional if you had one" value={form.inviteCode} onChange={e=>setField('inviteCode', e.target.value)} />
+                <label>{t('attendeeRegister.labels.inviteCode','Invite code')}</label>
+                <input placeholder={t('attendeeRegister.placeholders.optional','optional if you had one')} value={form.inviteCode} onChange={e=>setField('inviteCode', e.target.value)} />
               </div>
 
               <div className="att-field full">
-                <label>Langues préférées <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.preferredLanguages','Preferred languages')} <span className="req">*</span></label>
                 <LanguageSelect value={form.languages} onChange={v => setField('languages', v)} max={3} />
                 {errs.languages && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.languages}</div>}
               </div>
 
               {showSubRoles  && (
                 <div className="att-field full">
-                  <label>Votre secteur de spécialité (multi-select)</label>
+                  <label>{t('attendeeRegister.labels.subRoles','Your specialties (multi-select)')}</label>
                   <SubRoleSelect
                     values={form.subRoles}
                     onChange={v => setField('subRoles', v)}
                     options={SUBROLE_OPTIONS}
                   />
-                  <div className="hint">Sélectionnez toutes les options qui s'appliquent.</div>
+                  <div className="hint">{t('attendeeRegister.hints.subRole','Select all options that apply.')}</div>
                 </div>
               )}
 
               <div className="att-field full">
-                <label>Objectif</label>
+                <label>{t('attendeeRegister.labels.objective','Objective')}</label>
                 <ObjectiveSelect
                   values={form.objective}
                   onChange={(v) => setField('objective', v)}
                 />
               </div>
+
               <div className="att-field full" style={{ alignItems:'flex-start' }}>
-                <label>Disponible pour des rendez-vous ?</label>
+                <label>{t('attendeeRegister.labels.openToMeetings','Available for meetings?')}</label>
                 <label className="chk-inline as-switch">
                   <input
                     type="checkbox"
@@ -908,11 +879,12 @@ const trackSections = useMemo(() => {
                     onChange={e=>setField('openToMeetings', e.target.checked)}
                   />
                   <span className="sw" aria-hidden="true"><span className="knob" /></span>
-                  <span className="txt">Oui, autoriser les demandes B2B</span>
+                  <span className="txt">{t('attendeeRegister.labels.allowB2B','Yes, allow B2B requests')}</span>
                 </label>
               </div>
+
               <div className="att-field full">
-                <label>Mode des rendez-vous <span className="req">*</span></label>
+                <label>{t('attendeeRegister.labels.meetingMode','Meeting mode')} <span className="req">*</span></label>
                 <div className="lang-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0,1fr))' }}>
                   <label className={`lang-item ${form.virtualMeet === false ? 'active' : ''}`} style={{ cursor:'pointer' }}>
                     <input
@@ -923,7 +895,7 @@ const trackSections = useMemo(() => {
                       onChange={() => setField('virtualMeet', false)}
                       style={{ display:'none' }}
                     />
-                    <span>Présentiel (physique)</span>
+                    <span>{t('attendeeRegister.options.physical','Physical')}</span>
                   </label>
 
                   <label className={`lang-item ${form.virtualMeet === true ? 'active' : ''}`} style={{ cursor:'pointer' }}>
@@ -935,48 +907,49 @@ const trackSections = useMemo(() => {
                       onChange={() => setField('virtualMeet', true)}
                       style={{ display:'none' }}
                     />
-                    <span>Virtuel</span>
+                    <span>{t('attendeeRegister.options.virtual','Virtual')}</span>
                   </label>
                 </div>
                 {errs.virtualMeet && <div style={{ color:'#ef4444', fontWeight:800 }}>{errs.virtualMeet}</div>}
               </div>
-              {/* Photo (OPTIONNELLE) */}
+
+              {/* Photo (OPTIONAL) */}
               <div className="att-field full">
-                <label>Photo de profil (optionnelle)</label>
+                <label>{t('attendeeRegister.labels.photo','Profile photo (optional)')}</label>
                 <div
                   className="att-photo-drop"
                   onClick={() => fileRef.current?.click()}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => {
-                  e.preventDefault();
-                  const f = e.dataTransfer.files?.[0];
-                  acceptPhotoFile(f, {
-                    onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
-                    onTooLarge: () => {
-                      setPhotoFile(null);
-                      setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
-                      triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
-                    },
-                    onNotImage: () => {
-                      setPhotoFile(null);
-                      setErrs(p => ({ ...p, photo: "Fichier non image" }));
-                      triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
-                    }
-                });
-                }}
+                    e.preventDefault();
+                    const f = e.dataTransfer.files?.[0];
+                    acceptPhotoFile(f, {
+                      onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
+                      onTooLarge: () => {
+                        setPhotoFile(null);
+                        setErrs(p => ({ ...p, photo: t('attendeeRegister.errors.photoTooLarge','Image too large (max 5 MB)') }));
+                        triggerPopup({ type:"error", title:t('attendeeRegister.notifications.photoInvalid','Invalid image'), body:t('attendeeRegister.notifications.photoTooLarge','Image exceeds 5 MB. Please choose a smaller image.') });
+                      },
+                      onNotImage: () => {
+                        setPhotoFile(null);
+                        setErrs(p => ({ ...p, photo: t('attendeeRegister.errors.notImage','File is not an image') }));
+                        triggerPopup({ type:"error", title:t('attendeeRegister.notifications.fileNotSupported','File not supported'), body:t('attendeeRegister.notifications.selectImage','Please select an image (PNG/JPG).') });
+                      }
+                    });
+                  }}
                 >
                   {!photoUrl ? (
                     <div className="att-photo-empty">
                       <div className="ico">📷</div>
-                      <div className="t">Déposez une image ici ou cliquez pour choisir</div>
-                      <div className="h">PNG/JPG, moins de 5 Mo (optionnel)</div>
+                      <div className="t">{t('attendeeRegister.photo.emptyTitle','Drop an image here or click to choose')}</div>
+                      <div className="h">{t('attendeeRegister.photo.emptyHint','PNG/JPG, under 5 MB (optional)')}</div>
                     </div>
                   ) : (
                     <div className="att-photo-prev">
                       <img src={photoUrl} alt="preview" />
                       <div className="att-photo-actions">
-                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>Changer</button>
-                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>Supprimer</button>
+                        <button type="button" className="btn-line" onClick={() => fileRef.current?.click()}>{t('attendeeRegister.photo.change','Change')}</button>
+                        <button type="button" className="btn-line" onClick={() => setPhotoFile(null)}>{t('attendeeRegister.photo.remove','Remove')}</button>
                       </div>
                     </div>
                   )}
@@ -991,13 +964,13 @@ const trackSections = useMemo(() => {
                         onOK: (file) => { setErrs(p => ({ ...p, photo: "" })); setPhotoFile(file); },
                         onTooLarge: () => {
                           setPhotoFile(null);
-                          setErrs(p => ({ ...p, photo: "Image trop volumineuse (max 5 Mo)" }));
-                          triggerPopup({ type:"error", title:"Image invalide", body:"La photo dépasse 5 Mo. Veuillez choisir une image plus petite." });
+                          setErrs(p => ({ ...p, photo: t('attendeeRegister.errors.photoTooLarge','Image too large (max 5 MB)') }));
+                          triggerPopup({ type:"error", title:t('attendeeRegister.notifications.photoInvalid','Invalid image'), body:t('attendeeRegister.notifications.photoTooLarge','Image exceeds 5 MB. Please choose a smaller image.') });
                         },
                         onNotImage: () => {
                           setPhotoFile(null);
-                          setErrs(p => ({ ...p, photo: "Fichier non image" }));
-                          triggerPopup({ type:"error", title:"Fichier non pris en charge", body:"Veuillez sélectionner une image (PNG/JPG)." });
+                          setErrs(p => ({ ...p, photo: t('attendeeRegister.errors.notImage','File is not an image') }));
+                          triggerPopup({ type:"error", title:t('attendeeRegister.notifications.fileNotSupported','File not supported'), body:t('attendeeRegister.notifications.selectImage','Please select an image (PNG/JPG).') });
                         }
                       });
                     }}
@@ -1008,29 +981,27 @@ const trackSections = useMemo(() => {
             </div>
 
             <div className="att-actions" style={{ justifyContent:'flex-end' }}>
-              <button type="submit" className="btn">Continuer</button>
+              <button type="submit" className="btn">{t('attendeeRegister.buttons.continue','Continue')}</button>
             </div>
           </form>
         )}
 
-        {/* ===== SECTION 3: Sessions (appears after form is valid) ===== */}
+        {/* SECTION 3: Sessions */}
         {roleType && showSessions && !finished && (
           <section className="anim-in" id="sessions-anchor" style={{ marginTop: 16 }}>
             <div className="att-section-head">
-              <div className="t">Sélectionnez vos sessions</div>
-              <div className="h">Pistes parallèles: vous pouvez choisir une <b>masterclass</b> et un <b>atelier</b> sur le même créneau, mais pas deux de la même famille.</div>
+              <div className="t">{t('attendeeRegister.sessions.title','Select your sessions')}</div>
+              <div className="h">{t('attendeeRegister.sessions.hint','Parallel tracks: you may pick a masterclass and an atelier in the same slot, but not two from the same family.')}</div>
             </div>
 
-            {/* Compact filter bar */}
             <div className="filter-bar">
-               <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder="Toutes les pistes" />
+               <TrackSelect options={uniqueTracks} value={track} onChange={setTrack} placeholder={t('attendeeRegister.placeholders.allTracks','All tracks')} />
             </div>
-
 
             {schedFetching ? (
               <div className="reg-skel" style={{ height: 160 }} />
             ) : !trackSections.length ? (
-              <div className="reg-empty">Aucune session disponible pour le moment.</div>
+              <div className="reg-empty">{t('attendeeRegister.sessions.empty','No sessions available at the moment.')}</div>
             ) : (
               <div className="att-session-list-v2">
                 {trackSections.map(section => (
@@ -1045,7 +1016,6 @@ const trackSections = useMemo(() => {
                         (typeof s.seatsTaken === 'number' ? s.seatsTaken : NaN)
                       );
                       const regSafe = Number.isFinite(reg) ? reg : Number(c.registered || 0);
-                      console.log("reg:", regSafe, "s:", s);
                       const cap = s.roomCapacity || 0;
                       const pct = cap ? Math.min(100, Math.round((reg / cap) * 100)) : 0;
                       const title = s.title || s.sessionTitle || 'Session';
@@ -1061,7 +1031,7 @@ const trackSections = useMemo(() => {
                           <div className="session-head-v2">
                             <div className="session-chipline-v2">
                               {s.track ? <span className="badge">{s.track}</span> : <span className="chip">Session</span>}
-                              {s.roomName ? <span className="chip">Salle: {s.roomName}</span> : null}
+                              {s.roomName ? <span className="chip">Room: {s.roomName}</span> : null}
                               {s.roomLocation ? <span className="chip">Loc: {s.roomLocation}</span> : null}
                               <span className="chip">
                                 {when.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • {when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1085,9 +1055,9 @@ const trackSections = useMemo(() => {
                             <div className="cap-mini-v2">
                               <div className="cap-mini-line"><div className="cap-mini-bar" style={{ width: `${pct}%` }} /></div>
                               <div className="cap-mini-meta">
-                                <span><b>{regSafe}</b> inscrits</span>
-                                {cap ? <span>• <b>{cap}</b> capacité</span> : null}
-                                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> liste d’attente</span> : null}
+                                <span><b>{regSafe}</b> {t('attendeeRegister.sessions.registered','registered')}</span>
+                                {cap ? <span>• <b>{cap}</b> {t('attendeeRegister.sessions.capacity','capacity')}</span> : null}
+                                {c.waitlisted ? <span>• <b>{c.waitlisted}</b> {t('attendeeRegister.sessions.waitlisted','waitlisted')}</span> : null}
                               </div>
                             </div>
                           ) : null}
@@ -1098,14 +1068,14 @@ const trackSections = useMemo(() => {
                               className="btn-line sm"
                               onClick={(e) => { e.stopPropagation(); setModalSession(s); setModalOpen(true); }}
                             >
-                              Info
+                              {t('attendeeRegister.buttons.info','Info')}
                             </button>
                             <button
                               type="button"
                               className={`btn sm`}
                               onClick={(e) => { e.stopPropagation(); toggleSession(s); }}
                             >
-                              {isSelected ? 'Sélectionné' : 'Sélectionner'}
+                              {isSelected ? t('attendeeRegister.buttons.selected','Selected') : t('attendeeRegister.buttons.select','Select')}
                             </button>
                           </div>
                         </article>
@@ -1122,19 +1092,19 @@ const trackSections = useMemo(() => {
                 disabled={regLoading}
                 onClick={finishAll}
               >
-                {regLoading ? 'Envoi en cours…' : 'Soumettre'}
+                {regLoading ? t('attendeeRegister.buttons.sending','Sending…') : t('attendeeRegister.buttons.submit','Submit')}
               </button>
             </div>
           </section>
         )}
 
-        {/* ===== DONE ===== */}
+        {/* DONE */}
         {finished && (
           <div className="anim-in">
             <div className="reg-empty" style={{ borderStyle:'solid', color:'#111827' }}>
-              ✅ Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.
+              ✅ {t('attendeeRegister.finished.message','Registration received. A popup with a quick link was also shown.')}
               <div style={{ marginTop: 8 }}>
-                <a className="btn" href="/login">Découvrez votre compte B2B</a>
+                <a className="btn" href="/login">{t('attendeeRegister.finished.button','View your B2B account')}</a>
               </div>
             </div>
           </div>
@@ -1157,4 +1127,24 @@ const trackSections = useMemo(() => {
       />
     </>
   );
+}
+
+/* Utility: triggerPopup (keeps English defaults) */
+function triggerPopup({ title, body, type = "success", link }) {
+  try {
+    const item = {
+      type, status: type,
+      title: title || "Notification",
+      body: body || "",
+      message: body || "",
+      ts: Date.now(),
+      showOnce: true,
+      link: link ? { href: link.href, label: link.label || "Open" } : null,
+      _source: "local",
+    };
+    localStorage.setItem("popup", JSON.stringify([item]));
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("app:popup:ready"));
+    });
+  } catch {}
 }
