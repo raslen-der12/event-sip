@@ -29,7 +29,9 @@ countries.registerLocale(enLocale);
 
 // Build an array of { code, name } sorted by name.
 // Do this at module init so it isn't recomputed per render.
-const ALL_COUNTRIES = Object.entries(countries.getNames("en", { select: "official" }))
+const ALL_COUNTRIES = Object.entries(
+  countries.getNames("en", { select: "official" })
+)
   .map(([code, name]) => ({ code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -54,9 +56,15 @@ function EventName({ id, fallback = "—" }) {
 
 function flagChip(codeOrName) {
   if (!codeOrName) return "—";
-  const alpha2 = normalizeToAlpha2(codeOrName) || String(codeOrName).trim().slice(0, 2).toUpperCase();
+  const alpha2 =
+    normalizeToAlpha2(codeOrName) ||
+    String(codeOrName).trim().slice(0, 2).toUpperCase();
   if (!alpha2 || alpha2.length !== 2) {
-    return <span className="flag-chip" title={String(codeOrName)}>{String(codeOrName)}</span>;
+    return (
+      <span className="flag-chip" title={String(codeOrName)}>
+        {String(codeOrName)}
+      </span>
+    );
   }
   return (
     <span className="flag-chip" title={alpha2}>
@@ -68,9 +76,11 @@ function flagChip(codeOrName) {
 function isDefaultPhoto(src) {
   if (!src) return false;
   try {
-    return String(src).includes("/uploads/default/photodef.png") ||
+    return (
+      String(src).includes("/uploads/default/photodef.png") ||
       String(src).endsWith(": /default/photodef.png") ||
-      String(src).endsWith("/default/photodef.png");
+      String(src).endsWith("/default/photodef.png")
+    );
   } catch {
     return false;
   }
@@ -95,7 +105,10 @@ function bool(v) {
 }
 function timeHM(d) {
   try {
-    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return new Date(d).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch {
     return "—";
   }
@@ -156,10 +169,11 @@ export default function AdminSpeakers() {
   }, [searchParams, activeId]);
 
   // note: we need refetch to refresh modal after photo upload
-  const { data: actor, isFetching: fetchingActor, refetch: refetchActor } = useGetAdminActorQuery(
-    activeId ? activeId : null,
-    { skip: !activeId }
-  );
+  const {
+    data: actor,
+    isFetching: fetchingActor,
+    refetch: refetchActor,
+  } = useGetAdminActorQuery(activeId ? activeId : null, { skip: !activeId });
 
   const openModal = (id) => {
     setActiveId(id);
@@ -182,25 +196,34 @@ export default function AdminSpeakers() {
     email: "",
     country: "",
     eventId: "",
+    jobTitle: "",
     sessionIds: [],
-    photoFile: null,       // <-- added
-    photoPreview: null,    // <-- added
+    photoFile: null, // <-- added
+    photoPreview: null, // <-- added
   });
   const [roleKind, setRoleKind] = React.useState(""); // optional “role-like”
 
   // upload hook
-  const [uploadActorPhoto, { isLoading: uploadingPhoto }] = useUploadActorPhotoMutation();
+  const [uploadActorPhoto, { isLoading: uploadingPhoto }] =
+    useUploadActorPhotoMutation();
 
   // Load sessions for selected event (exclude “Formation” track)
-  const { data: sessionsPack, isFetching: fetchingSessions } = useGetEventSessionsQuery(
-    createDraft.eventId ? { eventId: createDraft.eventId, track: "", includeCounts: 1 } : undefined,
-    { skip: !createDraft.eventId }
-  );
+  const { data: sessionsPack, isFetching: fetchingSessions } =
+    useGetEventSessionsQuery(
+      createDraft.eventId
+        ? { eventId: createDraft.eventId, track: "", includeCounts: 1 }
+        : undefined,
+      { skip: !createDraft.eventId }
+    );
 
   const cleanSessions = React.useMemo(() => {
-    const raw = sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
+    const raw =
+      sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
     return (Array.isArray(raw) ? raw : []).filter(
-      (s) => String(s?.track || "").trim().toLowerCase() !== "formation"
+      (s) =>
+        String(s?.track || "")
+          .trim()
+          .toLowerCase() !== "formation"
     );
   }, [sessionsPack]);
 
@@ -228,7 +251,9 @@ export default function AdminSpeakers() {
       const has = prev.sessionIds.includes(id);
       return {
         ...prev,
-        sessionIds: has ? prev.sessionIds.filter((x) => x !== id) : [...prev.sessionIds, id],
+        sessionIds: has
+          ? prev.sessionIds.filter((x) => x !== id)
+          : [...prev.sessionIds, id],
       };
     });
   };
@@ -254,6 +279,8 @@ export default function AdminSpeakers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!"; // temporary password generator
+
   const onCreateSubmit = async (e) => {
     e.preventDefault();
     if (!canCreate) return;
@@ -263,30 +290,52 @@ export default function AdminSpeakers() {
       eventId: createDraft.eventId,
       roleKind: roleKind || undefined,
       personal: {
-        fullName: createDraft.fullName.trim(),
-        email: createDraft.email.trim(),
-        country: createDraft.country.trim().toUpperCase(),
+        fullName: (createDraft.fullName || "").trim(),
+        email: (createDraft.email || "").trim(),
+        firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
+        country: (createDraft.country || "").trim().toUpperCase(),
+        phone: (createDraft.phone || "").trim(),
       },
-      sessionIds: createDraft.sessionIds, // backend accepts sessionIds / sessionIds[]
+      organization: {
+        jobTitle: (createDraft.jobTitle || "").trim(),
+        orgName: (createDraft.orgName || "").trim(),
+        businessRole: (createDraft.businessRole || "").trim(),
+      },
+      sessionIds: createDraft.sessionIds || [],
+      // ensure pwd exists because your schema requires it
+      pwd: createDraft.pwd || generateTempPwd(),
     };
 
     try {
       const created = await createActor(payload).unwrap();
-      // determine created id from response (adjust if your backend shape differs)
       const newId = created?.data?._id || created?._id || created?.id;
-      // If a photo was selected, upload it now
+
       if (newId && createDraft.photoFile) {
         try {
-          await uploadActorPhoto({ id: newId, file: createDraft.photoFile }).unwrap();
+          await uploadActorPhoto({
+            id: newId,
+            file: createDraft.photoFile,
+          }).unwrap();
         } catch (upErr) {
           console.error("Photo upload failed:", upErr);
-          // still continue but notify admin
           alert("Speaker created but image upload failed.");
         }
       }
 
       setCreating(false);
-      setCreateDraft({ fullName: "", email: "", country: "", eventId: "", sessionIds: [], photoFile: null, photoPreview: null });
+      setCreateDraft({
+        fullName: "",
+        email: "",
+        firstEmail: "",
+        country: "",
+        eventId: "",
+        sessionIds: [],
+        photoFile: null,
+        photoPreview: null,
+        jobTitle: "",
+        orgName: "",
+        businessRole: "",
+      });
       setRoleKind("");
       refetch();
     } catch (err) {
@@ -383,7 +432,11 @@ export default function AdminSpeakers() {
 
           {/* Actions */}
           <div className="att-actions">
-            <button className="btn" onClick={() => refetch()} disabled={isFetching}>
+            <button
+              className="btn"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
               {isFetching ? "Loading…" : "Refresh"}
             </button>
             <button
@@ -407,7 +460,10 @@ export default function AdminSpeakers() {
                     className="input"
                     value={createDraft.fullName}
                     onChange={(e) =>
-                      setCreateDraft({ ...createDraft, fullName: e.target.value })
+                      setCreateDraft({
+                        ...createDraft,
+                        fullName: e.target.value,
+                      })
                     }
                   />
                 </label>
@@ -431,7 +487,10 @@ export default function AdminSpeakers() {
                       className="input"
                       value={createDraft.country}
                       onChange={(e) =>
-                        setCreateDraft({ ...createDraft, country: e.target.value })
+                        setCreateDraft({
+                          ...createDraft,
+                          country: e.target.value,
+                        })
                       }
                     >
                       <option value="">— Select —</option>
@@ -441,7 +500,9 @@ export default function AdminSpeakers() {
                         </option>
                       ))}
                     </select>
-                    <div className="flag-preview">{flagChip(createDraft.country)}</div>
+                    <div className="flag-preview">
+                      {flagChip(createDraft.country)}
+                    </div>
                   </div>
                 </label>
 
@@ -461,6 +522,23 @@ export default function AdminSpeakers() {
                     <option>Employee</option>
                     <option>Student</option>
                   </select>
+                </label>
+
+                {/* Job title input */}
+                <label className="mp-field">
+                  <span className="mp-label">Intitulé du poste</span>
+                  <input
+                    className="mp-input"
+                    type="text"
+                    value={createDraft.jobTitle || ""}
+                    onChange={(e) =>
+                      setCreateDraft((d) => ({
+                        ...d,
+                        jobTitle: e.target.value,
+                      }))
+                    }
+                    placeholder="Ex : Product Manager, Développeur Front, Designer"
+                  />
                 </label>
 
                 <label className="att-field">
@@ -488,7 +566,8 @@ export default function AdminSpeakers() {
                     })}
                   </select>
                   <div className="att-hint muted">
-                    Sessions list will load after selecting the event. “Formation” track is excluded.
+                    Sessions list will load after selecting the event.
+                    “Formation” track is excluded.
                   </div>
                 </label>
               </div>
@@ -524,11 +603,19 @@ export default function AdminSpeakers() {
             </div>
 
             <div className="att-create-actions">
-              <button className="btn brand" disabled={!canCreate || creatingReq || uploadingPhoto}>
-                {creatingReq ? "Creating…" : uploadingPhoto ? "Uploading photo…" : "Create speaker"}
+              <button
+                className="btn brand"
+                disabled={!canCreate || creatingReq || uploadingPhoto}
+              >
+                {creatingReq
+                  ? "Creating…"
+                  : uploadingPhoto
+                  ? "Uploading photo…"
+                  : "Create speaker"}
               </button>
               <span className="att-hint muted ml-8">
-                The speaker will be created and linked to the selected event sessions.
+                The speaker will be created and linked to the selected event
+                sessions.
               </span>
             </div>
           </form>
@@ -550,7 +637,11 @@ export default function AdminSpeakers() {
             skeletons(12)
           ) : list.length ? (
             list.map((it) => (
-              <SpeakerRow key={getId(it)} item={it} onOpen={() => openModal(getId(it))} />
+              <SpeakerRow
+                key={getId(it)}
+                item={it}
+                onOpen={() => openModal(getId(it))}
+              />
             ))
           ) : (
             <div className="muted">No speakers.</div>
@@ -577,7 +668,8 @@ export default function AdminSpeakers() {
 function SpeakerRow({ item, onOpen }) {
   const name = item?.personal?.fullName || item?.name || "—";
   const email = item?.personal?.email || item?.email || "—";
-  const countryKey = (item?.personal && item.personal.country) || item?.country || "";
+  const countryKey =
+    (item?.personal && item.personal.country) || item?.country || "";
   const pic = item?.personal?.profilePic || item?.profilePic;
   const verified = !!(item?.verified ?? item?.verifiedEmail);
   const eventId = item?.id_event || item?.eventId || item?.event?._id;
@@ -662,7 +754,9 @@ function ActorDetails({ actor, refetchActor }) {
   React.useEffect(() => {
     return () => {
       if (localPreview) {
-        try { URL.revokeObjectURL(localPreview); } catch {}
+        try {
+          URL.revokeObjectURL(localPreview);
+        } catch {}
       }
     };
   }, [localPreview]);
@@ -703,9 +797,18 @@ function ActorDetails({ actor, refetchActor }) {
       {/* header area: left fixed column + right flexible content */}
       <div className="att-d-head att-d-head--split">
         <div className="att-d-left">
-          <button className="att-d-avatar" onClick={goProfile} title="Open full profile" aria-label="Open profile">
+          <button
+            className="att-d-avatar"
+            onClick={goProfile}
+            title="Open full profile"
+            aria-label="Open profile"
+          >
             {hasRealPhoto ? (
-              <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
+              <img
+                className="att-d-img"
+                src={imageLink(photo)}
+                alt={A.fullName}
+              />
             ) : (
               <span className="att-fallback">
                 {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
@@ -715,7 +818,10 @@ function ActorDetails({ actor, refetchActor }) {
 
           <div className="att-upload-panel">
             <div className="att-upload-row">
-              <label className="btn small att-upload-btn" htmlFor={`actor-photo-input-${id}`}>
+              <label
+                className="btn small att-upload-btn"
+                htmlFor={`actor-photo-input-${id}`}
+              >
                 Choose file
               </label>
               <input
@@ -731,18 +837,28 @@ function ActorDetails({ actor, refetchActor }) {
               <div className="att-upload-preview">
                 <img src={localPreview} alt="preview" />
                 <div className="att-upload-actions">
-                  <button className="btn" onClick={onUpload} disabled={uploadInProgress}>
+                  <button
+                    className="btn"
+                    onClick={onUpload}
+                    disabled={uploadInProgress}
+                  >
                     {uploadInProgress ? "Uploading…" : "Upload"}
                   </button>
                   <button
                     type="button"
                     className="btn ml-4"
-                    onClick={() => { setLocalFile(null); setLocalPreview(null); setUploadErr(null); }}
+                    onClick={() => {
+                      setLocalFile(null);
+                      setLocalPreview(null);
+                      setUploadErr(null);
+                    }}
                   >
                     Cancel
                   </button>
                 </div>
-                {uploadErr && <div className="muted att-upload-error">{uploadErr}</div>}
+                {uploadErr && (
+                  <div className="muted att-upload-error">{uploadErr}</div>
+                )}
               </div>
             ) : (
               <div className="att-upload-hint muted">PNG / JPG • max 5MB</div>
@@ -752,16 +868,31 @@ function ActorDetails({ actor, refetchActor }) {
 
         <div className="att-d-meta">
           <div className="att-d-top">
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                className="att-d-name linklike"
+                onClick={goProfile}
+                title={A.fullName}
+              >
                 {A.fullName || "—"}
               </button>
 
-              <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
+              <span
+                className={`pill-verify big ${base.verified ? "ok" : "no"}`}
+              >
                 {base.verified ? "Email verified" : "Unverified"}
               </span>
 
-              <span className={`pill-status big ${base.adminVerified || "pending"}`}>
+              <span
+                className={`pill-status big ${base.adminVerified || "pending"}`}
+              >
                 {base.adminVerified || "pending"}
               </span>
             </div>
@@ -769,7 +900,9 @@ function ActorDetails({ actor, refetchActor }) {
 
           <div className="att-d-sub att-d-sub--wrap">
             <div className="muted att-d-email">{A.email || "—"}</div>
-            <div className="muted att-d-country">{flagChip(A.country)} {A.city ? `, ${A.city}` : ""}</div>
+            <div className="muted att-d-country">
+              {flagChip(A.country)} {A.city ? `, ${A.city}` : ""}
+            </div>
           </div>
 
           <div className="att-d-sub">
@@ -777,7 +910,12 @@ function ActorDetails({ actor, refetchActor }) {
               Event: <EventName id={eid} fallback="—" />
             </span>
             {actor?.roleKind ? (
-              <span className="muted ml-10">Role-like: <strong style={{whiteSpace:'normal'}}>{actor.roleKind}</strong></span>
+              <span className="muted ml-10">
+                Role-like:{" "}
+                <strong style={{ whiteSpace: "normal" }}>
+                  {actor.roleKind}
+                </strong>
+              </span>
             ) : null}
           </div>
 
@@ -787,12 +925,22 @@ function ActorDetails({ actor, refetchActor }) {
 
           <div className="att-d-links">
             {fmtUrl(base?.links?.website) ? (
-              <a className="linklike mr-8" href={fmtUrl(base.links.website)} target="_blank" rel="noreferrer">
+              <a
+                className="linklike mr-8"
+                href={fmtUrl(base.links.website)}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Website
               </a>
             ) : null}
             {fmtUrl(base?.links?.linkedin) ? (
-              <a className="linklike" href={fmtUrl(base.links.linkedin)} target="_blank" rel="noreferrer">
+              <a
+                className="linklike"
+                href={fmtUrl(base.links.linkedin)}
+                target="_blank"
+                rel="noreferrer"
+              >
                 LinkedIn
               </a>
             ) : null}
@@ -829,7 +977,14 @@ function ActorDetails({ actor, refetchActor }) {
           <KV k="Offering" v={I.offering} />
           <KV k="Looking for" v={I.lookingFor} />
           <KV k="Open to meetings" v={bool(I.openMeetings)} />
-          <KV k="Regions" v={Array.isArray(I.regionsInterest) ? I.regionsInterest.join(", ") : I.regionsInterest} />
+          <KV
+            k="Regions"
+            v={
+              Array.isArray(I.regionsInterest)
+                ? I.regionsInterest.join(", ")
+                : I.regionsInterest
+            }
+          />
         </AttSection>
 
         <AttSection title="Sessions">
@@ -839,7 +994,9 @@ function ActorDetails({ actor, refetchActor }) {
             <div className="att-sessions">
               {sess.map((s) => (
                 <div key={s._id || s.id} className="sess-row">
-                  <div className="sess-title line-1">{s.title || "Untitled"}</div>
+                  <div className="sess-title line-1">
+                    {s.title || "Untitled"}
+                  </div>
                   <div className="sess-sub tiny">
                     <span className="tag">{s.track || "Session"}</span>
                     <span className="sep">•</span>
@@ -868,7 +1025,6 @@ function ActorDetails({ actor, refetchActor }) {
     </div>
   );
 }
-
 
 /* ───────────────────────── Shared UI ───────────────────────── */
 
