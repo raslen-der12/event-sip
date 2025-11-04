@@ -14,6 +14,25 @@ import {
   useListActorNotificationsQuery,
   useAckActorNotificationMutation,
 } from "../../features/Actor/toolsApiSlice";
+
+const UKFlag = ({ className }) => (
+  <svg className={className} viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+    <clipPath id="t"><path d="M0,0h60v30H0z"/></clipPath>
+    <path d="M0,0h60v30H0z" fill="#012169"/>
+    <path d="M0,0l60,30m0-30L0,30" stroke="#fff" strokeWidth="6" clipPath="url(#t)"/>
+    <path d="M0,0l60,30" stroke="#C8102E" strokeWidth="4" clipPath="url(#t)"/>
+    <path d="M30,0v30M0,15h60" stroke="#fff" strokeWidth="10" clipPath="url(#t)"/>
+    <path d="M30,0v30M0,15h60" stroke="#C8102E" strokeWidth="6" clipPath="url(#t)"/>
+  </svg>
+);
+
+const FRFlag = ({ className }) => (
+  <svg className={className} viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+    <rect width="20" height="40" fill="#002654"/>
+    <rect x="20" width="20" height="40" fill="#fff"/>
+    <rect x="40" width="20" height="40" fill="#CE1126"/>
+  </svg>
+);
 /* social icons */
 const SocialIcon = {
   fb: () => (
@@ -361,66 +380,76 @@ export default function HeaderShell({ top, nav, cta ,logo }) {
     }
   };
 
+  
+
   return (
     <div className="header">
       {/* TOPBAR */}
-      <div className="topbar">
-        <div className="container">
-          <div className="row">
-            <div className="left">
-              <span className="item">
-                <Icon.mail />
-                {top?.phone}
-              </span>
-              
-              <span className="item d-none d-md-flex">
-                <Icon.clock />
-                {top?.hours}
-              </span>
-            </div>
-            <div className="top-actions">
-              {/* tiny language select */}
-              <label className="lang-wrap" aria-label="Language">
-                <select
-                  className="lang-select"
-                  value={curLang}
-                  onChange={(e) => setLang(e.target.value)}
-                >
-                  <option value="en">EN</option>
-                  <option value="fr">FR</option>
-                </select>
-              </label>
-              <div
-                className="social"
-                role="navigation"
-                aria-label="Social links"
-              >
-                {["fb", "ig", "tw", "yt", "in"].map((key) => {
-                  const map = getSocialsObject(top);
-                  const href = ensureHttp(map[key]);
-                  if (!href) return null;
-                  const IconEl = SocialIcon[key];
-                  const label = SOCIAL_LABEL[key];
+      <div className="bg-gray-900 text-white text-xs">
+  <div className="container mx-auto px-3">
+    <div className="flex justify-between items-center py-1.5 gap-2">
 
-                  return (
-                    <a
-                      key={key}
-                      className="social-link"
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                      title={label}
-                    >
-                      <IconEl />
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+      {/* Left: TINY Mail + Full Email */}
+      <div className="flex items-center gap-1 flex-1 min-w-0">
+        {/* EN / FR Toggle with Flags */}
+        <div className="flex bg-gray-800 rounded-full p-0.5">
+          <button
+            onClick={() => setLang('en')}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all ${
+              curLang === 'en'
+                ? 'bg-white text-gray-900'
+                : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            <UKFlag className="w-2.5 h-2.5" />
+            EN
+          </button>
+          <button
+            onClick={() => setLang('fr')}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all ${
+              curLang === 'fr'
+                ? 'bg-white text-gray-900'
+                : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            <FRFlag className="w-2.5 h-2.5" />
+            FR
+          </button>
         </div>
       </div>
+
+      {/* Right: Language Toggle + Social */}
+      <div className="flex items-center gap-2">
+
+
+
+        {/* Social Icons — SAME SIZE */}
+        <div className="flex items-center gap-1.5">
+          {["fb", "ig", "tw", "yt", "in"].map((key) => {
+            const map = getSocialsObject(top);
+            const href = ensureHttp(map[key]);
+            if (!href) return null;
+            const IconEl = SocialIcon[key];
+            const label = SOCIAL_LABEL[key];
+
+            return (
+              <a
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="hover:text-gray-300 transition-colors"
+              >
+                <IconEl className="w-2.5 h-2.5" />
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* NAVBAR */}
       <div className={`nav ${elevated ? "elevated" : ""}`}>
@@ -436,7 +465,7 @@ export default function HeaderShell({ top, nav, cta ,logo }) {
           {/* brand */}
           <a className="brand" href="/">
             <img
-              width={190}
+              width={120}
               src={logo || "https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png"}
               alt="Brand"
             />

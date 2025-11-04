@@ -112,6 +112,128 @@
       "subtitle": "Real procurement paths",
       "desc": "Hear how large buyers select, pilot, and scale solutions. Concrete steps to get vendor-ready."
     }
-  ]
+  ],
+   "impact": {
+    "heading": "Event Impact",
+    "subheading": "Key outcomes and highlights achieved by the event.",
+    "participantsTitle": "1.5k+ participants",
+    "participantsDesc": "International audience across MENA, EU and North America.",
+    "meetingsTitle": "400+ B2B meetings",
+    "meetingsDesc": "Curated matchmaking that produced measurable deal flow.",
+    "satisfactionTitle": "95% satisfaction",
+    "satisfactionDesc": "Post-event survey covering content, logistics and value.",
+    "exhibitorsTitle": "120 exhibitors",
+    "exhibitorsDesc": "Showcasing solutions from startups and enterprises.",
+    "sessionsTitle": "30+ sessions",
+    "sessionsDesc": "Keynotes, panels and hands-on workshops across 2 days.",
+    "coverageTitle": "Global coverage",
+    "coverageDesc": "Media mentions and social reach across regions.",
+    "noData": "No impact highlights published yet."
+  },
+    "partnership": {
+    "heading": "Strategic Partnership: IPDAYS × GITS 2025",
+    "strap": "When local impact meets global reach",
+    "paragraphs": [
+      "The 2025 edition marks a unique alliance between IPDAYS and GITS 2025 (Global Investment & Trading Summit).",
+      "Together, we create a powerful bridge between regional innovation and international opportunity."
+    ],
+    "ctaLabel": "Register Now",
+    "ctaHref": "/register",
+    "imageAlt": "Simplified Event Management Experience",
+    "imageCaption": "Connecting Local Innovation to Global Opportunities"
+  },
+    "attendeeRegister": {
+    "eventNotFound": "Event not found",
+    "chooseRoleTitle": "Choose your actor type",
+    "chooseRoleHint": "By selecting a role, the form appears below. Changing role resets the form and session choices.",
+    "formTitle": "Attendee details",
+    "formHint": "All fields marked",
+    "formRequired": "are required",
+    "labels": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "city": "City",
+      "gender": "Gender",
+      "organization": "Organization",
+      "jobTitle": "Job title",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "website": "Website / Social…",
+      "linkedin": "LinkedIn",
+      "inviteCode": "Invite code",
+      "preferredLanguages": "Preferred languages",
+      "subRoles": "Your specialties (multi-select)",
+      "objective": "Objective",
+      "openToMeetings": "Available for meetings?",
+      "allowB2B": "Yes, allow B2B requests",
+      "meetingMode": "Meeting mode",
+      "photo": "Profile photo (optional)"
+    },
+    "placeholders": {
+      "selectCountry": "Select country",
+      "pwd": "At least 8 characters",
+      "confirmPwd": "Repeat your password",
+      "optional": "optional if you had one",
+      "allTracks": "All tracks"
+    },
+    "hints": {
+      "loadingCountries": "Loading countries…",
+      "subRole": "Select all options that apply."
+    },
+    "photo": {
+      "emptyTitle": "Drop an image here or click to choose",
+      "emptyHint": "PNG/JPG, under 5 MB (optional)",
+      "change": "Change",
+      "remove": "Remove"
+    },
+    "errors": {
+      "required": "Required",
+      "minLength": "Min 8 characters",
+      "pwdMismatch": "Passwords do not match",
+      "invalidEmail": "Invalid email",
+      "chooseLanguage": "Choose at least 1 language",
+      "photoTooLarge": "Image too large (max 5 MB)",
+      "notImage": "File is not an image"
+    },
+    "notifications": {
+      "successTitle": "Registration complete",
+      "successBody": "Start your B2B journey",
+      "goToLogin": "Go to login",
+      "failTitle": "Registration failed",
+      "photoInvalid": "Invalid image",
+      "photoTooLarge": "Image exceeds 5 MB. Please choose a smaller image.",
+      "fileNotSupported": "File not supported",
+      "selectImage": "Please select an image (PNG/JPG)."
+    },
+    "alerts": {
+      "chooseSession": "Please choose at least one session (one per slot and track family)."
+    },
+    "sessions": {
+      "title": "Select your sessions",
+      "hint": "Parallel tracks: you may pick a masterclass and an atelier in the same slot, but not two from the same family.",
+      "empty": "No sessions available at the moment.",
+      "registered": "registered",
+      "capacity": "capacity",
+      "waitlisted": "waitlisted"
+    },
+    "buttons": {
+      "continue": "Continue",
+      "info": "Info",
+      "selected": "Selected",
+      "select": "Select",
+      "sending": "Sending…",
+      "submit": "Submit"
+    },
+    "aria": {
+      "hidePwd": "Hide password",
+      "showPwd": "Show password"
+    },
+    "finished": {
+      "message": "Registration received. A popup with a quick link was also shown.",
+      "button": "View your B2B account"
+    }
+  }
 
 }

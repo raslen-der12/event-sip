@@ -87,18 +87,7 @@ export default function LoginPage() {
 
           {error ? <div className="auth-alert">{error}</div> : null}
 
-          <button
-            className="btn-google"
-            onClick={onGoogleLogin}
-            disabled={isLoading}
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
 
-          <div className="auth-sep" role="separator" aria-label="or">
-            <span>or</span>
-          </div>
 
           <form onSubmit={onSubmit} noValidate>
             <div className="auth-field">

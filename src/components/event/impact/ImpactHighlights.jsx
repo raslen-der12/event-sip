@@ -5,15 +5,8 @@ import { useTranslation } from "react-i18next";
 import "./impact.css";
 
 /**
- * Props:
- *  - heading?: string
- *  - subheading?: string
- *  - impacts?: Array<{ id?: string|number, title: string, description?: string }>
- *  - isLoading?: boolean
- *  - onItemClick?: (item) => void
- *
- * Data source:
- *  - From useGetFullEventQuery(eventId) → impacts (array of eventImpact docs)
+ * Generic, fully i18n-ready component for Event Impact section.
+ * Automatically loads fallback translated data if no API impacts are provided.
  */
 export default function ImpactHighlights({
   heading,
@@ -24,55 +17,37 @@ export default function ImpactHighlights({
 }) {
   const { t } = useTranslation();
 
-  // Provide fallback impact data with translation keys
+  // Fallback data with translations
   const fallback = [
     {
       id: "f1",
-      title: t("impact.participantsTitle", "1.5k+ participants"),
-      description: t(
-        "impact.participantsDesc",
-        "International audience across MENA, EU, and NA."
-      ),
+      title: t("impact.participantsTitle"),
+      description: t("impact.participantsDesc"),
     },
     {
       id: "f2",
-      title: t("impact.meetingsTitle", "400+ B2B meetings"),
-      description: t(
-        "impact.meetingsDesc",
-        "Curated matchmaking produced measurable deal flow."
-      ),
+      title: t("impact.meetingsTitle"),
+      description: t("impact.meetingsDesc"),
     },
     {
       id: "f3",
-      title: t("impact.satisfactionTitle", "95% satisfaction"),
-      description: t(
-        "impact.satisfactionDesc",
-        "Post-event survey: content, logistics, and value."
-      ),
+      title: t("impact.satisfactionTitle"),
+      description: t("impact.satisfactionDesc"),
     },
     {
       id: "f4",
-      title: t("impact.exhibitorsTitle", "120 exhibitors"),
-      description: t(
-        "impact.exhibitorsDesc",
-        "Showcasing solutions from startups and enterprises."
-      ),
+      title: t("impact.exhibitorsTitle"),
+      description: t("impact.exhibitorsDesc"),
     },
     {
       id: "f5",
-      title: t("impact.sessionsTitle", "30+ sessions"),
-      description: t(
-        "impact.sessionsDesc",
-        "Keynotes, panels, and workshops across 2 days."
-      ),
+      title: t("impact.sessionsTitle"),
+      description: t("impact.sessionsDesc"),
     },
     {
       id: "f6",
-      title: t("impact.coverageTitle", "Global coverage"),
-      description: t(
-        "impact.coverageDesc",
-        "Media mentions and social reach across regions."
-      ),
+      title: t("impact.coverageTitle"),
+      description: t("impact.coverageDesc"),
     },
   ];
 
@@ -96,17 +71,10 @@ export default function ImpactHighlights({
       <div className="container">
         <header className="imp-head">
           <div className="imp-titles">
-            <h2 className="imp-title">{heading ?? t("impact.heading", "Event Impact")}</h2>
-            {subheading ? (
-              <p className="imp-sub">{subheading}</p>
-            ) : (
-              <p className="imp-sub">
-                {t(
-                  "impact.subheading",
-                  "Key outcomes and highlights achieved by the event."
-                )}
-              </p>
-            )}
+            <h2 className="imp-title">{heading ?? t("impact.heading")}</h2>
+            <p className="imp-sub">
+              {subheading ?? t("impact.subheading")}
+            </p>
           </div>
         </header>
 
@@ -130,19 +98,21 @@ export default function ImpactHighlights({
                 }}
                 aria-label={it.title}
               >
-                <div className="imp-badge">{String(idx + 1).padStart(2, "0")}</div>
+                <div className="imp-badge">
+                  {String(idx + 1).padStart(2, "0")}
+                </div>
                 <div className="imp-ico" aria-hidden>
                   {IconFor(idx)}
                 </div>
                 <h3 className="imp-item-title">{it.title}</h3>
-                {it.description ? (
+                {it.description && (
                   <p className="imp-item-desc">{it.description}</p>
-                ) : null}
+                )}
               </article>
             ))}
           </div>
         ) : (
-          <div className="imp-empty">{t("impact.noData", "No impact highlights published yet.")}</div>
+          <div className="imp-empty">{t("impact.noData")}</div>
         )}
       </div>
     </section>

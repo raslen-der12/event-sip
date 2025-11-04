@@ -112,6 +112,111 @@
       "subtitle": "Véritables chemins d’approvisionnement",
       "desc": "Découvrez comment les grands acheteurs sélectionnent, testent, et déploient des solutions. Des étapes concrètes pour être prêt fournisseur."
     }
-  ]
+  ],
+   "partnership": {
+    "heading": "Partenariat Stratégique : IPDAYS × GITS 2025",
+    "strap": "Quand l’impact local rencontre la portée mondiale",
+    "paragraphs": [
+      "L’édition 2025 marque une alliance inédite entre IPDAYS et GITS 2025 (Global Investment & Trading Summit).",
+      "Ensemble, nous créons un pont unique entre l’innovation régionale et les opportunités internationales."
+    ],
+    "ctaLabel": "Je m’inscris",
+    "ctaHref": "/register",
+    "imageAlt": "Une expérience simplifiée de gestion d’événements",
+    "imageCaption": "Relier l’innovation locale aux opportunités mondiales"
+  },
+  "attendeeRegister": {
+    "eventNotFound": "Événement introuvable",
+    "chooseRoleTitle": "Choisissez votre type d'acteur",
+    "chooseRoleHint": "En sélectionnant un rôle, le formulaire apparaît ci-dessous. Changer le rôle réinitialise le formulaire et les choix de sessions.",
+    "formTitle": "Détails des participants",
+    "formHint": "Tous les champs marqués",
+    "formRequired": "sont obligatoires",
+    "labels": {
+      "fullName": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone",
+      "country": "Pays",
+      "city": "Ville",
+      "gender": "Genre",
+      "organization": "Organisation",
+      "jobTitle": "Intitulé du poste",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "website": "Website / Social…",
+      "linkedin": "LinkedIn",
+      "inviteCode": "Code d'invitation",
+      "preferredLanguages": "Langues préférées",
+      "subRoles": "Votre secteur de spécialité (multi-select)",
+      "objective": "Objectif",
+      "openToMeetings": "Disponible pour des rendez-vous ?",
+      "allowB2B": "Oui, autoriser les demandes B2B",
+      "meetingMode": "Mode des rendez-vous",
+      "photo": "Photo de profil (optionnelle)"
+    },
+    "placeholders": {
+      "selectCountry": "Sélectionner un pays",
+      "pwd": "Au moins 8 caractères",
+      "confirmPwd": "Répétez votre mot de passe",
+      "optional": "optionnel si vous en avez un",
+      "allTracks": "Toutes les pistes"
+    },
+    "hints": {
+      "loadingCountries": "Chargement des pays…",
+      "subRole": "Sélectionnez toutes les options qui s'appliquent."
+    },
+    "photo": {
+      "emptyTitle": "Déposez une image ici ou cliquez pour choisir",
+      "emptyHint": "PNG/JPG, moins de 5 Mo (optionnel)",
+      "change": "Changer",
+      "remove": "Supprimer"
+    },
+    "errors": {
+      "required": "Requis",
+      "minLength": "Min 8 caractères",
+      "pwdMismatch": "Les mots de passe ne correspondent pas",
+      "invalidEmail": "Email invalide",
+      "chooseLanguage": "Choisissez au moins 1 langue",
+      "photoTooLarge": "Image trop volumineuse (max 5 Mo)",
+      "notImage": "Fichier non image"
+    },
+    "notifications": {
+      "successTitle": "Inscription terminée",
+      "successBody": "Commencez votre parcours B2B",
+      "goToLogin": "Aller à la connexion",
+      "failTitle": "Échec de l’inscription",
+      "photoInvalid": "Image invalide",
+      "photoTooLarge": "La photo dépasse 5 Mo. Veuillez choisir une image plus petite.",
+      "fileNotSupported": "Fichier non pris en charge",
+      "selectImage": "Veuillez sélectionner une image (PNG/JPG)."
+    },
+    "alerts": {
+      "chooseSession": "Veuillez choisir au moins une session (une par créneau horaire et par famille de piste)."
+    },
+    "sessions": {
+      "title": "Sélectionnez vos sessions",
+      "hint": "Pistes parallèles : vous pouvez choisir une masterclass et un atelier sur le même créneau, mais pas deux de la même famille.",
+      "empty": "Aucune session disponible pour le moment.",
+      "registered": "inscrits",
+      "capacity": "capacité",
+      "waitlisted": "liste d’attente"
+    },
+    "buttons": {
+      "continue": "Continuer",
+      "info": "Info",
+      "selected": "Sélectionné",
+      "select": "Sélectionner",
+      "sending": "Envoi en cours…",
+      "submit": "Soumettre"
+    },
+    "aria": {
+      "hidePwd": "Masquer le mot de passe",
+      "showPwd": "Afficher le mot de passe"
+    },
+    "finished": {
+      "message": "Inscription reçue. Nous avons également affiché une fenêtre contextuelle avec un lien rapide.",
+      "button": "Découvrez votre compte B2B"
+    }
+  }
 
 }

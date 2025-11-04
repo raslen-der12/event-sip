@@ -1,5 +1,5 @@
 // src/pages/bp/BusinessProfilePage.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "./business-profile.css";
@@ -54,7 +54,7 @@ const TABS = [
 ];
 
 const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
-const safeArray = (v) => (Array.isArray(v) ? v : []); // keep order as-is
+const safeArray = (v) => (Array.isArray(v) ? v : []);
 const safeObj = (v) => (isObj(v) ? v : {});
 const lower = (s) => String(s || "").toLowerCase();
 
@@ -97,11 +97,10 @@ function groupItemsToSectors(items) {
       tags: it.tags || [],
       images: it.images || [],
       thumbnailUpload: it.thumbnailUpload,
-      // NEW: price fields (flat + legacy fallback)
-      pricingNote  : it.pricingNote || "",
-      priceValue   : (typeof it.priceValue !== "undefined" ? it.priceValue : (it.price && it.price.value)),
+      pricingNote: it.pricingNote || "",
+      priceValue: (typeof it.priceValue !== "undefined" ? it.priceValue : (it.price && it.price.value)),
       priceCurrency: (it.priceCurrency || (it.price && it.price.currency) || ""),
-      priceUnit    : (it.priceUnit || (it.price && it.price.unit) || "")
+      priceUnit: (it.priceUnit || (it.price && it.price.unit) || "")
     });
   }
   const sectors = [];
@@ -126,23 +125,20 @@ const toStr = (v) => (v == null ? "" : String(v));
 function computeLowData(p, apiProfileRaw, overviewData = {}, products = [], services = [], gallery = [], teamResp = []) {
   if (!p) return { coreSignals: 0, auxSignals: 0, totalSignals: 0, tooLow: true };
 
-  // Core signals: must reflect real “substance”
   const coreSignals = [
-    (p.offering || []).length,     // offerings
-    (p.seeking || []).length,      // looking for
-    (p.industries || []).length,   // industries
-    products.length,               // products count
-    services.length,               // services count
+    (p.offering || []).length,
+    (p.seeking || []).length,
+    (p.industries || []).length,
+    products.length,
+    services.length,
   ].filter((n) => Number(n) > 0).length;
 
-  // Social/contacts presence
   const contacts = safeObj(apiProfileRaw?.contacts);
   const hasSocial = ["linkedin","facebook","twitter","x","instagram","youtube","tiktok"]
     .some((k) => toStr(contacts[k]).trim().length > 0);
 
   const aboutLen = toStr(apiProfileRaw?.about).trim().length;
 
-  // Aux signals: supporting info
   const auxSignals =
     (gallery.length > 0 ? 1 : 0) +
     ((overviewData.locations || []).length > 0 ? 1 : 0) +
@@ -155,13 +151,9 @@ function computeLowData(p, apiProfileRaw, overviewData = {}, products = [], serv
     (p.website ? 1 : 0) +
     (hasSocial ? 1 : 0) +
     ((teamResp || []).length > 0 ? 1 : 0) +
-    (aboutLen >= 40 ? 1 : 0); // only count about if it has some length
+    (aboutLen >= 40 ? 1 : 0);
 
   const totalSignals = coreSignals + auxSignals;
-
-  // Rules:
-  // - require >= 2 core signals (ex: only 1 tag is not enough)
-  // - and totalSignals >= 4 to show overview
   const tooLow = (coreSignals < 2) || (totalSignals < 4);
 
   return { coreSignals, auxSignals, totalSignals, tooLow };
@@ -179,37 +171,32 @@ function LowDataNotice({ isOwnerView, onEdit }) {
           : "We can’t show the Overview because the owner hasn’t added enough information yet."}
       </div>
       {isOwnerView && (
-        <button
-          type="button"
-          className="btn"
-          onClick={onEdit}
-          style={{ marginTop: 4 }}
-        >
+        <button type="button" className="btn" onClick={onEdit} style={{ marginTop: 4 }}>
           Edit your business profile
         </button>
       )}
     </div>
   );
 }
+
 /* ===== MAIN PAGE ===== */
-export default function BusinessProfilePage({ profile, onMessage, onRequestMeet }) {
-  const {t} = useTranslation();
+export default function BusinessProfilePage({ profile: propProfile, onMessage, onRequestMeet }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
   const { search } = useLocation();
   const qs = new URLSearchParams(search);
 
-  // Only ID is considered per requirement
   const idParam = params?.BPI || qs.get("id") || "";
 
-  // If there is NO id in params -> check my profile; if missing -> redirect
+  // Fetch my profile if no id
   const {
     data: mySummary,
     isFetching: myFetching,
     isSuccess: myOk,
   } = useGetMyBPQuery(undefined, { skip: !!idParam });
 
-  // If there IS id in params -> fetch that profile
+  // Fetch public profile by id
   const {
     data: byIdData,
     isFetching: idFetching,
@@ -219,132 +206,104 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
   // Normalize responses
   const ownerProf = mySummary?.data || mySummary?.profile || null;
   const idProf = byIdData?.data || byIdData?.profile || (isObj(byIdData) ? byIdData : null);
-
-  // Redirect path as specified
-  const BP_FORM_PATH = "/businessprofile/form";
-
-  // Redirect: no id + no owner profile
-  React.useEffect(() => {
-    if (!idParam && !myFetching) {
-      if (!ownerProf) {
-        navigate(BP_FORM_PATH, { replace: true });
-      }
-    }
-  }, [idParam, myFetching, ownerProf, navigate]);
-
-  // Select active profile to show
   const apiProfileRaw = idParam ? (idProf || null) : (ownerProf || null);
   const profileId = apiProfileRaw?._id || apiProfileRaw?.id || null;
 
-  // Items / overview / team (only if we have a profile id)
-  const {
-    data: itemsResp,
-    isFetching: itemsFetching,
-  } = useListProfileItemsQuery(profileId, { skip: !profileId });
+  // Redirect if no profile
+  const BP_FORM_PATH = "/businessprofile/form";
+  React.useEffect(() => {
+    if (!idParam && !myFetching && !ownerProf) {
+      navigate(BP_FORM_PATH, { replace: true });
+    }
+  }, [idParam, myFetching, ownerProf, navigate]);
+
+  // Fetch related data
+  const { data: itemsResp, isFetching: itemsFetching } = useListProfileItemsQuery(profileId, { skip: !profileId });
+  const { data: overviewDataRaw } = useGetProfileOverviewQuery(profileId, { skip: !profileId });
+  const { data: teamResp = [], isFetching: teamFetching } = useGetPublicTeamQuery(profileId, { skip: !profileId });
+  const { data: contactData = {}, isFetching: contactLoading } = useGetPublicContactQuery(profileId, { skip: !profileId });
+  const { data: engageData = [], isFetching: engageLoading } = useGetPublicEngagementsQuery(profileId, { skip: !profileId });
 
   const flatItems = itemsResp?.data || (Array.isArray(itemsResp) ? itemsResp : []) || [];
-
-  const { data: overviewDataRaw } = useGetProfileOverviewQuery(profileId, { skip: !profileId });
   const overviewData = overviewDataRaw || {};
 
-  const { data: teamResp = [], isFetching: teamFetching } = useGetPublicTeamQuery(profileId, {
-    skip: !profileId,
-  });
-  const { data: contactData = {},     isFetching: contactLoading }= useGetPublicContactQuery(profileId, { skip: !profileId });
-  const { data: engageData = [],      isFetching: engageLoading } = useGetPublicEngagementsQuery(profileId, { skip: !profileId });
+  // === CORRECT: useMemo INSIDE component ===
+  const profile = useMemo(() => {
+    return apiProfileRaw?.profile || apiProfileRaw?.data || apiProfileRaw || null;
+  }, [apiProfileRaw]);
 
-  // Loading & not-found states
+  const bpContacts = useMemo(() => {
+    return Array.isArray(profile?.contacts) ? profile.contacts : [];
+  }, [profile]);
+
+  // Loading & not-found
   const loading = (!!idParam ? idFetching : myFetching) || itemsFetching;
-  const notFoundExplicit =
-    !!idParam && !loading && !apiProfileRaw && !teamFetching && (idErr || !idProf);
+  const notFoundExplicit = !!idParam && !loading && !apiProfileRaw && !teamFetching && (idErr || !idProf);
 
   // Presentable fields
-  const baseRaw = isObj(profile) ? profile : {};
   const p = apiProfileRaw
     ? {
-        id: profileId || baseRaw.id,
-        name: apiProfileRaw?.name || apiProfileRaw?.displayName || baseRaw.name || "",
-        tagline: apiProfileRaw?.tagline || baseRaw.tagline || "",
-        website: apiProfileRaw?.website || apiProfileRaw?.contacts?.website || baseRaw.website || "",
-        location:
-          apiProfileRaw?.location ||
-          [apiProfileRaw?.city, apiProfileRaw?.country].filter(Boolean).join(", ") ||
-          baseRaw.location ||
-          "",
-        verified: !!(apiProfileRaw?.published || apiProfileRaw?.verified || baseRaw.verified),
-
-        // media
-        logo: imageLink(apiProfileRaw?.logoUpload) || baseRaw.logo || "",
-        banner: imageLink(apiProfileRaw?.bannerUpload) || baseRaw.banner || "",
-
+        id: profileId,
+        name: apiProfileRaw?.name || apiProfileRaw?.displayName || "",
+        tagline: apiProfileRaw?.tagline || "",
+        website: apiProfileRaw?.website || apiProfileRaw?.contacts?.website || "",
+        location: apiProfileRaw?.location || [apiProfileRaw?.city, apiProfileRaw?.country].filter(Boolean).join(", ") || "",
+        verified: !!(apiProfileRaw?.published || apiProfileRaw?.verified),
+        logo: imageLink(apiProfileRaw?.logoUpload) || "",
+        banner: imageLink(apiProfileRaw?.bannerUpload) || "",
         industries: safeArray(apiProfileRaw?.industries),
-
         offering: safeArray(apiProfileRaw?.offering),
         seeking: safeArray(apiProfileRaw?.seeking),
         innovation: safeArray(apiProfileRaw?.innovation),
-        contacts: { ...safeObj(baseRaw.contacts), ...safeObj(apiProfileRaw?.contacts) },
-
-        rating: apiProfileRaw?.rating ?? baseRaw.rating,
+        contacts: { ...safeObj(apiProfileRaw?.contacts) },
+        rating: apiProfileRaw?.rating,
       }
     : null;
 
-  // derive lists
-  const products = flatItems
-    .filter((x) => x.kind === "product")
-    .map((x) => ({
-      id: x._id || x.id,
-      name: x.title,
-      summary: x.summary,
-      thumbnailUpload: x.thumbnailUpload,
-      images: x.images,
-      type: "product",
-    }));
+  const products = flatItems.filter(x => x.kind === "product").map(x => ({
+    id: x._id || x.id,
+    name: x.title,
+    summary: x.summary,
+    thumbnailUpload: x.thumbnailUpload,
+    images: x.images,
+    type: "product",
+  }));
 
-  const services = flatItems
-    .filter((x) => x.kind === "service")
-    .map((x) => ({
-      id: x._id || x.id,
-      name: x.title,
-      summary: x.summary,
-      thumbnailUpload: x.thumbnailUpload,
-      images: x.images,
-      type: "service",
-    }));
+  const services = flatItems.filter(x => x.kind === "service").map(x => ({
+    id: x._id || x.id,
+    name: x.title,
+    summary: x.summary,
+    thumbnailUpload: x.thumbnailUpload,
+    images: x.images,
+    type: "service",
+  }));
 
   const sectors = flatItems.length ? groupItemsToSectors(flatItems) : [];
-
-  const gallery =
-    Array.isArray(apiProfileRaw?.gallery) ? apiProfileRaw.gallery
-      : [];
+  const gallery = Array.isArray(apiProfileRaw?.gallery) ? apiProfileRaw.gallery : [];
 
   const [tab] = useHashTab("overview");
 
   const fallbackLogo = (name = "BP") =>
-    `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(
-      String(name || "BP").slice(0, 24)
-    )}`;
+    `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(String(name || "BP").slice(0, 24))}`;
 
   const heroBg = (bannerUrl) =>
     bannerUrl
       ? { backgroundImage: `linear-gradient(180deg, rgba(14,26,56,.60), rgba(14,26,56,.86)), url(${bannerUrl})` }
       : { backgroundImage: "linear-gradient(135deg, #13284c 0%, #244c9a 55%, #13284c 100%)" };
 
-  const peerId =
-    apiProfileRaw?.owner?.actor ||
-    apiProfileRaw?.ownerId ||
-    p?.id;
+  const peerId = apiProfileRaw?.owner?.actor || apiProfileRaw?.ownerId || p?.id;
 
   const onMsg = () => {
     if (peerId) navigate(`/messages?member=${peerId}`);
     else alert("Owner not found yet.");
   };
+
   const onMeet = () => {
     const el = document.querySelector(".bp-body");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     if (peerId) navigate(`/team?prefill=${peerId}`);
   };
 
-  // ===== render =====
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
@@ -355,24 +314,19 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
               <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
                 {t("Profile Not Found")}
               </div>
-              <div style={{ color: "#60708a" }}>
-                The requested profile could not be found.
-              </div>
+              <div style={{ color: "#60708a" }}>The requested profile could not be found.</div>
             </div>
           </div>
         )}
 
-        {/* ===== loading skeleton ===== */}
         {loading && !notFoundExplicit && (
           <div className="container" style={{ padding: "48px 0" }}>
             <div className="reg-skel" />
           </div>
         )}
 
-        {/* ===== main view (only when we have a profile) ===== */}
         {!loading && !notFoundExplicit && p && (
           <>
-            {/* HERO */}
             <header className="bp-hero mb-5">
               <div className="bp-banner" style={heroBg(p.banner)} aria-hidden="true" />
               <div className="container bp-hero-inner">
@@ -388,27 +342,24 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
 
                   <div className="bp-id">
                     <h1 className="bpp-name align-items-start">{p.name}</h1>
-                    {p.tagline ? <p className="bp-tag">{p.tagline}</p> : null}
-                    {apiProfileRaw?.about ? <p className="bp-about">{apiProfileRaw.about}</p> : null}
+                    {p.tagline && <p className="bp-tag">{p.tagline}</p>}
+                    {apiProfileRaw?.about && <p className="bp-about">{apiProfileRaw.about}</p>}
                     <div className="bp-meta">
-                      {p.location ? (
+                      {p.location && (
                         <span className="chip">
-                          <I.pin />
-                          {p.location}
+                          <I.pin />{p.location}
                         </span>
-                      ) : null}
-                      {p.website ? (
+                      )}
+                      {p.website && (
                         <a className="chip link" href={p.website} target="_blank" rel="noreferrer">
-                          <I.link />
-                          {t("Website")}
+                          <I.link />{t("Website")}
                         </a>
-                      ) : null}
-                      {p.verified ? (
+                      )}
+                      {p.verified && (
                         <span className="chip ok">
-                          <I.shield />
-                          Verified
+                          <I.shield />Verified
                         </span>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 </div>
@@ -423,7 +374,6 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                 </div>
               </div>
 
-              {/* TABS (sticky) */}
               <nav className="bp-tabs" aria-label="Profile sections">
                 <div className="container bp-tabs-row">
                   {TABS.map((t) => (
@@ -447,7 +397,6 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
               </nav>
             </header>
 
-            {/* CONTENT */}
             <section className="container bp-body">
               <TabContent
                 p={p}
@@ -462,6 +411,8 @@ export default function BusinessProfilePage({ profile, onMessage, onRequestMeet 
                 engageData={engageData}
                 navigate={navigate}
                 isOwnerView={!idParam}
+                profile={profile}
+                bpContacts={bpContacts}
               />
             </section>
           </>
@@ -493,17 +444,15 @@ function TabContent({
   engageData,
   navigate,
   isOwnerView,
+  profile,
+  bpContacts,
 }) {
   const [tab] = useHashTab("overview");
 
-  const teamMembers = React.useMemo(() => {
+  const teamMembers = useMemo(() => {
     return (teamResp || []).map((m) => {
-      const fullName =
-        m.name ||
-        [m.firstName, m.lastName].filter(Boolean).join(" ") ||
-        "—";
-      const avatar =
-        imageLink(m.avatarUpload) ||
+      const fullName = m.name || [m.firstName, m.lastName].filter(Boolean).join(" ") || "—";
+      const avatar = imageLink(m.avatarUpload) ||
         `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(fullName.slice(0, 24))}`;
       return {
         id: `${m.entityType}-${m.entityId}`,
@@ -520,11 +469,13 @@ function TabContent({
       };
     });
   }, [teamResp]);
-  const dataScore = React.useMemo(
-  () => computeLowData(p, apiProfileRaw, overviewData, products, services, gallery, teamResp),
-  [p, apiProfileRaw, overviewData, products, services, gallery, teamResp]
-);
-const tooLow = dataScore.tooLow;
+
+  const dataScore = useMemo(
+    () => computeLowData(p, apiProfileRaw, overviewData, products, services, gallery, teamResp),
+    [p, apiProfileRaw, overviewData, products, services, gallery, teamResp]
+  );
+  const tooLow = dataScore.tooLow;
+
   return (
     <>
       {tab === "overview" && (
@@ -556,7 +507,7 @@ const tooLow = dataScore.tooLow;
 
       {tab === "team" && (
         <BusinessTeam
-          members={teamResp } //teamMembers}
+          members={teamMembers}
           onMessage={(m) => navigate(`/messages?member=${m.entityId}`)}
           onMeet={(m) => navigate(`/team?prefill=${m.entityId}`)}
           onProfile={(m) => navigate(`/profile/${m.entityId}`)}
@@ -565,19 +516,17 @@ const tooLow = dataScore.tooLow;
 
       {tab === "contact" && (
         <BusinessContact
-          companyName={contactData.company?.value || []}
-          contacts={contactData.people || {}}
-          social={contactData.social || []}
-          people={contactData.people || []}
-          locations={contactData.locations || []}
-          collateral={contactData.collateral || []}
-          topics={contactData.topics || []}
-          onMessage={() => {
-            const peerId =
-              apiProfileRaw?.owner?.actor ||
-              apiProfileRaw?.ownerId ||
-              p.id;
-            if (peerId) window.location.href = `/messages?member=${peerId}`;
+          companyName={profile?.name || ""}
+          bpContacts={bpContacts}
+          social={profile?.socials || []}
+          locations={profile?.locations || []}
+          collateral={profile?.collateral || []}
+          topics={profile?.topics || []}
+          onMessage={({ label, value }) => {
+            const peerId = apiProfileRaw?.owner?.actor || apiProfileRaw?.ownerId || apiProfileRaw?.id;
+            if (peerId) {
+              window.location.href = `/messages?member=${peerId}&contact=${encodeURIComponent(value)}`;
+            }
           }}
           onMeet={() => {
             window.location.href = "/team";
@@ -585,7 +534,7 @@ const tooLow = dataScore.tooLow;
         />
       )}
 
-      {tab === "engagements" && <BusinessEngagements   items={engageData || []} />}
+      {tab === "engagements" && <BusinessEngagements items={engageData || []} />}
     </>
   );
 }

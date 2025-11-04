@@ -389,7 +389,7 @@ function TeamSelectModal({
                   ) : null}
                 </div>
                 <div className="bpe-person-actions">
-                  <button className="btn" onClick={async () => onPick(r)}>
+                  <button className="btn " onClick={async () => onPick(r)}>
                     Add
                   </button>
                 </div>
@@ -738,10 +738,35 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
     }
   }
 
-  async function onRemoveGalleryImage(imageId) {
-    await removeFromGallery({ imageId }).unwrap();
+async function onRemoveGalleryImage(image) {
+  try {
+    // Extract uploadPath safely
+    const uploadPath = 
+      typeof image === "string" ? image :  // if it's already a path string
+      image?.path || 
+      image?.url || 
+      image?.uploadPath || 
+      image?.imagePath || 
+      image?.filePath;
+
+    if (!uploadPath || typeof uploadPath !== "string") {
+      console.warn("No valid uploadPath found:", image);
+      alert("Cannot remove: missing image path.");
+      return;
+    }
+
+    // Send uploadPath, NOT imageId
+    await removeFromGallery({ uploadPath }).unwrap();
+
+    // Refetch to update UI
     await refetchBP();
+  } catch (err) {
+    console.error("Failed to remove gallery image:", err);
+    alert(err?.data?.message || "Error removing image. Please try again.");
   }
+}
+
+
 
   /* ----------- Contacts / Socials ----------- */
   function addContact() {
@@ -936,60 +961,67 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
 
       <div className="bpe-editor">
       {/* Topbar */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 py-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div>
-                  <div className="text-sm font-medium text-slate-800">Business Profile</div>
-                  <div className="text-xs text-slate-500">Edit your public profile</div>
-                </div>
+      <header className="bg-white shadow-sm border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
 
-                <div className="flex items-center gap-2">
-                  {profile?.published ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                      Published
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                      Draft
-                    </span>
-                  )}
+            {/* Left section — Logo & Info */}
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              {profile?.logo && (
+                <img
+                  src={profile.logo}
+                  alt="Company Logo"
+                  className="h-12 w-12 rounded-lg object-contain border border-slate-100"
+                />
+              )}
 
-                  {profile?._id && (
-                    <a
-                      href="/BusinessProfile"
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Open owner view"
-                      className="inline-flex items-center gap-2 text-xs px-2 py-0.5 rounded-full bg-slate-50 border border-slate-100 text-slate-700 hover:bg-slate-100"
-                    >
-                      <span aria-hidden>👁️</span>
-                      <span className="truncate">View public page</span>
-                    </a>
-                  )}
-
-                  {profile?._id && (
-                    <button
-                      type="button"
-                      onClick={copyShareUrl}
-                      title="Copy public link"
-                      className={`inline-flex items-center gap-2 text-xs px-2 py-0.5 rounded-full border ${copied ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-slate-50 border-slate-100 text-slate-700"} hover:opacity-95`}
-                    >
-                      <span aria-hidden>🔗</span>
-                      <span>{copied ? "Copied!" : "Copy share link"}</span>
-                    </button>
-                  )}
-
-                  {busy && <span className="ml-2 text-xs text-slate-500">Saving…</span>}
-                </div>
+              <div>
+                <h1 className="text-lg font-semibold text-slate-800">Business Profile</h1>
+                <p className="text-sm text-slate-500">Edit your public profile</p>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            {/* Right section — Actions */}
+            <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
+
+              {profile?.published ? (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                  Published
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                  Draft
+                </span>
+              )}
+
+              {profile?._id && (
+                <a
+                  href="/BusinessProfile"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 transition"
+                >
+                  👁️ View
+                </a>
+              )}
+
+              {profile?._id && (
+                <button
+                  type="button"
+                  onClick={copyShareUrl}
+                  className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border transition ${
+                    copied
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  🔗 {copied ? "Copied!" : "Share"}
+                </button>
+              )}
+
               <button
-                className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-60"
+                className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white"
+                style={{ backgroundColor: "#3379BD" }}
                 onClick={saveBasics}
                 disabled={busy}
               >
@@ -997,296 +1029,105 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </button>
 
               <button
-                className={`inline-flex items-center px-3 py-2 rounded-md text-sm border ${profile?.published ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-amber-500 text-white hover:bg-amber-600"}`}
-                disabled={busy}
+                className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium border transition ${
+                  profile?.published
+                    ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    : "bg-amber-500 text-white hover:bg-amber-600"
+                }`}
                 onClick={() => togglePublish(!profile?.published)}
-                title={profile?.published ? "Unpublish" : "Request publish"}
+                disabled={busy}
               >
                 {profile?.published ? "Unpublish" : "Publish"}
               </button>
+
+              {busy && <span className="text-xs text-slate-500 ml-2">Saving…</span>}
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero banner preview */}
-      <section className="bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="md:flex md:items-center">
-              {/* Media / Banner */}
-              <div className="relative md:w-1/3 w-full h-44 md:h-48 bg-gray-100">
-                {bannerUrl ? (
-                  <div
-                    className="absolute inset-0 bg-center bg-cover"
-                    style={{ backgroundImage: `url(${bannerUrl})` }}
-                    aria-hidden
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">No banner</div>
-                )}
 
-                {/* Logo overlay */}
-                <div className="absolute left-4 -bottom-8 md:left-6 md:-bottom-10">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-white border border-slate-100 flex items-center justify-center">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2  z-3 position-absolute" />
-                    ) : (
-                      <div className="text-slate-400 text-xs">No logo</div>
-                    )}
-                  </div>
-                </div>
-              </div>
 
-              {/* Meta */}
-              <div className="md:flex-1 md:pl-8 px-4 pt-6 md:pt-0 pb-6 md:pb-0">
-                <div className="mt-2 md:mt-0">
-                  <div className="text-xl md:text-2xl font-semibold text-slate-800">{name || "Your company name"}</div>
-                  <div className="mt-1 text-sm text-slate-600">{tagline || "placeholder"}</div>
-
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <a className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700" href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}>
-                      View public page
-                    </a>
-                    <button
-                      className="inline-flex items-center px-3 py-2 rounded-md text-sm border bg-white text-slate-700 hover:bg-slate-50"
-                      onClick={copyShareUrl}
-                      disabled={!profile?._id}
-                    >
-                      Copy share link
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
 
         {/* Main grid */}
         <main className="bpe-main container">
           {/* Identity */}
-        <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-800">Identity</h3>
-          </div>
+<section className="bg-slate-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="md:flex md:items-center">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
-              {TextInput ? (
-                <TextInput value={name} onChange={setName} placeholder="Company / Brand name" />
-              ) : (
-                <input
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Company / Brand name"
-                />
-              )}
+        {/* Banner */}
+        <div className="relative md:w-1/3 w-full h-48 md:h-56 bg-slate-100">
+          {bannerUrl ? (
+            <div
+              className="absolute inset-0 bg-center bg-cover"
+              style={{ backgroundImage: `url(${bannerUrl})` }}
+              aria-hidden="true"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+              No banner
             </div>
+          )}
+        </div>
 
-            {/* Team size */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Team size</label>
-              {Select ? (
-                <Select value={size} onChange={setSize} options={["1-10", "11-50", "51-200", "201-500", "500+"]} />
-              ) : (
-                <select
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={size}
-                  onChange={(e) => setSize(e.target.value)}
-                >
-                  <option value="">Select</option>
-                  <option value="1-10">1-10</option>
-                  <option value="11-50">11-50</option>
-                  <option value="51-200">51-200</option>
-                  <option value="201-500">201-500</option>
-                  <option value="500+">500+</option>
-                </select>
-              )}
-            </div>
+        {/* Content */}
+        <div className="flex-1 md:pl-10 px-4 py-8">
+          {/* Logo + Name + Tagline + Description */}
+          <div className="flex items-start gap-4 flex-wrap">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="h-40 w-40 rounded-md object-contain border border-slate-100 bg-white p-1"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-md border border-slate-100 flex items-center justify-center text-xs text-slate-400 bg-white">
+                No logo
+              </div>
+            )}
 
-            {/* Tagline */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Tagline</label>
-              {TextInput ? (
-                <TextInput value={tagline} onChange={setTagline} placeholder="Short one-liner" />
-              ) : (
-                <input
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={tagline}
-                  onChange={(e) => setTagline(e.target.value)}
-                  placeholder="Short one-liner"
-                />
-              )}
-            </div>
-
-            {/* About (spans full width) */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">About</label>
-              {TextArea ? (
-                <TextArea
-                  rows={6}
-                  value={about}
-                  onChange={setAbout}
-                  placeholder="Tell visitors what you do, who you help, and why you're different."
-                />
-              ) : (
-                <textarea
-                  rows={6}
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={about}
-                  onChange={(e) => setAbout(e.target.value)}
-                  placeholder="Tell visitors what you do, who you help, and why you're different."
-                />
-              )}
-            </div>
-
-            {/* Sector */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Sector</label>
-              <select
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                disabled={taxFetching}
-                value={sector}
-                onChange={(e) => {
-                  setSector(e.target.value);
-                  setSubsectors([]);
-                }}
-              >
-                <option value="">{taxFetching ? "Loading…" : "Select a sector"}</option>
-                {sectorOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {typeof titleize === "function" ? titleize(opt.label) : opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Subsectors */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Subsectors</label>
-              {MultiSelect ? (
-                <MultiSelect values={subsectors} onChange={setSubsectors} options={subsectorOptions} />
-              ) : (
-                <select
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  multiple
-                  value={subsectors || []}
-                  onChange={(e) =>
-                    setSubsectors(Array.from(e.target.selectedOptions).map((o) => o.value))
-                  }
-                >
-                  {subsectorOptions.map((opt) => (
-                    <option key={opt._id || opt.value} value={opt._id || opt.value}>
-                      {opt.name || opt.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Countries */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Countries</label>
-              {MultiSelect ? (
-                <MultiSelect values={countries} onChange={setCountries} options={countryOptions} />
-              ) : (
-                <select
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  multiple
-                  value={countries || []}
-                  onChange={(e) => setCountries(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                >
-                  {countryOptions.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Languages */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Languages</label>
-              {MultiSelect ? (
-                <MultiSelect values={languages} onChange={setLanguages} options={languageOptions} />
-              ) : (
-                <select
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  multiple
-                  value={languages || []}
-                  onChange={(e) => setLanguages(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                >
-                  {languageOptions.map((l) => (
-                    <option key={l.value} value={l.value}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Offering */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Offering (what you sell/do)</label>
-              {ArrayInput ? (
-                <ArrayInput values={offering} onChange={setOffering} />
-              ) : (
-                <input
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={(offering || []).join(", ")}
-                  onChange={(e) => setOffering(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
-                  placeholder="comma, separated, offerings"
-                />
-              )}
-            </div>
-
-            {/* Seeking */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Seeking (what you want)</label>
-              {ArrayInput ? (
-                <ArrayInput values={seeking} onChange={setSeeking} />
-              ) : (
-                <input
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={(seeking || []).join(", ")}
-                  onChange={(e) => setSeeking(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
-                  placeholder="comma, separated, seeking..."
-                />
-              )}
-            </div>
-
-            {/* Innovation / Keywords */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Innovation / Keywords</label>
-              {ArrayInput ? (
-                <ArrayInput values={innovation} onChange={setInnovation} />
-              ) : (
-                <input
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-                  value={(innovation || []).join(", ")}
-                  onChange={(e) => setInnovation(String(e.target.value).split(",").map((s) => s.trim()).filter(Boolean))}
-                  placeholder="comma, separated keywords"
-                />
+            <div className="flex-1 min-w-[200px]">
+              <h2 className="text-2xl font-semibold text-slate-800">
+                {name || "Your company name"}
+              </h2>
+              <p className="text-sm text-slate-500">
+                {tagline || "Your company tagline or short description"}
+              </p>
+              {about && (
+                <p className="mt-2 text-slate-600 text-sm leading-relaxed">
+                  {about.length > 400 ? about.slice(0, 400) + "..." : about}
+                </p>
               )}
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end">
-            <button
-              className={`px-4 py-2 rounded-md ${busy ? "bg-slate-300 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
-              onClick={saveBasics}
-              disabled={busy}
+          {/* CTA buttons */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white"
+              style={{ backgroundColor: "#3379BD" }}
+              href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}
             >
-              Save identity
+              View public page
+            </a>
+
+            <button
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
+              onClick={copyShareUrl}
+              disabled={!profile?._id}
+            >
+              Copy share link
             </button>
           </div>
-        </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 
           {/* Media */}
@@ -1350,7 +1191,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
               </div>
             </div>
 
-            {/* Gallery heading */}
+            {/* Gallery heading 
             <div className="text-sm font-medium text-slate-700 mt-5 mb-3">Gallery</div>
 
             {gallery?.length ? (
@@ -1359,13 +1200,14 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                   <figure key={`${String(g)}-${i}`} className="relative rounded-md overflow-hidden bg-slate-50 border border-slate-100">
                     <img src={imageLink(g)} alt={`Gallery ${i + 1}`} className="w-full h-28 object-cover" />
                     <figcaption className="absolute left-2 right-2 bottom-2 flex gap-2 justify-end">
-                      <button
-                        type="button"
-                        className="text-xs px-2 py-1 bg-white/90 border rounded-md hover:bg-white"
-                        onClick={() => onRemoveGalleryImage(g)}
-                      >
-                        Remove
-                      </button>
+                    <button
+                      type="button"
+                      className="text-xs px-2 py-1 bg-white/90 border rounded-md hover:bg-white"
+                      onClick={() => onRemoveGalleryImage(g)}
+                    >
+                      Remove
+                    </button>
+
                     </figcaption>
                   </figure>
                 ))}
@@ -1391,135 +1233,144 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                 />
               </label>
             </div>
+            */}
           </section>
 
 
           {/* Contacts & Socials */}
-          <section className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Contacts &amp; Socials</h3>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Contacts */}
-              <div>
-                <div className="text-sm font-medium text-slate-700 mb-3">Contacts</div>
+          {/* Contacts & Socials */}
+<section className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+  <h3 className="text-lg font-semibold text-slate-800 mb-5">Contacts & Socials</h3>
 
-                {contacts.length === 0 && <div className="text-sm text-slate-500 mb-3">No contacts yet.</div>}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Contacts */}
+    <div>
+      {contacts.length === 0 && (
+        <div className="text-sm text-slate-500 mb-3">No contacts yet.</div>
+      )}
 
-                <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
-                  {contacts.map((c, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
-                    >
-                      <select
-                        className="w-full sm:w-36 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
-                        value={c.kind || "email"}
-                        onChange={(e) => updateContact(idx, { kind: e.target.value })}
-                      >
-                        <option value="email">email</option>
-                        <option value="phone">phone</option>
-                        <option value="whatsapp">whatsapp</option>
-                      </select>
+      <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
+        {contacts.map((c, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
+          >
+            <select
+              className="w-full sm:w-32 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
+              value={c.kind || "email"}
+              onChange={(e) => updateContact(idx, { kind: e.target.value })}
+            >
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="whatsapp">WhatsApp</option>
+            </select>
 
-                      <input
-                        className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
-                        placeholder="value"
-                        value={c.value || ""}
-                        onChange={(e) => updateContact(idx, { value: e.target.value })}
-                      />
+            <input
+              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
+              placeholder="Contact (e.g., info@yourcompany.com)"
+              value={c.value || ""}
+              onChange={(e) => updateContact(idx, { value: e.target.value })}
+            />
 
-                      <input
-                        className="w-full sm:w-40 rounded-md border border-slate-200 px-3 py-2 text-sm"
-                        placeholder="label (e.g., Sales)"
-                        value={c.label || ""}
-                        onChange={(e) => updateContact(idx, { label: e.target.value })}
-                      />
+            <button
+              type="button"
+              className="mt-2 sm:mt-0 inline-flex items-center px-2 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
+              onClick={() => removeContact(idx)}
+              title="Remove"
+            >
+              🗑
+            </button>
+          </div>
+        ))}
+      </div>
 
-                      <button
-                        type="button"
-                        className="mt-2 sm:mt-0 inline-flex items-center px-3 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
-                        onClick={() => removeContact(idx)}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
+      <button
+        type="button"
+        className="inline-flex items-center gap-2 px-3 py-2 bg-[#3379BD] text-white rounded-md text-sm hover:bg-[#2a6da9]"
+        onClick={addContact}
+      >
+        <span className="text-lg leading-none">+</span> Add contact
+      </button>
+    </div>
 
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
-                  onClick={addContact}
-                >
-                  <span className="text-lg leading-none">+</span> Add contact
-                </button>
-              </div>
+    {/* Socials */}
+    <div>
+      {socials.length === 0 && (
+        <div className="text-sm text-slate-500 mb-3">No socials yet.</div>
+      )}
 
-              {/* Socials */}
-              <div>
-                <div className="text-sm font-medium text-slate-700 mb-3">Socials</div>
+      <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
+        {socials.map((s, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
+          >
+            <div className="relative flex items-center w-full sm:w-32">
+              {s.kind === "linkedin" && <i className="fa-brands fa-linkedin text-[#0A66C2] mr-2"></i>}
+              {s.kind === "facebook" && <i className="fa-brands fa-facebook text-[#1877F2] mr-2"></i>}
+              {s.kind === "instagram" && <i className="fa-brands fa-instagram text-[#E4405F] mr-2"></i>}
+              {s.kind === "x" && <i className="fa-brands fa-x-twitter text-black mr-2"></i>}
+              {s.kind === "youtube" && <i className="fa-brands fa-youtube text-[#FF0000] mr-2"></i>}
+              {s.kind === "website" && <i className="fa-solid fa-globe text-slate-600 mr-2"></i>}
 
-                {socials.length === 0 && <div className="text-sm text-slate-500 mb-3">No socials yet.</div>}
-
-                <div className="space-y-3 mb-3 max-h-[48vh] overflow-y-auto pr-2">
-                  {socials.map((s, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-lg border border-slate-100"
-                    >
-                      <select
-                        className="w-full sm:w-36 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
-                        value={s.kind || "website"}
-                        onChange={(e) => updateSocial(idx, { kind: e.target.value })}
-                      >
-                        <option value="website">website</option>
-                        <option value="linkedin">linkedin</option>
-                        <option value="x">x</option>
-                        <option value="facebook">facebook</option>
-                        <option value="instagram">instagram</option>
-                        <option value="youtube">youtube</option>
-                      </select>
-
-                      <input
-                        className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
-                        placeholder="https://..."
-                        value={s.url || ""}
-                        onChange={(e) => updateSocial(idx, { url: e.target.value })}
-                      />
-
-                      <button
-                        type="button"
-                        className="mt-2 sm:mt-0 inline-flex items-center px-3 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
-                        onClick={() => removeSocial(idx)}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
-                  onClick={addSocial}
-                >
-                  <span className="text-lg leading-none">+</span> Add social
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                className={`px-4 py-2 rounded-md ${savingContacts ? "bg-slate-300 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
-                onClick={saveContacts}
-                disabled={savingContacts}
+              <select
+                className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white"
+                value={s.kind || "website"}
+                onChange={(e) => updateSocial(idx, { kind: e.target.value })}
               >
-                Save Contacts/Socials
-              </button>
+                <option value="website">Website</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="x">X</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="youtube">YouTube</option>
+              </select>
             </div>
-          </section>
+
+            <input
+              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm"
+              placeholder="https://..."
+              value={s.url || ""}
+              onChange={(e) => updateSocial(idx, { url: e.target.value })}
+            />
+
+            <button
+              type="button"
+              className="mt-2 sm:mt-0 inline-flex items-center px-2 py-2 border rounded-md text-sm bg-white hover:bg-slate-50"
+              onClick={() => removeSocial(idx)}
+              title="Remove"
+            >
+              🗑
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="inline-flex items-center gap-2 px-3 py-2 bg-[#3379BD] text-white rounded-md text-sm hover:bg-[#2a6da9]"
+        onClick={addSocial}
+      >
+        <span className="text-lg leading-none">+</span> Add social
+      </button>
+    </div>
+  </div>
+
+  <div className="mt-4 flex justify-end">
+    <button
+      className={`px-4 py-2 rounded-md ${
+        savingContacts
+          ? "bg-slate-300 text-slate-600 cursor-not-allowed"
+          : "bg-[#3379BD] text-white hover:bg-[#2a6da9]"
+      }`}
+      onClick={saveContacts}
+      disabled={savingContacts}
+    >
+      Save Contacts/Socials
+    </button>
+  </div>
+</section>
 
           <section className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-3">
             <div className="flex items-center justify-between mb-4">
@@ -1583,7 +1434,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
 
             <div className="mt-4">
               <button
-                className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="inline-flex bg-[#3379BD] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 onClick={() => setTeamModalOpen(true)}
               >
                 <span className="text-xl leading-none">+</span> Add team member
@@ -1616,7 +1467,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
             <div className="flex items-center justify-between mb-4">
               <div className="text-lg font-semibold text-slate-800">Items (Products / Services)</div>
               <button
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="inline-flex bg-[#3379BD] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 onClick={() =>
                   setEditingItem({
                     title: "",
@@ -1633,7 +1484,7 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
                   })
                 }
               >
-                <span className="text-xl leading-none">+</span> New Item
+                <span className="text-xl leading-none ">+</span> New Item
               </button>
             </div>
 
