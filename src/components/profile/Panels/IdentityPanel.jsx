@@ -1,55 +1,7 @@
 // src/components/profile/panels/IdentityPanel.jsx
 import React from "react";
 import PropTypes from "prop-types";
-
-function TextRow({ label, value, extra }) {
-  return (
-    <div className="pp-row">
-      <div className="pp-label">{label}</div>
-      <div className="pp-value">
-        {value ? value : <span className="pp-muted">—</span>}
-        {extra ? <span style={{ marginLeft: 8 }}>{extra}</span> : null}
-      </div>
-    </div>
-  );
-}
-
-function LinkRow({ label, href }) {
-  const url = normalizeUrl(href);
-  return (
-    <div className="pp-row">
-      <div className="pp-label">{label}</div>
-      <div className="pp-value">
-        {url ? (
-          <a className="pp-link" href={url} target="_blank" rel="noreferrer">
-            {prettyUrl(url)}
-          </a>
-        ) : (
-          <span className="pp-muted">—</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function InputRow({ id, label, type = "text", value, onChange, placeholder, disabled=false }) {
-  return (
-    <div className="pp-row">
-      <label className="pp-label" htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        className="pp-input"
-        type={type}
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-      />
-    </div>
-  );
-}
-
-function UrlRow(props) { return <InputRow {...props} type="url" placeholder="https://…" />; }
+import { useTranslation } from "react-i18next";
 
 /* helpers */
 function normalizeUrl(u = "") {
@@ -59,8 +11,12 @@ function normalizeUrl(u = "") {
   return `https://${t}`;
 }
 function prettyUrl(u = "") {
-  try { const x = new URL(u); return `${x.hostname}${x.pathname.replace(/\/$/, "")}`; }
-  catch { return u; }
+  try {
+    const x = new URL(u);
+    return `${x.hostname}${x.pathname.replace(/\/$/, "")}`;
+  } catch {
+    return u;
+  }
 }
 const safeStr = (v) => (typeof v === "string" ? v.trim() : v ?? "");
 
@@ -93,61 +49,112 @@ function diffPatch(current, desired) {
   return patch;
 }
 
+/* --- Small presentational subcomponents (use t inside them) --- */
+function TextRow({ label, value, extra }) {
+  const { t } = useTranslation();
+  return (
+    <div className="pp-row">
+      <div className="pp-label">{label}</div>
+      <div className="pp-value">
+        {value ? value : <span className="pp-muted">{t('identityPanel.empty', '—')}</span>}
+        {extra ? <span style={{ marginLeft: 8 }}>{extra}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function LinkRow({ label, href }) {
+  const { t } = useTranslation();
+  const url = normalizeUrl(href);
+  return (
+    <div className="pp-row">
+      <div className="pp-label">{label}</div>
+      <div className="pp-value">
+        {url ? (
+          <a className="pp-link" href={url} target="_blank" rel="noreferrer">
+            {prettyUrl(url)}
+          </a>
+        ) : (
+          <span className="pp-muted">{t('identityPanel.empty', '—')}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InputRow({ id, label, type = "text", value, onChange, placeholder, disabled = false }) {
+  return (
+    <div className="pp-row">
+      <label className="pp-label" htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        className="pp-input"
+        type={type}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+function UrlRow(props) {
+  const { t } = useTranslation();
+  return <InputRow {...props} type="url" placeholder={props.placeholder ?? t('identityPanel.placeholders.url', 'https://…')} />;
+}
+
+/* --- Main panel --- */
 export default function IdentityPanel({ role, actor, loading, onPatch }) {
+  const { t } = useTranslation();
+
   const r = String(role || "").toLowerCase();
   const isAtt = r === "attendee";
   const isExh = r === "exhibitor";
   const isSpk = r === "speaker";
 
   // Safe paths
-  const A         = actor || {};
-  const personal  = (isAtt || isSpk) ? (A.personal || {}) : {};
-  const org       = (isAtt || isSpk) ? (A.organization || {}) : {};
-  const identity  = isExh ? (A.identity || {}) : {};
-  const links     = A.links || {};
-  const enrich    = isSpk ? (A.enrichments || {}) : {};
+  const A = actor || {};
+  const personal = (isAtt || isSpk) ? (A.personal || {}) : {};
+  const org = (isAtt || isSpk) ? (A.organization || {}) : {};
+  const identity = isExh ? (A.identity || {}) : {};
+  const links = A.links || {};
+  const enrich = isSpk ? (A.enrichments || {}) : {};
 
-  // Canonical email (non-editable), and firstEmail snapshot (non-editable)
-  console.log(A);
+  // emails / country
   const accountEmail = safeStr(A.personal?.email);
-  const firstEmail   = safeStr(A.personal?.firstEmail);
+  const firstEmail = safeStr(A.personal?.firstEmail);
 
-  // Non-editable country (comes from role-specific object)
-  const countryCode = safeStr(
-    (isExh ? identity.country : personal.country) || ""
-  ).toUpperCase();
+  // country badge logic
+  const countryCode = safeStr((isExh ? identity.country : personal.country) || "").toUpperCase();
   const allowedCountries = ["TN", "FR"];
-  const countryBadge =
-    countryCode && !allowedCountries.includes(countryCode)
-      ? <span className="ps-badge -warn">Not TN/FR</span>
-      : null;
+  const countryBadge = countryCode && !allowedCountries.includes(countryCode)
+    ? <span className="ps-badge -warn">{t('identityPanel.badges.notAllowed', 'Not TN/FR')}</span>
+    : null;
 
-  // Edit toggles
-  const [editPub, setEditPub]   = React.useState(false);
+  // edit toggles + forms
+  const [editPub, setEditPub] = React.useState(false);
   const [editPriv, setEditPriv] = React.useState(false);
-
-  // Form states (no email/country here—they’re locked)
-  const [pub, setPub]   = React.useState({});
+  const [pub, setPub] = React.useState({});
   const [priv, setPriv] = React.useState({});
 
-  // Current snapshots for diff
+  // current snapshots for diff
   const currentPublic = React.useMemo(() => {
     if (isAtt) {
       return {
-        personal: { fullName: safeStr(personal.fullName), /* country locked */ city: safeStr(personal.city) },
+        personal: { fullName: safeStr(personal.fullName), city: safeStr(personal.city) },
         organization: { orgName: safeStr(org.orgName), businessRole: safeStr(org.businessRole) },
         links: { website: safeStr(links.website), linkedin: safeStr(links.linkedin) },
       };
     }
     if (isExh) {
       return {
-        identity: { exhibitorName: safeStr(identity.exhibitorName), orgName: safeStr(identity.orgName), /* country locked */ city: safeStr(identity.city) },
+        identity: { exhibitorName: safeStr(identity.exhibitorName), orgName: safeStr(identity.orgName), city: safeStr(identity.city) },
         links: { website: safeStr(links.website), linkedin: safeStr(links.linkedin) },
       };
     }
     if (isSpk) {
       return {
-        personal: { fullName: safeStr(personal.fullName), /* country locked */ city: safeStr(personal.city) },
+        personal: { fullName: safeStr(personal.fullName), city: safeStr(personal.city) },
         organization: { orgName: safeStr(org.orgName), jobTitle: safeStr(org.jobTitle) },
         links: { website: safeStr(links.website), linkedin: safeStr(links.linkedin) },
       };
@@ -156,61 +163,51 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
   }, [isAtt, isExh, isSpk, personal, org, identity, links]);
 
   const currentPrivate = React.useMemo(() => {
-    if (isExh) return { identity: { contactName: safeStr(identity.contactName), /* email locked */ phone: safeStr(identity.phone) } };
-    return { personal: { /* email locked */ phone: safeStr(personal.phone) } };
+    if (isExh) return { identity: { contactName: safeStr(identity.contactName), phone: safeStr(identity.phone) } };
+    return { personal: { phone: safeStr(personal.phone) } };
   }, [isExh, identity, personal]);
 
-  // Seed forms
+  // seed forms when actor/role change
   React.useEffect(() => {
     if (isAtt) {
       setPub({
         fullName: personal.fullName || "",
-        orgName:  org.orgName || "",
+        orgName: org.orgName || "",
         businessRole: org.businessRole || "",
-        // country locked
         city: personal.city || "",
         website: links.website || "",
         linkedin: links.linkedin || "",
       });
-      setPriv({
-        // email locked
-        phone: personal.phone || "",
-      });
+      setPriv({ phone: personal.phone || "" });
     } else if (isExh) {
       setPub({
         exhibitorName: identity.exhibitorName || "",
         orgName: identity.orgName || "",
-        // country locked
         city: identity.city || "",
         website: links.website || "",
         linkedin: links.linkedin || "",
       });
       setPriv({
         contactName: identity.contactName || "",
-        // email locked
         phone: identity.phone || "",
       });
     } else if (isSpk) {
       setPub({
         fullName: personal.fullName || "",
-        orgName:  org.orgName || "",
+        orgName: org.orgName || "",
         jobTitle: org.jobTitle || "",
-        // country locked
         city: personal.city || "",
         website: links.website || "",
         linkedin: links.linkedin || "",
       });
-      setPriv({
-        // email locked
-        phone: personal.phone || "",
-      });
+      setPriv({ phone: personal.phone || "" });
     } else {
       setPub({});
       setPriv({});
     }
-  }, [role, actor, editPub, editPriv]); // keep in sync
+  }, [role, actor, editPub, editPriv]);
 
-  // Build patches (diff-only, no country/email)
+  // build patches
   function buildPublicPatch() {
     let desired;
     if (isAtt) {
@@ -247,16 +244,18 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
       {/* Visible (public) */}
       <section className="pp-section">
         <header className="pp-head">
-          <h3 className="pp-title">Visible information</h3>
+          <h3 className="pp-title">{t('identityPanel.titles.visible','Visible information')}</h3>
           <div className="pp-actions">
             {!editPub ? (
-              <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(true)} disabled={disabled}>✏️ Edit</button>
+              <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(true)} disabled={disabled}>
+                ✏️ {t('identityPanel.buttons.edit','Edit')}
+              </button>
             ) : (
               <>
                 <button className="pp-btn" type="button" onClick={async () => {
                   try { const patch = buildPublicPatch(); if (Object.keys(patch).length) await onPatch?.(patch); setEditPub(false); } catch {}
-                }} disabled={disabled}>Save</button>
-                <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(false)}>Cancel</button>
+                }} disabled={disabled}>{t('identityPanel.buttons.save','Save')}</button>
+                <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(false)}>{t('identityPanel.buttons.cancel','Cancel')}</button>
               </>
             )}
           </div>
@@ -267,33 +266,32 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
             <div className="pp-grid">
               {isAtt && (
                 <>
-                  <TextRow label="Full name" value={personal.fullName} />
-                  <TextRow label="Organization" value={org.orgName} />
-                  <TextRow label="Role / Title" value={org.jobTitle} />
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <TextRow label="City" value={personal.city} />
-   
+                  <TextRow label={t('identityPanel.labels.fullName','Full name')} value={personal.fullName} />
+                  <TextRow label={t('identityPanel.labels.organization','Organization')} value={org.orgName} />
+                  <TextRow label={t('identityPanel.labels.roleTitle','Role / Title')} value={org.jobTitle} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <TextRow label={t('identityPanel.labels.city','City')} value={personal.city} />
                 </>
               )}
               {isExh && (
                 <>
-                  <TextRow label="Exhibitor name" value={identity.exhibitorName} />
-                  <TextRow label="Organization" value={identity.orgName} />
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <TextRow label="City" value={identity.city} />
-                  <LinkRow label="Website" href={links.website} />
-                  <LinkRow label="LinkedIn" href={links.linkedin} />
+                  <TextRow label={t('identityPanel.labels.exhibitorName','Exhibitor name')} value={identity.exhibitorName} />
+                  <TextRow label={t('identityPanel.labels.organization','Organization')} value={identity.orgName} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <TextRow label={t('identityPanel.labels.city','City')} value={identity.city} />
+                  <LinkRow label={t('identityPanel.labels.website','Website')} href={links.website} />
+                  <LinkRow label={t('identityPanel.labels.linkedin','LinkedIn')} href={links.linkedin} />
                 </>
               )}
               {isSpk && (
                 <>
-                  <TextRow label="Full name" value={personal.fullName} />
-                  <TextRow label="Organization" value={org.orgName} />
-                  <TextRow label="Job title" value={org.jobTitle} />
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <TextRow label="City" value={personal.city} />
-                  <LinkRow label="Website" href={links.website} />
-                  <LinkRow label="LinkedIn" href={links.linkedin} />
+                  <TextRow label={t('identityPanel.labels.fullName','Full name')} value={personal.fullName} />
+                  <TextRow label={t('identityPanel.labels.organization','Organization')} value={org.orgName} />
+                  <TextRow label={t('identityPanel.labels.jobTitle','Job title')} value={org.jobTitle} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <TextRow label={t('identityPanel.labels.city','City')} value={personal.city} />
+                  <LinkRow label={t('identityPanel.labels.website','Website')} href={links.website} />
+                  <LinkRow label={t('identityPanel.labels.linkedin','LinkedIn')} href={links.linkedin} />
                 </>
               )}
             </div>
@@ -303,37 +301,34 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
             <div className="pp-grid">
               {isAtt && (
                 <>
-                  <InputRow id="fn" label="Full name" value={pub.fullName} onChange={(v) => setPub((s) => ({ ...s, fullName: v }))} />
-                  <InputRow id="on" label="Organization" value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
-                  <InputRow id="br" label="Role / Title" value={pub.businessRole} onChange={(v) => setPub((s) => ({ ...s, businessRole: v }))} />
-                  {/* Country locked */}
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <InputRow id="ci" label="City" value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
-                  <UrlRow id="ws" label="Website" value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
-                  <UrlRow id="li" label="LinkedIn" value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
+                  <InputRow id="fn" label={t('identityPanel.labels.fullName','Full name')} value={pub.fullName} onChange={(v) => setPub((s) => ({ ...s, fullName: v }))} />
+                  <InputRow id="on" label={t('identityPanel.labels.organization','Organization')} value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
+                  <InputRow id="br" label={t('identityPanel.labels.roleTitle','Role / Title')} value={pub.businessRole} onChange={(v) => setPub((s) => ({ ...s, businessRole: v }))} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <InputRow id="ci" label={t('identityPanel.labels.city','City')} value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
+                  <UrlRow id="ws" label={t('identityPanel.labels.website','Website')} value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
+                  <UrlRow id="li" label={t('identityPanel.labels.linkedin','LinkedIn')} value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
                 </>
               )}
               {isExh && (
                 <>
-                  <InputRow id="exh" label="Exhibitor name" value={pub.exhibitorName} onChange={(v) => setPub((s) => ({ ...s, exhibitorName: v }))} />
-                  <InputRow id="on" label="Organization" value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
-                  {/* Country locked */}
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <InputRow id="ci" label="City" value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
-                  <UrlRow id="ws" label="Website" value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
-                  <UrlRow id="li" label="LinkedIn" value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
+                  <InputRow id="exh" label={t('identityPanel.labels.exhibitorName','Exhibitor name')} value={pub.exhibitorName} onChange={(v) => setPub((s) => ({ ...s, exhibitorName: v }))} />
+                  <InputRow id="on" label={t('identityPanel.labels.organization','Organization')} value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <InputRow id="ci" label={t('identityPanel.labels.city','City')} value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
+                  <UrlRow id="ws" label={t('identityPanel.labels.website','Website')} value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
+                  <UrlRow id="li" label={t('identityPanel.labels.linkedin','LinkedIn')} value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
                 </>
               )}
               {isSpk && (
                 <>
-                  <InputRow id="fn" label="Full name" value={pub.fullName} onChange={(v) => setPub((s) => ({ ...s, fullName: v }))} />
-                  <InputRow id="on" label="Organization" value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
-                  <InputRow id="jt" label="Job title" value={pub.jobTitle} onChange={(v) => setPub((s) => ({ ...s, jobTitle: v }))} />
-                  {/* Country locked */}
-                  <TextRow label="Country" value={countryCode} extra={countryBadge} />
-                  <InputRow id="ci" label="City" value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
-                  <UrlRow id="ws" label="Website" value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
-                  <UrlRow id="li" label="LinkedIn" value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
+                  <InputRow id="fn" label={t('identityPanel.labels.fullName','Full name')} value={pub.fullName} onChange={(v) => setPub((s) => ({ ...s, fullName: v }))} />
+                  <InputRow id="on" label={t('identityPanel.labels.organization','Organization')} value={pub.orgName} onChange={(v) => setPub((s) => ({ ...s, orgName: v }))} />
+                  <InputRow id="jt" label={t('identityPanel.labels.jobTitle','Job title')} value={pub.jobTitle} onChange={(v) => setPub((s) => ({ ...s, jobTitle: v }))} />
+                  <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
+                  <InputRow id="ci" label={t('identityPanel.labels.city','City')} value={pub.city} onChange={(v) => setPub((s) => ({ ...s, city: v }))} />
+                  <UrlRow id="ws" label={t('identityPanel.labels.website','Website')} value={pub.website} onChange={(v) => setPub((s) => ({ ...s, website: v }))} />
+                  <UrlRow id="li" label={t('identityPanel.labels.linkedin','LinkedIn')} value={pub.linkedin} onChange={(v) => setPub((s) => ({ ...s, linkedin: v }))} />
                 </>
               )}
             </div>
@@ -344,37 +339,38 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
       {/* Private (contact) */}
       <section className="pp-section">
         <header className="pp-head">
-          <h3 className="pp-title">Private information</h3>
+          <h3 className="pp-title">{t('identityPanel.titles.private','Private information')}</h3>
           <div className="pp-actions">
             {!editPriv ? (
-              <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(true)} disabled={disabled}>✏️ Edit</button>
+              <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(true)} disabled={disabled}>
+                ✏️ {t('identityPanel.buttons.edit','Edit')}
+              </button>
             ) : (
               <>
                 <button className="pp-btn" type="button" onClick={async () => {
                   try { const patch = buildPrivatePatch(); if (Object.keys(patch).length) await onPatch?.(patch); setEditPriv(false); } catch {}
-                }} disabled={disabled}>Save</button>
-                <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(false)}>Cancel</button>
+                }} disabled={disabled}>{t('identityPanel.buttons.save','Save')}</button>
+                <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(false)}>{t('identityPanel.buttons.cancel','Cancel')}</button>
               </>
             )}
           </div>
         </header>
 
         <div className="pp-card">
-          {/* Always show non-editable canonical emails */}
           <div className="pp-grid">
-            <TextRow label="Account email" value={accountEmail} />
-            {firstEmail ? <TextRow label="Registration email" value={firstEmail} /> : null}
+            <TextRow label={t('identityPanel.labels.accountEmail','Account email')} value={accountEmail} />
+            {firstEmail ? <TextRow label={t('identityPanel.labels.registrationEmail','Registration email')} value={firstEmail} /> : null}
           </div>
 
           {!editPriv && (
             <div className="pp-grid">
               {isExh ? (
                 <>
-                  <TextRow label="Contact name" value={identity.contactName} />
-                  <TextRow label="Phone" value={identity.phone} />
+                  <TextRow label={t('identityPanel.labels.contactName','Contact name')} value={identity.contactName} />
+                  <TextRow label={t('identityPanel.labels.phone','Phone')} value={identity.phone} />
                 </>
               ) : (
-                <TextRow label="Phone" value={personal.phone} />
+                <TextRow label={t('identityPanel.labels.phone','Phone')} value={personal.phone} />
               )}
             </div>
           )}
@@ -383,14 +379,12 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
             <div className="pp-grid">
               {isExh ? (
                 <>
-                  <InputRow id="cn" label="Contact name" value={priv.contactName} onChange={(v) => setPriv((s) => ({ ...s, contactName: v }))} />
-                  {/* Email locked */}
-                  <InputRow id="ph" label="Phone" value={priv.phone} onChange={(v) => setPriv((s) => ({ ...s, phone: v }))} />
+                  <InputRow id="cn" label={t('identityPanel.labels.contactName','Contact name')} value={priv.contactName} onChange={(v) => setPriv((s) => ({ ...s, contactName: v }))} />
+                  <InputRow id="ph" label={t('identityPanel.labels.phone','Phone')} value={priv.phone} onChange={(v) => setPriv((s) => ({ ...s, phone: v }))} />
                 </>
               ) : (
                 <>
-                  {/* Email locked */}
-                  <InputRow id="ph" label="Phone" value={priv.phone} onChange={(v) => setPriv((s) => ({ ...s, phone: v }))} />
+                  <InputRow id="ph" label={t('identityPanel.labels.phone','Phone')} value={priv.phone} onChange={(v) => setPriv((s) => ({ ...s, phone: v }))} />
                 </>
               )}
             </div>
@@ -401,9 +395,9 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
       {/* Speaker presentation */}
       {isSpk && enrich?.slidesFile ? (
         <section className="pp-section">
-          <header className="pp-head"><h3 className="pp-title">Presentation</h3></header>
+          <header className="pp-head"><h3 className="pp-title">{t('identityPanel.titles.presentation','Presentation')}</h3></header>
           <div className="pp-card">
-            <a className="pp-link" href={enrich.slidesFile} target="_blank" rel="noreferrer">View uploaded slides</a>
+            <a className="pp-link" href={enrich.slidesFile} target="_blank" rel="noreferrer">{t('identityPanel.links.viewSlides','View uploaded slides')}</a>
           </div>
         </section>
       ) : null}
