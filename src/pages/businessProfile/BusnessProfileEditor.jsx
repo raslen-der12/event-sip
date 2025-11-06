@@ -1109,7 +1109,7 @@ async function onRemoveGalleryImage(image) {
                   <div className="mt-6 flex flex-wrap gap-3">
                     <a
                       className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white"
-                      style={{ backgroundColor: "#3379BD" }}
+                      style={{ backgroundColor: "#F97316" }}
                       href={profile?._id ? `/BusinessProfile/${profile._id}` : "#"}
                     >
                       View public page
@@ -1133,10 +1133,41 @@ async function onRemoveGalleryImage(image) {
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-xl font-semibold text-slate-800">Identity</h3>
-                <p className="text-sm text-slate-500">
-                  Fill out your company details — visible on your public profile.
-                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-5 space-y-3">
+  <div className="flex items-start gap-3">
+    {/* Subtle Icon */}
+    <div className="flex-shrink-0 mt-0.5">
+      <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+
+    <div className="flex-1">
+      <h3 className="text-base font-medium text-orange-900">Complete Your Identity</h3>
+      <p className="text-sm text-orange-700 mt-1">
+        Fill out your company details — visible on your public profile.
+      </p>
+      <p className="text-xs text-orange-600 mt-2 italic">
+        Don’t forget to save your business identity.
+      </p>
+    </div>
+  </div>
+
+  {/* Clean Save Button */}
+  <button
+    className={`w-full sm:w-auto px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+      busy
+        ? "bg-orange-100 text-orange-400 cursor-not-allowed"
+        : "bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 shadow-sm hover:shadow"
+    }`}
+    onClick={saveBasics}
+    disabled={busy}
+  >
+    {busy ? "Saving..." : "Save Identity"}
+  </button>
+</div>
+
               </div>
             </div>
 
@@ -1435,8 +1466,8 @@ async function onRemoveGalleryImage(image) {
               <button
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                   busy
-                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    ? "bg-orange-100 text-orange-400 cursor-not-allowed"
+                    : "bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 shadow-sm hover:shadow"
                 }`}
                 onClick={saveBasics}
                 disabled={busy}
@@ -1677,8 +1708,8 @@ async function onRemoveGalleryImage(image) {
     <button
       className={`px-4 py-2 rounded-md ${
         savingContacts
-          ? "bg-slate-300 text-slate-600 cursor-not-allowed"
-          : "bg-[#3379BD] text-white hover:bg-[#2a6da9]"
+          ? "bg-orange-100 text-orange-400 cursor-not-allowed"
+          : "bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 shadow-sm hover:shadow"
       }`}
       onClick={saveContacts}
       disabled={savingContacts}
@@ -1750,7 +1781,7 @@ async function onRemoveGalleryImage(image) {
 
             <div className="mt-4">
               <button
-                className="inline-flex bg-[#3379BD] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="inline-flex bg-[#F97316] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 onClick={() => setTeamModalOpen(true)}
               >
                 <span className="text-xl leading-none">+</span> Add team member
@@ -1783,7 +1814,7 @@ async function onRemoveGalleryImage(image) {
             <div className="flex items-center justify-between mb-4">
               <div className="text-lg font-semibold text-slate-800">Items (Products / Services)</div>
               <button
-                className="inline-flex bg-[#3379BD] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="inline-flex bg-[#F97316] text-white hover:bg-[#2a6da9] items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 onClick={() =>
                   setEditingItem({
                     title: "",

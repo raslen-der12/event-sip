@@ -322,10 +322,6 @@ export default function BusinessProfileFormPage() {
     industry: "",
     countries: [],
 
-    offering: [],
-    seeking: [],
-    innovation: [],
-
     // contacts & socials
     contacts: {
       website: "",
@@ -391,10 +387,6 @@ export default function BusinessProfileFormPage() {
 
         industries: form.industry ? [form.industry] : [],
         countries: form.countries, // MULTI
-
-        offering: form.offering,
-        seeking: form.seeking,
-        innovation: form.innovation,
       };
       const res = await createOrGetBP(payload).unwrap();
       setProfile(res?.data || res);
@@ -938,27 +930,6 @@ export default function BusinessProfileFormPage() {
                   </Field>
                 </div>
 
-                <div className="bpf-g2">
-                  <Field label="Offering (what you sell)">
-                    <TagsInput
-                      value={form.offering}
-                      onChange={(v) => setForm((f) => ({ ...f, offering: v }))}
-                    />
-                  </Field>
-                  <Field label="Seeking (what you’re looking for)">
-                    <TagsInput
-                      value={form.seeking}
-                      onChange={(v) => setForm((f) => ({ ...f, seeking: v }))}
-                    />
-                  </Field>
-                </div>
-
-                <Field label="Innovation (optional)">
-                  <TagsInput
-                    value={form.innovation}
-                    onChange={(v) => setForm((f) => ({ ...f, innovation: v }))}
-                  />
-                </Field>
 
                 <div className="bpf-rowEnd">
                   <button
@@ -1265,21 +1236,7 @@ export default function BusinessProfileFormPage() {
                     </div>
                   </div>
                   <div className="bpf-reviewCol">
-                    <div className="bpf-rb">
-                      <div className="bpf-rb-h">Positioning</div>
-                      <div>
-                        <b>Industry:</b> {form.industry || "—"}
-                      </div>
-                      <div>
-                        <b>Countries:</b> {form.countries.join(", ") || "—"}
-                      </div>
-                      <div>
-                        <b>Offering:</b> {form.offering.join(", ") || "—"}
-                      </div>
-                      <div>
-                        <b>Seeking:</b> {form.seeking.join(", ") || "—"}
-                      </div>
-                    </div>
+
                   </div>
                   <div className="bpf-reviewCol">
                     <div className="bpf-rb">
