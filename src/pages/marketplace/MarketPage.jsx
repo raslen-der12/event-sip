@@ -54,10 +54,10 @@ function BusinessCard({ d }) {
         )}
 
         <div className="mk-card-actions">
-          <button className="mk-btn ghost" onClick={() => navigate(`/bp/${d.id}`)}>
+          <button className="mk-btn ghost" onClick={() => navigate(`/BusinessProfile/${d.id}`)}>
             View Profile
           </button>
-          <button className="mk-btn primary" onClick={() => navigate(`/bp/${d.id}/products`)}>
+          <button className="mk-btn primary" onClick={() => navigate(`/products/${d.id}`)}>
             View Products
           </button>
         </div>
@@ -117,13 +117,13 @@ function ItemCard({ d }) {
         <div className="mk-card-actions">
           <button
             className="mk-btn ghost"
-            onClick={() => prof?.id && navigate(`/bp/${prof.id}`)}
+            onClick={() => prof?.id && navigate(`/BusinessProfile/${prof.id}`)}
             disabled={!prof?.id}
             title={prof?.id ? "Open business profile" : "No profile data"}
           >
             View Profile
           </button>
-          <button className="mk-btn primary" onClick={() => navigate(`/market/item/${d.id}`)} title="Open product/service">
+          <button className="mk-btn primary" onClick={() => navigate(`/products/${d.id}`)} title="Open product/service">
             View {isService ? "Service" : "Product"}
           </button>
         </div>
