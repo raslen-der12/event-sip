@@ -1,4 +1,5 @@
-import React from "react";
+// EventSpeakersGrid.jsx (aggressive tooltip removal)
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -12,40 +13,160 @@ import {
 import "./event-speakers.css";
 import imageLink from "../../../utils/imageLink";
 
-/**
- * Square photo cards:
- * - Name + Job title: always visible over the image (bottom-left).
- * - Org / Role badges: appear on hover/focus (softer on touch).
- * - Open-to-meet: brand-2 triangle in the bottom-right (hover/focus on desktop; soft-visible on touch).
- * - Compare toggle: round confirm badge (top-right).
- * - Message: floating round button inside photo (only if logged in).
- * - Footer: Read more (always), Book meeting (if logged in & open).
- */
-export default function EventSpeakersGrid({
-  heading = "Speakers",
-  subheading = "",
-  items = [],
-  isLoading = false,
-  errorText = "",
-  isLoggedIn = false,
-  onPreview,               // (item, index)
-  getReadMoreHref,         // (item) => string
-  selectedIds = new Set(), // Set of selected ids
-  onToggleSelect,          // (item) => void
-  sentinelRef,
-  onBook,           // for infinite scroll
-}) {
+export default function EventSpeakersGrid(props) {
+  const {
+    heading = "Speakers",
+    subheading = "",
+    items = [],
+    isLoading = false,
+    errorText = "",
+    isLoggedIn = false,
+    onPreview,
+    getReadMoreHref,
+    selectedIds = new Set(),
+    onToggleSelect,
+    sentinelRef,
+    onBook,
+  } = props;
+
   const safe = Array.isArray(items) ? items : [];
+  const rootRef = useRef(null);
+  const { pathname, search } = useLocation();
+  const loginHref = `/login?from=${encodeURIComponent(pathname + search)}`;
+
   const hrefOf = (s) =>
     (typeof getReadMoreHref === "function" && getReadMoreHref(s)) ||
     `/speaker/${s?._id || s?.id || ""}`;
 
-  const { pathname, search } = useLocation();
-  const loginHref = `/login?from=${encodeURIComponent(pathname + search)}`;
+  useEffect(() => {
+    // Helpers
+    const removeTitleAttr = (el) => {
+      try {
+        if (!el) return;
+        if (el.hasAttribute && el.hasAttribute("title"))
+          el.removeAttribute("title");
+      } catch (e) {
+        /* ignore cross-origin */
+      }
+    };
+    const removeSvgTitleNodes = (root) => {
+      try {
+        const svgTitles = (root || document).querySelectorAll("svg > title");
+        svgTitles.forEach((t) => t.remove());
+      } catch (e) {}
+    };
+    const stripOnNodeAndChildren = (node) => {
+      try {
+        if (!node) return;
+        if (node.querySelectorAll) {
+          node.querySelectorAll("[title]").forEach((el) => removeTitleAttr(el));
+          removeSvgTitleNodes(node);
+        } else {
+          removeTitleAttr(node);
+        }
+      } catch (e) {}
+    };
 
+    // 1) Remove titles immediately in the whole document (aggressive)
+    stripOnNodeAndChildren(document);
+
+    // 2) Also remove titles in the grid root (redundant but focused)
+    stripOnNodeAndChildren(rootRef.current);
+
+    // 3) MutationObserver on the whole document body to remove any future title attributes or added <svg><title>
+    const mo = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === "attributes" && m.attributeName === "title") {
+          removeTitleAttr(m.target);
+        }
+        if (m.addedNodes?.length) {
+          m.addedNodes.forEach((n) => {
+            if (n.nodeType === 1) stripOnNodeAndChildren(n);
+          });
+        }
+      }
+    });
+
+    try {
+      mo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["title"],
+        childList: true,
+        subtree: true,
+      });
+    } catch (e) {
+      // ignoring possible CSP / cross-origin issues
+    }
+
+    // 4) mouseover listener: remove title from hovered target and its ancestors (extra defense)
+    const onMouseOver = (ev) => {
+      let node = ev.target;
+      let depth = 0;
+      while (node && depth < 8) {
+        removeTitleAttr(node);
+        node = node.parentElement;
+        depth += 1;
+      }
+      // remove any svg title child on the target
+      try {
+        if (ev.target && ev.target.querySelectorAll) {
+          ev.target.querySelectorAll("svg > title").forEach((t) => t.remove());
+        }
+      } catch (e) {}
+    };
+    document.addEventListener("mouseover", onMouseOver, {
+      capture: true,
+      passive: true,
+    });
+
+    // cleanup
+    return () => {
+      try {
+        mo.disconnect();
+      } catch (e) {}
+      document.removeEventListener("mouseover", onMouseOver, { capture: true });
+    };
+  }, []);
+  useEffect(() => {
+    const root =
+      rootRef.current || document.querySelector(".esg") || document.body;
+    function removeEsqPillNodes(node) {
+      try {
+        if (!node) return;
+        node.querySelectorAll &&
+          node.querySelectorAll(".esq-pill").forEach((n) => n.remove());
+        node.querySelectorAll &&
+          node.querySelectorAll("*").forEach((el) => {
+            if (el.textContent && el.textContent.trim() === "Unknown")
+              el.remove();
+          });
+      } catch (e) {}
+    }
+    removeEsqPillNodes(root);
+    const mo = new MutationObserver((muts) => {
+      muts.forEach((m) => {
+        if (m.addedNodes?.length)
+          Array.from(m.addedNodes).forEach((n) => removeEsqPillNodes(n));
+      });
+    });
+    mo.observe(root, { childList: true, subtree: true });
+    const onHover = (e) => removeEsqPillNodes(e.target);
+    root.addEventListener("mouseover", onHover, {
+      capture: true,
+      passive: true,
+    });
+    return () => {
+      try {
+        mo.disconnect();
+      } catch (e) {}
+      root.removeEventListener("mouseover", onHover, { capture: true });
+    };
+  }, []);
+
+  // Render fallback states
   if (isLoading) {
     return (
-      <section className="esg">
+      <section className="esg" aria-label="Speakers grid" ref={rootRef}>
         <div className="esg-head">
           <h3 className="esg-title">{heading}</h3>
           {subheading ? <p className="esg-sub">{subheading}</p> : null}
@@ -61,7 +182,7 @@ export default function EventSpeakersGrid({
 
   if (errorText) {
     return (
-      <section className="esg">
+      <section className="esg" aria-label="Speakers grid" ref={rootRef}>
         <div className="esg-head">
           <h3 className="esg-title">{heading}</h3>
           {subheading ? <p className="esg-sub">{subheading}</p> : null}
@@ -73,7 +194,7 @@ export default function EventSpeakersGrid({
 
   if (!safe.length) {
     return (
-      <section className="esg">
+      <section className="esg" aria-label="Speakers grid" ref={rootRef}>
         <div className="esg-head">
           <h3 className="esg-title">{heading}</h3>
           {subheading ? <p className="esg-sub">{subheading}</p> : null}
@@ -83,19 +204,20 @@ export default function EventSpeakersGrid({
     );
   }
 
+  // Main render
   return (
-    <section className="esg">
+    <section className="esg" aria-label="Speakers grid" ref={rootRef}>
       <div className="esg-head">
         <h3 className="esg-title">{heading}</h3>
         {subheading ? <p className="esg-sub">{subheading}</p> : null}
       </div>
 
-      <div className="esg-grid">
+      <div className="esg-grid" role="list">
         {safe.map((s, idx) => {
           const photo =
             s?.profilePic ||
             "https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=600";
-          const name = s?.fullName || "—";
+          const name = s?.fullName || "Speaker";
           const org = s?.orgName || s?.organization || "";
           const title = s?.jobTitle || "";
           const role = s?.BusinessRole || s?.businessRole || "";
@@ -104,46 +226,55 @@ export default function EventSpeakersGrid({
           const isSelected = selectedIds.has(id);
 
           return (
-            <article key={id} className={`esg-card ${isSelected ? "is-selected" : ""}`}>
-              {/* MEDIA (square) */}
-              <button
-                type="button"
+            <article
+              key={id}
+              className={`esg-card ${isSelected ? "is-selected" : ""}`}
+              aria-labelledby={`speaker-${id}-name`}
+              role="listitem"
+            >
+              <div
+                role="button"
+                tabIndex={0}
                 className="esg-media esg-square"
                 style={{ backgroundImage: `url(${imageLink(photo)})` }}
                 onClick={() => onPreview?.(s, idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onPreview?.(s, idx);
+                  }
+                }}
                 aria-label={`Preview ${name}`}
               >
-                {/* gradient overlay below all ui */}
                 <span className="esg-overlay" aria-hidden="true" />
 
-                {/* name + title always visible */}
                 <span className="esg-namebar">
-                  <span className="esg-name-strong">
-                    <FiUser />
+                  <span className="esg-name-strong" id={`speaker-${id}-name`}>
+                    <FiUser aria-hidden="true" focusable="false" />
                     <span className="truncate">{name}</span>
                   </span>
+
                   {title ? (
                     <span className="esg-name-sub">
-                      <FiBriefcase />
+                      <FiBriefcase aria-hidden="true" focusable="false" />
                       <span className="truncate">{title}</span>
                     </span>
                   ) : null}
                 </span>
 
-                {/* corner triangle if open */}
                 {open ? (
                   <span className="esg-open-tri" aria-hidden="true">
                     <span className="esg-open-tri-text">Open to meet</span>
                   </span>
                 ) : null}
 
-                {/* hover/focus badges (org / role) */}
-                <span className="esg-badges">
+                <span className="esg-badges" aria-hidden="true">
                   {org ? <span className="esg-badge">{org}</span> : null}
-                  {role ? <span className="esg-badge esg-badge-ghost">{role}</span> : null}
+                  {role ? (
+                    <span className="esg-badge esg-badge-ghost">{role}</span>
+                  ) : null}
                 </span>
 
-                {/* compare toggle as round confirm badge */}
                 <button
                   type="button"
                   className={`esg-compare ${isSelected ? "on" : ""}`}
@@ -153,12 +284,13 @@ export default function EventSpeakersGrid({
                     onToggleSelect?.(s);
                   }}
                   aria-pressed={isSelected}
-                  title={isSelected ? "Confirmed for compare" : "Confirm for compare"}
+                  aria-label={
+                    isSelected ? "Confirmed for compare" : "Confirm for compare"
+                  }
                 >
-                  <FiCheckCircle />
+                  <FiCheckCircle aria-hidden="true" focusable="false" />
                 </button>
 
-                {/* message floating button (only if logged in) */}
                 {isLoggedIn ? (
                   <button
                     type="button"
@@ -168,21 +300,20 @@ export default function EventSpeakersGrid({
                       e.stopPropagation();
                       alert("Message: TODO");
                     }}
-                    title="Message"
                     aria-label={`Message ${name}`}
                   >
-                    <FiMessageSquare />
+                    <FiMessageSquare aria-hidden="true" focusable="false" />
                   </button>
                 ) : null}
-              </button>
+              </div>
 
-              {/* FOOTER: Read more (always) + Book meeting (if logged in and open) */}
               <div className="esg-footer">
                 <Link
                   className="esg-btn esg-primary"
                   to={isLoggedIn ? hrefOf(s) : loginHref}
+                  aria-label={`Read more about ${name}`}
                 >
-                  <FiExternalLink />
+                  <FiExternalLink aria-hidden="true" focusable="false" />
                   Read more
                 </Link>
 
@@ -192,9 +323,9 @@ export default function EventSpeakersGrid({
                       type="button"
                       className="esg-btn esg-btn-strong"
                       onClick={onBook}
-                      title="Book a meeting"
+                      aria-label={`Book a meeting with ${name}`}
                     >
-                      <FiUserPlus />
+                      <FiUserPlus aria-hidden="true" focusable="false" />
                       Book meeting
                     </button>
                   ) : null}
@@ -204,7 +335,6 @@ export default function EventSpeakersGrid({
           );
         })}
 
-        {/* infinite scroll sentinel */}
         <div ref={sentinelRef} className="esg-sentinel" />
       </div>
     </section>

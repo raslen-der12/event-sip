@@ -608,7 +608,7 @@ export default function HeaderShell({ top, nav, cta ,logo }) {
           <a className="brand" href="/">
             <img
               width={130}
-              src={"https://gits.seketak-eg.com/wp-content/uploads/2025/10/Asset-1logo-eventra-.png"}
+              src={imageLink("default/LOGO GITS COLOR.png")}
               alt="Brand"
             />
           </a>

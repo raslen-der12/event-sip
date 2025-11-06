@@ -1,6 +1,8 @@
 // src/pages/admin/members/AdminSpeakers.jsx
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectCurrentToken } from "../../../features/auth/authSlice";
 import ReactCountryFlag from "react-country-flag";
 import "./admin.attendees.css"; // reuse same styles
 import SessionPicker from "../../../components/admin/SessionPicker";
@@ -188,6 +190,26 @@ export default function AdminSpeakers() {
     sp.delete("id");
     setSearchParams(sp, { replace: true });
   };
+  // helper to reset the createDraft to an empty/new state
+  const resetCreateDraftToEmpty = () => {
+    // keep this shape in sync with your initial createDraft state
+    setCreateDraft({
+      fullName: "",
+      email: "",
+      country: "",
+      eventId: "",
+      jobTitle: "",
+      sessionIds: [],
+      photoFile: null,
+      photoPreview: null,
+      phone: "",
+      city: "",
+      orgName: "",
+      businessRole: "",
+    });
+    setEditingId(null);
+    setIsEditing(false);
+  };
 
   /* ── Create speaker (expanded form + sessions assignment) */
   const [creating, setCreating] = React.useState(false);
@@ -200,8 +222,137 @@ export default function AdminSpeakers() {
     sessionIds: [],
     photoFile: null, // <-- added
     photoPreview: null, // <-- added
+    bio: "",
   });
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editingId, setEditingId] = React.useState(null);
   const [roleKind, setRoleKind] = React.useState(""); // optional “role-like”
+  const token = useSelector(selectCurrentToken);
+
+  // ---------- Edit helpers (paste right after createDraft/isEditing state) ----------
+  // Replace existing handleEditClick with this defensive version
+  // Extremely defensive handleEditClick — paste over your existing function
+  const handleEditClick = async (actorRowOrId) => {
+    try {
+      // if passed whole object with enough data, use it directly
+      let actor = actorRowOrId;
+      let maybeId =
+        typeof actorRowOrId === "string"
+          ? actorRowOrId
+          : actorRowOrId?._id || actorRowOrId?.id;
+
+      const hasEnough = !!(
+        actorRowOrId &&
+        (actorRowOrId.personal ||
+          actorRowOrId.organization ||
+          actorRowOrId.talk)
+      );
+      if (!hasEnough && maybeId) {
+        // build backend base
+        const base =
+          (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "") ||
+          "http://localhost:3500";
+        const safeId = encodeURIComponent(String(maybeId));
+        const url = `${base}/actors/${safeId}`;
+
+        // prefer Redux token, fallback to cookie jwt
+        const pickTokenFromCookie = (name = "jwt") => {
+          try {
+            const m = document.cookie.match(
+              new RegExp(
+                "(?:^|; )" +
+                  name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") +
+                  "=([^;]*)"
+              )
+            );
+            return m ? decodeURIComponent(m[1]) : null;
+          } catch (e) {
+            return null;
+          }
+        };
+        const finalToken = token || pickTokenFromCookie("jwt");
+
+        if (!finalToken) {
+          alert("You are not authenticated. Please login and try again.");
+          return;
+        }
+
+        const headers = {
+          Accept: "application/json",
+          Authorization: `Bearer ${finalToken}`,
+        };
+        const res = await fetch(url, {
+          method: "GET",
+          credentials: "include",
+          headers,
+        });
+        if (!res.ok) {
+          const txt = await res.text().catch(() => `HTTP ${res.status}`);
+          console.warn("Failed to fetch actor for edit:", res.status, txt);
+          alert("Unable to load actor for editing (server error).");
+          return;
+        }
+        const parsed = await res.json();
+        actor = parsed?.data || parsed;
+      }
+
+      // normalize shapes
+      const personal = actor.personal || actor.identity || {};
+      const org = actor.organization || actor.business || actor.identity || {};
+      const sessions = Array.isArray(actor.sessionIds)
+        ? actor.sessionIds
+        : actor.sessions || [];
+
+      // prefill your create form state
+      setCreateDraft((d) => ({
+        ...d,
+        fullName: (
+          personal.fullName ||
+          personal.exhibitorName ||
+          d.fullName ||
+          ""
+        ).trim(),
+        email: ((personal.email || "") + "").toLowerCase().trim(),
+        firstEmail: ((personal.firstEmail || personal.email || "") + "")
+          .toLowerCase()
+          .trim(),
+        country: (personal.country || d.country || "").trim(),
+        phone: (personal.phone || d.phone || "").trim(),
+        city: (personal.city || d.city || "").trim(),
+        jobTitle: (org.jobTitle || d.jobTitle || "").trim(),
+        orgName: (org.orgName || org.name || d.orgName || "").trim(),
+        businessRole: (org.businessRole || d.businessRole || "").trim(),
+        sessionIds: sessions || [],
+        eventId: actor.id_event || actor.eventId || d.eventId || "",
+      }));
+
+      setEditingId(actor._id || actor.id || maybeId);
+      setIsEditing(true);
+      setCreating(true);
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("handleEditClick error:", err);
+      alert("Failed to open editor — see console.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingId(null);
+    setCreateDraft({
+      fullName: "",
+      email: "",
+      country: "",
+      eventId: "",
+      jobTitle: "",
+      sessionIds: [],
+      photoFile: null,
+      photoPreview: null,
+    });
+    if (typeof setRoleKind === "function") setRoleKind("");
+  };
+  // -------------------------------------------------------------------------------
 
   // upload hook
   const [uploadActorPhoto, { isLoading: uploadingPhoto }] =
@@ -282,67 +433,89 @@ export default function AdminSpeakers() {
   const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!"; // temporary password generator
 
   const onCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!canCreate) return;
+  e.preventDefault();
+  if (!canCreate) return;
 
-    const payload = {
-      role: ROLE,
-      eventId: createDraft.eventId,
-      roleKind: roleKind || undefined,
-      personal: {
-        fullName: (createDraft.fullName || "").trim(),
-        email: (createDraft.email || "").trim(),
-        firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
-        country: (createDraft.country || "").trim().toUpperCase(),
-        phone: (createDraft.phone || "").trim(),
-      },
-      organization: {
-        jobTitle: (createDraft.jobTitle || "").trim(),
-        orgName: (createDraft.orgName || "").trim(),
-        businessRole: (createDraft.businessRole || "").trim(),
-      },
-      sessionIds: createDraft.sessionIds || [],
-      // ensure pwd exists because your schema requires it
-      pwd: createDraft.pwd || generateTempPwd(),
-    };
+  // client-side normalization + enforce server-side limits
 
-    try {
-      const created = await createActor(payload).unwrap();
-      const newId = created?.data?._id || created?._id || created?.id;
-
-      if (newId && createDraft.photoFile) {
-        try {
-          await uploadActorPhoto({
-            id: newId,
-            file: createDraft.photoFile,
-          }).unwrap();
-        } catch (upErr) {
-          console.error("Photo upload failed:", upErr);
-          alert("Speaker created but image upload failed.");
-        }
-      }
-
-      setCreating(false);
-      setCreateDraft({
-        fullName: "",
-        email: "",
-        firstEmail: "",
-        country: "",
-        eventId: "",
-        sessionIds: [],
-        photoFile: null,
-        photoPreview: null,
-        jobTitle: "",
-        orgName: "",
-        businessRole: "",
-      });
-      setRoleKind("");
-      refetch();
-    } catch (err) {
-      console.error("Create speaker failed:", err);
-      alert(err?.data?.message || "Create failed");
-    }
+  const payload = {
+    personal: {
+      fullName: (createDraft.fullName || "").trim(),
+      email: (createDraft.email || "").trim(),
+      firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
+      country: (createDraft.country || "").trim().toUpperCase(),
+      phone: (createDraft.phone || "").trim(),
+      city: (createDraft.city || "").trim(),
+      bio: (createDraft.bio || '').trim().slice(0, 300), // <= 300 chars
+    },
+    organization: {
+      orgName: (createDraft.orgName || "").trim(),
+      jobTitle: (createDraft.jobTitle || "").trim(),
+      businessRole: (createDraft.businessRole || "").trim(),
+    },
+    links: {
+      website: createDraft.website || "",
+      linkedin: createDraft.linkedin || "",
+    },
+    sessionIds: createDraft.sessionIds || [],
+    eventId: createDraft.eventId || undefined,
   };
+
+  try {
+    const base =
+      (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "") ||
+      "http://localhost:3500";
+
+    if (isEditing && editingId) {
+      const url = `${base}/actors/update/${encodeURIComponent(editingId)}`;
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(url, {
+        method: "PATCH",
+        credentials: "include",
+        headers,
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Update failed: " + res.status);
+      await res.json();
+      alert("Speaker updated");
+    } else {
+      // existing create flow (POST /actors/create)
+      const url = `${base}/actors/create`;
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        headers,
+        body: JSON.stringify({ ...payload, role: "speaker" }),
+      });
+      if (!res.ok) throw new Error("Create failed: " + res.status);
+      await res.json();
+      alert("Speaker created");
+    }
+
+    // Clean up UI and refetch
+    setIsEditing(false);
+    setEditingId(null);
+    setCreateDraft({
+      fullName: "",
+      email: "",
+      country: "",
+      eventId: "",
+      jobTitle: "",
+      bio: "",             // reset bio too
+      sessionIds: [],
+      photoFile: null,
+      photoPreview: null,
+    });
+    refetch(); // call whatever fetch function you use to reload list
+  } catch (err) {
+    console.error("Submit error:", err);
+    alert("Submit failed — see console.");
+  }
+};
+
 
   /* Top-bar actions */
   const seeMore = () => {
@@ -439,9 +612,14 @@ export default function AdminSpeakers() {
             >
               {isFetching ? "Loading…" : "Refresh"}
             </button>
+
             <button
               className="btn brand ml-4"
-              onClick={() => setCreating((v) => !v)}
+              onClick={() => {
+                // always open create form (not edit)
+                resetCreateDraftToEmpty();
+                setCreating(true);
+              }}
             >
               {creating ? "Close form" : "Create speaker"}
             </button>
@@ -524,11 +702,11 @@ export default function AdminSpeakers() {
                   </select>
                 </label>
 
-                {/* Job title input */}
-                <label className="mp-field">
-                  <span className="mp-label">Intitulé du poste</span>
+                {/* Job title input (matches other fields) */}
+                <label className="att-field">
+                  <div className="att-lbl">Job Title</div>
                   <input
-                    className="mp-input"
+                    className="input"
                     type="text"
                     value={createDraft.jobTitle || ""}
                     onChange={(e) =>
@@ -537,7 +715,22 @@ export default function AdminSpeakers() {
                         jobTitle: e.target.value,
                       }))
                     }
-                    placeholder="Ex : Product Manager, Développeur Front, Designer"
+                    placeholder="Ex: Product Manager, Développeur Front, Designer"
+                  />
+                </label>
+
+                {/* Bio input (matches other fields) */}
+                <label className="att-field">
+                  <div className="att-lbl">Bio</div>
+                  <textarea
+                    className="input"
+                    value={createDraft.bio || ""}
+                    onChange={(e) =>
+                      setCreateDraft((d) => ({ ...d, bio: e.target.value }))
+                    }
+                    placeholder="Short bio — e.g. Senior Frontend Engineer, 10+ years, loves accessibility"
+                    rows={4}
+                    maxLength={300}
                   />
                 </label>
 
@@ -604,18 +797,43 @@ export default function AdminSpeakers() {
 
             <div className="att-create-actions">
               <button
+                type="submit"
                 className="btn brand"
                 disabled={!canCreate || creatingReq || uploadingPhoto}
               >
                 {creatingReq
-                  ? "Creating…"
+                  ? isEditing
+                    ? "Saving…"
+                    : "Creating…"
                   : uploadingPhoto
-                  ? "Uploading photo…"
+                  ? isEditing
+                    ? "Uploading photo…"
+                    : "Uploading photo…"
+                  : isEditing
+                  ? "Save changes"
                   : "Create speaker"}
               </button>
+
+              {isEditing ? (
+                // show a cancel edit button when editing
+                <button
+                  type="button"
+                  className="btn ml-4"
+                  onClick={() => {
+                    // cancel editing and reset form
+                    resetCreateDraftToEmpty();
+                    // optionally close form UI
+                    setCreating(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
+
               <span className="att-hint muted ml-8">
-                The speaker will be created and linked to the selected event
-                sessions.
+                {isEditing
+                  ? "You are editing an existing speaker. Click Save changes to apply."
+                  : "The speaker will be created and linked to the selected event sessions."}
               </span>
             </div>
           </form>
@@ -641,6 +859,7 @@ export default function AdminSpeakers() {
                 key={getId(it)}
                 item={it}
                 onOpen={() => openModal(getId(it))}
+                onEdit={() => handleEditClick(it)}
               />
             ))
           ) : (
@@ -665,7 +884,7 @@ export default function AdminSpeakers() {
 
 /* ───────────────────────── Small components ───────────────────────── */
 
-function SpeakerRow({ item, onOpen }) {
+function SpeakerRow({ item, onOpen, onEdit }) {
   const name = item?.personal?.fullName || item?.name || "—";
   const email = item?.personal?.email || item?.email || "—";
   const countryKey =
@@ -674,8 +893,23 @@ function SpeakerRow({ item, onOpen }) {
   const verified = !!(item?.verified ?? item?.verifiedEmail);
   const eventId = item?.id_event || item?.eventId || item?.event?._id;
 
+  const onKey = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (typeof onOpen === "function") onOpen();
+    }
+  };
+
   return (
-    <button className="att-row" onClick={onOpen} title="Open">
+    <div
+      className="att-row"
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={onKey}
+      title="Open"
+      style={{ display: "flex", alignItems: "center" }}
+    >
       <div className="att-avatar">
         {pic && !isDefaultPhoto(pic) ? (
           <img className="att-img" src={imageLink(pic)} alt={name} />
@@ -685,7 +919,8 @@ function SpeakerRow({ item, onOpen }) {
           </span>
         )}
       </div>
-      <div className="att-meta">
+
+      <div className="att-meta" style={{ flex: 1 }}>
         <div className="att-name line-1">{name}</div>
         <div className="att-sub line-1">{email}</div>
         <div className="att-sub tiny">
@@ -697,12 +932,27 @@ function SpeakerRow({ item, onOpen }) {
           ) : null}
         </div>
       </div>
+
       <div className="att-right">
-        <span className={`pill-verify ${verified ? "ok" : "no"}`}>
-          {verified ? "Email verified" : "Unverified"}
-        </span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn tiny" // match your app btn classes (or use att-row styles)
+            onClick={(e) => {
+              e.stopPropagation();
+              if (typeof onEdit === "function") onEdit(item);
+            }}
+            title="Edit"
+          >
+            Edit
+          </button>
+
+          <span className={`pill-verify ${verified ? "ok" : "no"}`}>
+            {verified ? "Email verified" : "Unverified"}
+          </span>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
 
