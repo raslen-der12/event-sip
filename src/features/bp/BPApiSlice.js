@@ -265,6 +265,22 @@ export const BPApiSlice = apiSlice.injectEndpoints({
       return [];
     }
   }),
+  getMarketBusinesses: builder.query({
+    query: (params) => ({ url: "/biz/market/businesses", method: "GET", params }),
+    transformResponse: (res) => res || { items: [], total: 0 },
+    providesTags: (result, err, args) => [{ type: "MarketBusinesses", id: JSON.stringify(args || {}) }],
+  }),
+  getCommunityFacets: builder.query({
+    query: (params) => ({ url: '/community/facets', method: 'GET', params }),
+    transformResponse: (res) => res || { types:[], countries:[] },
+    providesTags: ['CommunityFacets'],
+    keepUnusedDataFor: 300,
+  }),
+  getCommunityList: builder.query({
+    query: (params) => ({ url: '/community/list', method: 'GET', params }),
+    transformResponse: (res) => res || { items:[], total:0 },
+    providesTags: (r,e,a)=>[{type:'CommunityList',id:JSON.stringify(a||{})}],
+  }),
 
   }),
   overrideExisting: true,
@@ -339,4 +355,7 @@ export const {
   useLazyGetMarketItemsQuery,
   useGetMarketItemQuery,
   useGetPublicEngagementsQuery,
+  useGetMarketBusinessesQuery,
+  useGetCommunityFacetsQuery,
+  useGetCommunityListQuery,
 } = BPApiSlice;
