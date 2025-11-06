@@ -239,11 +239,18 @@ export const BPApiSlice = apiSlice.injectEndpoints({
     /* ============================ Market ============================ */
     getMarketFacets: builder.query({
       query: () => ({ url: "biz/market/facets" }),
-      transformResponse: (res) => (res?.success ? res : { success: false, sectors: [], counts: {}, tagsTop: [] }),
+      transformResponse: (res) => res || {},
+      providesTags: ["MarketFacets"],
+      keepUnusedDataFor: 300,
     }),
     getMarketItems: builder.query({
-      query: (id) => `/biz/market/items/${id}`,
-      transformResponse: (res) => (res && res.data ? res.data : res),
+      query: (params) => ({
+        url: "biz/market/items",
+        method: "GET",
+        params,
+      }),
+      transformResponse: (res) => res || { items: [], total: 0 },
+      providesTags: (result, err, args) => [{ type: "MarketItems", id: JSON.stringify(args || {}) }],
     }),
     getMarketItem: builder.query({
       query: (id) => ({ url: `biz/market/item/${id}` }),
@@ -329,6 +336,7 @@ export const {
   // market
   useGetMarketFacetsQuery,
   useGetMarketItemsQuery,
+  useLazyGetMarketItemsQuery,
   useGetMarketItemQuery,
   useGetPublicEngagementsQuery,
 } = BPApiSlice;
