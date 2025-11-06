@@ -1,214 +1,466 @@
-/* ====== Section ====== */
+:root{
+  --brand: #0ea5a4;
+  --brand-2: #06b6d4;
+  --namebar-height: 72px;
+  --card-radius: 16px;
+  --muted: #5f6b85;
+  --text: #0f1221;
+  --ui-bg: #ffffff;
+  --glass: rgba(255,255,255,0.08);
+  --shadow-lg: 0 18px 40px rgba(2,6,23,0.08);
+  --shadow-sm: 0 6px 18px rgba(2,6,23,0.06);
+  --ease-md: cubic-bezier(.2,.9,.3,1);
+}
+
+/* Section */
 .esg{
-  background:#fff; color:#0f1221; padding:16px 0;
-  border-top:1px solid rgba(0,0,0,.06);
+  background: var(--ui-bg);
+  color: var(--text);
+  padding: 18px 0;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-.esg-head{ margin-bottom:12px; text-align:left; }
+.esg-head{
+  margin-bottom: 14px;
+  display:flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
 .esg-title{
-  margin:0; font-weight:900; letter-spacing:.2px;
-  font-size:clamp(22px,4.2vw,28px); color:var(--brand);
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: clamp(22px, 4vw, 28px);
+  color: var(--brand);
 }
-.esg-sub{ margin:6px 0 0; color:#5f6b85; }
+.esg-sub{
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
 
-/* ====== Grid (3 / 2 / 1) ====== */
+/* Grid - slightly taller rows so photos feel larger */
 .esg-grid{
-  display:grid;
+  display: grid;
+  gap: 18px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap:16px;
-  align-items:stretch;
+  align-items: stretch;
 }
-@media (max-width: 1024px){ .esg-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px){  .esg-grid{ grid-template-columns: 1fr; } }
+@media (max-width: 1024px){ .esg-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 640px){ .esg-grid{ grid-template-columns: 1fr; gap: 12px; } }
 
-/* ====== Card ====== */
+/* Card base - increased min-height to give the media space */
 .esg-card{
-  background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:16px; overflow:hidden;
-  position:relative; transition: transform .14s ease, box-shadow .14s ease;
-  display:flex; flex-direction:column;
+  background: var(--ui-bg);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: var(--card-radius);
+  overflow: visible;
+  position: relative;
+  transition: transform .22s var(--ease-md), box-shadow .22s ease, border-color .22s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* increased height so photos are more prominent */
+  box-shadow: var(--shadow-sm);
 }
-.esg-card:hover{ transform: translateY(-2px); box-shadow: 0 16px 32px rgba(0,0,0,.08); }
-.esg-card.is-selected{ outline:2px solid color-mix(in oklab, var(--brand) 50%, #fff 50%); outline-offset:0; }
+.esg-card:hover,
+.esg-card:focus-within{
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in oklab, var(--brand) 18%, rgba(0,0,0,0.04));
+}
+.esg-card.is-selected{
+  outline: 3px solid rgba(14,165,164,0.12);
+  outline-offset: 2px;
+}
 
-/* ====== Media (square image area) ====== */
+/* Media (square) - keep square but allow larger area via card min-height */
 .esg-media{
-  position:relative; width:100%;
-  background:center/cover no-repeat;
-  cursor:pointer; border:none; padding:0;
+  position: relative;
+  width: 100%;
+  display: block;
+  aspect-ratio: 1/1;
+  max-height: 60vh;
+  background-position: center;
+  background-size: cover;
+  border-radius: calc(var(--card-radius) - 2px);
+  cursor: pointer;
+  isolation:isolate;
+  overflow: hidden;
 }
-.esg-media.esg-square{ aspect-ratio: 1 / 1; display:block; }
-
-/* overlay sits under UI */
-.esg-overlay{
-  position:absolute; inset:0; pointer-events:none; z-index:1;
+.esg-media::before{
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0) 44%, rgba(0,0,0,.38) 100%),
-    radial-gradient(60% 50% at 80% 20%, color-mix(in oklab, var(--brand-2) 20%, transparent 80%), transparent 80%),
-    radial-gradient(60% 50% at 20% 80%, color-mix(in oklab, var(--brand) 20%, transparent 80%), transparent 80%);
-  mix-blend-mode: normal;
+    linear-gradient(180deg, rgba(0,0,0,0) 36%, rgba(0,0,0,0.42) 100%),
+    radial-gradient(60% 50% at 82% 18%, color-mix(in oklab, var(--brand-2) 18%, transparent 82%), transparent 82%),
+    radial-gradient(60% 50% at 18% 82%, color-mix(in oklab, var(--brand) 16%, transparent 84%), transparent 84%);
+  z-index: 2;
+  pointer-events: none;
+  transition: transform .22s var(--ease-md), opacity .22s ease;
+  transform-origin: center;
+}
+.esg-card:hover .esg-media::before,
+.esg-card:focus-within .esg-media::before{
+  transform: scale(1.02);
+  opacity: 1;
 }
 
-/* ====== Name bar (always visible) ====== */
+/* Namebar - now spans left to right within the card (no cramped right inset) */
 .esg-namebar{
-  position:absolute; left:10px; right:54px; bottom:10px; z-index:2;
-  display:grid; gap:6px;
+  position: absolute;
+  left: 12px;
+  right: 12px; /* expanded to full width with comfortable padding */
+  bottom: 12px;
+  z-index: 6;
+  display: grid;
+  gap: 8px;
+  min-height: var(--namebar-height);
+  pointer-events: none;
+  transition: transform .2s var(--ease-md), opacity .18s ease;
 }
-.esg-name-strong{
-  display:inline-flex; align-items:center; gap:8px; max-width:100%;
-  padding:6px 10px; border-radius:999px;
-  background: rgba(0,0,0,.45);
-  color:#fff; font-weight:900; letter-spacing:.2px; font-size:14px;
-  border:1px solid rgba(255,255,255,.18);
-}
+.esg-name-strong,
 .esg-name-sub{
-  display:inline-flex; align-items:center; gap:8px; max-width:100%;
-  padding:6px 10px; border-radius:999px;
-  background: rgba(255,255,255,.12);
-  color:#fff; font-weight:800; font-size:12px; border:1px solid rgba(255,255,255,.18);
-}
-.truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-/* ====== Corner open badge (triangle) ====== */
-.esg-open-tri{
-  position:absolute; right:0; bottom:0; z-index:2;
-  width:152px; height:152px;
-  background: var(--brand-2);
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
-  opacity:0; transition: opacity .18s ease;
-  display:flex; align-items:flex-end; justify-content:flex-end;
-  pointer-events:none;
-}
-.esg-open-tri-text{
-  color:#fff; font-weight:900; font-size:18px; letter-spacing:.12em; text-transform:uppercase;
-  transform: rotate(-45deg) translate(75px, -47px);
-  transform-origin: bottom right;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.35));
-  user-select:none;
-}
-.esg-card:hover .esg-open-tri,
-.esg-card:focus-within .esg-open-tri{ opacity:0.70; }
-
-/* touch devices: keep open badge softly visible */
-@media (hover: none){
-  .esg-open-tri{ opacity:.85; }
+  display: flex; /* use full-width flex so borders stretch edge-to-edge within namebar padding */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(2,6,23,0.06) inset;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* ====== Hover/Foucus badges (org/role) ====== */
+/* Primary name: single-line ellipsis, full width look */
+.esg-name-strong{
+  background: linear-gradient(180deg, rgba(0,0,0,0.52), rgba(0,0,0,0.38));
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  border: 1px solid rgba(255,255,255,0.16);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+.esg-name-strong .truncate{
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+/* Job title: two-line graceful clamp and full-width border */
+.esg-name-sub{
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.esg-name-sub .truncate{
+  display: block;
+  min-width: 0;
+  flex: 1 1 0;
+  white-space: normal;
+  line-height: 1.18;
+  max-height: calc(1.18em * 2);
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Top-left badges appear on hover */
 .esg-badges{
-  position:absolute; top:10px; left:10px; z-index:2;
-  display:flex; flex-wrap:wrap; gap:8px;
-  opacity:0; transform: translateY(-4px);
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 7;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-6px);
   transition: opacity .16s ease, transform .16s ease;
-  pointer-events:none;
+  pointer-events: none;
 }
 .esg-card:hover .esg-badges,
-.esg-card:focus-within .esg-badges{ opacity:1; transform: translateY(0); }
-
-@media (hover:none){
-  .esg-badges{ opacity:.8; transform:none; }
+.esg-card:focus-within .esg-badges{
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
-
 .esg-badge{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px 10px; border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius: 999px;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  color:#fff; font-weight:800; font-size:12px;
-  border:1px solid rgba(255,255,255,.18);
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
 }
 .esg-badge-ghost{
-  background:#ffffffd0; color:#0f1221; border:1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,0.94);
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
-/* ====== Compare toggle (round confirm) ====== */
+/* Compare toggle - top-right */
 .esg-compare{
-  position:absolute; top:10px; right:10px; z-index:3;
-  width:36px; height:36px; border-radius:999px;
-  display:inline-grid; place-items:center; cursor:pointer;
-  background:#fff; color:#0f1221; border:1px solid rgba(0,0,0,.08);
-  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease, border-color .12s ease;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  background: #fff;
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.08);
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+  box-shadow: 0 6px 14px rgba(2,6,23,0.06);
 }
-.esg-compare:hover{ transform: translateY(-1px); }
+.esg-compare:hover{ transform: translateY(-2px) scale(1.02); }
 .esg-compare.on{
-  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#fff; border-color:transparent;
-  box-shadow: 0 14px 28px rgba(30,11,58,.25);
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 12px 32px rgba(6,182,212,0.12);
 }
 
-/* ====== Message floating button (in photo) ====== */
+/* Message button stacked directly below compare (upright) */
 .esg-msg{
-  position:absolute; top:56px; right:10px; z-index:3;
-  width:36px; height:36px; border-radius:999px;
-  display:inline-grid; place-items:center; cursor:pointer;
-  background:#ffffffcc; color:#0f1221; border:1px solid rgba(0,0,0,.08);
-  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+  position: absolute;
+  top: calc(12px + 44px); /* 12px top + 44px (compare height + gap) -> places directly under compare */
+  right: 12px;
+  z-index: 9;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  background: #ffffffd9;
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.08);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
 }
-.esg-msg:hover{ transform: translateY(-1px); background:#fff; }
+.esg-msg:hover{ transform: translateY(-2px); background: #fff; }
 
-/* ====== Footer (bottom actions) ====== */
+/* Open-to-meet corner triangle, subtle */
+.esg-open-tri{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 104px;
+  height: 104px;
+  background: var(--brand-2);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-end;
+  pointer-events: none;
+}
+.esg-card:hover .esg-open-tri,
+.esg-card:focus-within .esg-open-tri{ opacity: 0.68; transform: translateY(-2px); }
+.esg-open-tri-text{
+  color:#fff;
+  font-weight:900;
+  font-size:13px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  transform: rotate(-45deg) translate(54px, -34px);
+  transform-origin: bottom right;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.28));
+}
+
+/* Footer actions */
 .esg-footer{
-  padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;
-  border-top:1px solid rgba(0,0,0,.06); background:#fff;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  background: transparent;
 }
-.esg-foot-right{ display:flex; flex-wrap:wrap; gap:8px; }
+.esg-foot-right{ display:flex; gap:8px; align-items:center; }
 
+/* Buttons */
 .esg-btn{
-  appearance:none; border:1px solid rgba(0,0,0,.08); background:#fff; color:#0f1221;
-  padding:9px 12px; border-radius:10px; font-weight:800; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-  transition: background .12s ease, transform .12s ease, box-shadow .12s ease, border-color .12s ease, color .12s ease;
+  appearance: none;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
 }
-.esg-btn:hover{ background:#f6f7fb; color:#000; }
+.esg-btn:hover{ transform: translateY(-2px); background: #f6f7fb; }
 .esg-primary{
-  background:linear-gradient(135deg, var(--brand), var(--brand-2));
-  color:#fff; border-color:transparent;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  color: #052023;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(6,182,212,0.06);
 }
-.esg-primary:hover{ filter:brightness(1.02); }
 .esg-btn-strong{
-  background:#f6f7fb; border-color:rgba(0,0,0,.06); color:#0f1221;
+  background: #f6f7fb;
+  color: var(--text);
+  border-color: rgba(0,0,0,0.06);
+  font-weight: 800;
 }
 
-/* ====== Skeleton / Empty ====== */
+/* Skeleton */
 .is-skeleton{
-  height:360px;
-  background:linear-gradient(90deg,#f1f2f6,#fafafd,#f1f2f6);
-  border-radius:16px; border:1px solid rgba(0,0,0,.06);
+  height: 400px;
+  background: linear-gradient(90deg,#f1f2f6,#fafafd,#f1f2f6);
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
   animation: esg-sk 1.2s linear infinite;
 }
 @keyframes esg-sk{ from{background-position:-200% 0} to{background-position:200% 0} }
 
+/* Empty */
 .esg-empty{
-  margin:12px 0; padding:12px; background:#f7f9fc;
-  border:1px dashed rgba(0,0,0,.12); border-radius:12px; text-align:center; color:#6b7280;
+  margin: 12px 0;
+  padding: 12px;
+  background: #f7f9fc;
+  border: 1px dashed rgba(0,0,0,0.12);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--muted);
 }
 
-/* ====== Sentinel ====== */
-.esg-sentinel{ grid-column: 1 / -1; height:1px; }
+/* Safety: hide legacy injected pill */
+.esg-card .esq-pill { display: none !important; }
 
-@media (max-width: 1180px) {
-  .esg-btn{
-    font-size: 9.5pt ;
-  }
+/* Sentinel */
+.esg-sentinel{ grid-column: 1 / -1; height: 1px; }
+
+/* Focus accessibility */
+.esg-card :where(button, a, [role="button"]){
+  outline: none;
 }
-@media (max-width: 1025px) {
-  .esg-btn{
-    font-size: 15pt ;
-  }
+.esg-card :where(button, a, [role="button"]):focus-visible{
+  box-shadow: 0 0 0 4px rgba(14,165,164,0.12);
+  border-radius: 8px;
 }
-@media (max-width: 911px) {
-  .esg-btn{
-    font-size: 12pt !important;
-  }
+
+/* Responsive micro-tweaks */
+@media (max-width: 560px){
+  :root{ --namebar-height: 86px; }
+  .esg-name-strong{ font-size: 15px; padding: 10px 14px; }
+  .esg-name-sub{ font-size: 13px; padding: 8px 12px; }
+  .esg-compare, .esg-msg{ width: 40px; height: 40px; }
+  .esg-namebar{ right: 12px; left: 12px; bottom: 10px; }
 }
-@media (max-width: 780px) {
-  .esg-btn{
-    font-size: 9pt !important;
-  }
+/* ---------- Option A — preferred: card becomes a 3-row grid so media expands ---------- */
+/* Card base: switch to grid so we can let the media row grow */
+.esg-card{
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* header (if any) / media / footer */
+  min-height: 480px; /* increased baseline; tweak this number as needed */
+  gap: 0;
+  background: var(--ui-bg);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: var(--card-radius);
+  overflow: visible;
+  position: relative;
+  transition: transform .22s var(--ease-md), box-shadow .22s ease, border-color .22s ease;
+  box-shadow: var(--shadow-sm);
 }
-@media (max-width: 640px) {
-  .esg-btn{
-    font-size: 15pt !important;
-  }
+
+/* Ensure the media sits in the middle row and can expand to fill space */
+.esg-media{
+  grid-row: 2;            /* occupies the growing middle row */
+  width: 100%;
+  /* remove fixed square constraint so the media can grow vertically */
+  aspect-ratio: auto;     /* allow natural height */
+  height: 100%;
+  min-height: 240px;      /* safe minimum for small screens */
+  max-height: 70vh;       /* keep from getting absurdly tall */
+  display:block;
+  background-position: center;
+  background-size: cover;
+  border-radius: calc(var(--card-radius) - 2px);
+  cursor: pointer;
+  isolation:isolate;
+  overflow: hidden;
 }
-@media (max-width: 445px) {
-  .esg-btn{
-    font-size: 11pt !important;
-  }
+
+/* If you use <img> inside .esg-media — make it cover and stay centered */
+.esg-media img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover; /* preserves aspect and fills the area */
 }
+
+/* Make the grid rows themselves taller so even cards without much content show larger media */
+.esg-grid{
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;               /* let items start at top rather than stretch in odd ways */
+  grid-auto-rows: minmax(420px, auto); /* baseline height for rows — increases the visible area for photos */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px){
+  .esg-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); grid-auto-rows: minmax(380px, auto); }
+  .esg-card{ min-height: 420px; }
+}
+@media (max-width: 640px){
+  .esg-grid{ grid-template-columns: 1fr; gap: 12px; grid-auto-rows: minmax(300px, auto); }
+  .esg-card{ min-height: 360px; }
+}
+
+:root{ --brand-accent: #cfeeff; }
+
+/* keep grid static (no entrance), focus the motion into the namebar */
+.esg-namebar{
+  --sheenOffset: -60%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02));
+  transition: transform .18s var(--ease-md), opacity .18s ease;
+  overflow: visible;
+}
+.esg-namebar::after{
+  content:"";
+  position:absolute;
+  left: -40%;
+  top: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(191,238,255,0.25), transparent);
+  transform: translateX(var(--sheenOffset));
+  pointer-events: none;
+  filter: blur(8px);
+  transition: transform .9s cubic-bezier(.2,.8,.2,1);
+}
+.esg-card:hover .esg-namebar::after{
+  transform: translateX(220%); /* shimmer passes across on hover */
+}
+
+/* slightly lift card on hover but no blue rim */
+.esg-card:hover{ transform: translateY(-6px); box-shadow: var(--shadow-lg); }
 

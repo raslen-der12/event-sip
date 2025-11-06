@@ -98,7 +98,6 @@ const normMyMap = (raw) => {
   const m = new Map();
   list.forEach((row) => {
     const st = row?.status;
-    // both styles supported: {session:{...}} or { ...sessionFields }
     const s = row?.session || row;
     const sid = idOf(s);
     if (sid) m.set(String(sid), st || "registered");
@@ -114,11 +113,52 @@ const I = {
   tag:   () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10 4h7l3 3-10 10-7-7 7-6Z" stroke="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/></svg>),
 };
 
+/* larger mic avatar (used where images used to be) */
+function MicAvatar({ size = 40 }) {
+  const px = typeof size === "number" ? `${size}px` : size;
+  return (
+    <div
+      style={{ width: px, height: px }}
+      className="flex items-center justify-center rounded-full bg-gray-100 text-gray-700 shrink-0"
+      aria-hidden="true"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="9" y="3" width="6" height="10" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M5 9v1a7 7 0 0 0 14 0V9M12 20v-3" stroke="currentColor" strokeWidth="1.5"/>
+      </svg>
+    </div>
+  );
+}
+
+/* ───────────── Speaker UI ───────────── */
+/* Keep pill truncation in list view for compactness; modal will show full text */
+function SpeakerPill({ name, title, size = "sm", onClick }) {
+  const imgSize = size === "md" ? "w-10 h-10" : "w-8 h-8";
+  const textClass = size === "md" ? "text-sm" : "text-xs";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 bg-white/80 border border-gray-100 rounded-full px-2 py-1 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-200 ${size === "md" ? "p-2" : ""}`}
+      aria-label={`Open speaker ${name}`}
+    >
+      <span className={`${imgSize} rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center`} aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="10" rx="3" stroke="currentColor"/><path d="M5 9v1a7 7 0 0 0 14 0V9M12 20v-3" stroke="currentColor"/></svg>
+      </span>
+      <div className="min-w-0 text-left">
+        <div className={`font-medium text-gray-800 truncate ${textClass}`}>{name}</div>
+        {title ? <div className={`text-gray-500 truncate ${textClass}`}>{title}</div> : null}
+      </div>
+    </button>
+  );
+}
+
+/* ───────────── Capacity bar ───────────── */
 function CapacityBar({ count = 0, cap = null }) {
   if (cap == null) return null;
   const pct = Math.max(0, Math.min(100, Math.round((count / Math.max(1, cap)) * 100)));
   return (
-    <div className="ag__cap">
+    <div className="ag__cap mt-3">
       <div className="ag__capBar"><span style={{ width: `${pct}%` }} /></div>
       <div className="ag__capTxt">{count}/{cap} seats</div>
     </div>
@@ -166,7 +206,7 @@ export default function SchedulePage({ mySessionsHref = "/me/sessions" }) {
     return Array.from(set).sort();
   }, [allSessions]);
 
-  const firstDay = allDays[0] || null; // FIRST DAY
+  const firstDay = allDays[0] || null;
 
   /* Active day */
   const [day, setDay] = React.useState(() => allDays[0] || null);
@@ -189,23 +229,22 @@ export default function SchedulePage({ mySessionsHref = "/me/sessions" }) {
       .map((s) => ({ ...s, room: s.room || roomsById.get(String(s.roomId)) || s.roomId }));
   }, [dayRes, day, roomsById]);
 
-const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
+  const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
 
- // Merge API counts with per-session seatsTaken fallback
- const mergedCounts = React.useMemo(() => {
-   const base = counts || {};
-   const out = {};
-   daySessions.forEach((s) => {
-     const id = s.id;
-     console.log("s",s);
-     const reg = (base?.[id]?.seatsTaken != null)
-       ? base[id].seatsTaken
-       : (typeof s.seatsTaken === "number" ? s.seatsTaken : 0);
-     const waitlisted = base?.[id]?.seatsTaken ?? 0;
-     out[id] = { seatsTaken: reg, waitlisted };
-   });
-   return out;
- }, [counts, daySessions]);
+  /* Merge API counts with per-session seatsTaken fallback */
+  const mergedCounts = React.useMemo(() => {
+    const base = counts || {};
+    const out = {};
+    daySessions.forEach((s) => {
+      const id = s.id;
+      const reg = (base?.[id]?.seatsTaken != null)
+        ? base[id].seatsTaken
+        : (typeof s.seatsTaken === "number" ? s.seatsTaken : 0);
+      const waitlisted = base?.[id]?.seatsTaken ?? 0;
+      out[id] = { seatsTaken: reg, waitlisted };
+    });
+    return out;
+  }, [counts, daySessions]);
 
   /* My sessions map */
   const { data: myRes, refetch: refetchMine } = useGetMySessionsQuery({ eventId: currentEventId }, { skip: !currentEventId });
@@ -217,16 +256,12 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
   // ⬇️ B2B EXCLUDED FROM CONFLICTS
   const conflictWith = React.useMemo(() => {
     if (!open) return null;
-    // If the currently opened session is B2B → NO conflicts
     if (isB2B(open.track)) return null;
-
-    // consider only my registered sessions that are NOT B2B, same day
     const mine = allSessions.filter(s =>
       myMap.get(String(s.id)) === "registered" &&
       !isB2B(s.track) &&
       sameDay(s.startTime, day)
     );
-
     return mine.find(m => overlap(open.startTime, open.endTime, m.startTime, m.endTime)) || null;
   }, [open, myMap, allSessions, day]);
 
@@ -265,14 +300,14 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
     if (cap != null && reg >= cap) return <span className="ag__chip -full">full</span>;
     return null;
   };
-   const nav = [
+
+  const nav = [
     { label: "Home", href: "/" },
     { label: "Event", href: `/event/${eventId}` },
     { label: "Speakers", href: `/event/${eventId}/speakers` },
     { label: "Attendees", href: `/event/${eventId}/attendees` },
     { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
     { label: "Schedule", href: `/event/${eventId}/schedule` },
-    // { label: "Tickets", href: `/event/${eventId}/tickets` },
   ];
 
   return (
@@ -294,7 +329,7 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
                   type="button"
                   role="tab"
                   aria-selected={day === d}
-                  className={`ag__pill ${day === d ? "is-active" : ""}`}
+                  className={`ag__pill ${day === d ? "is-active" : ""} focus:outline-none focus:ring-2 focus:ring-indigo-200`}
                   onClick={() => setDay(d)}
                 >
                   {fmtMD(d)}
@@ -315,43 +350,72 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
                 .sort((a,b)=> +new Date(a.startTime) - +new Date(b.startTime))
                 .map((s) => {
                   const b2b = isB2B(s.track);
+                  const speakerCount = Array.isArray(s.speakers) ? s.speakers.length : 0;
                   return (
                     <li key={s.id} className="ag__item">
                       <button
                         type="button"
-                        className={`ag__card ${b2b ? "-b2b" : ""}`}
+                        className={`ag__card ${b2b ? "-b2b" : ""} bg-white rounded-lg border hover:shadow-md transition-shadow duration-150 p-4 flex gap-4 items-start w-full`}
                         onClick={() => setOpen(s)}
                         title="View details"
                       >
-                        <div className="ag__time">
+                        <div className="ag__time flex-shrink-0 text-gray-700">
                           <I.clock />
-                          <span>{fmtHM(s.startTime)}–{fmtHM(s.endTime)}</span>
+                          <span className="ml-1">{fmtHM(s.startTime)}–{fmtHM(s.endTime)}</span>
                         </div>
 
-                        <div className="ag__main">
-                          <h3 className="ag__name">{s.sessionTitle}</h3>
-                          <div className="ag__meta">
-                            <span className="ag__metaRow">
-                              <I.mic />
-                              <span className="ag__speaker">{s?.speaker?.fullName || (s.speakers?.[0]?.name) || "Speaker"}</span>
-                            </span>
+                        <div className="ag__main flex-1 min-w-0">
+                          <h3 className="ag__name text-lg font-semibold text-gray-900 truncate">{s.sessionTitle}</h3>
 
-                            <span className="ag__metaRow">
+                          <div className="ag__meta mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
                               <I.room />
                               <span>{s.room}</span>
-                            </span>
+                            </div>
 
                             {s.track ? (
-                              <span className={`ag__tag ${b2b ? "-b2b" : ""}`}><I.tag/>{s.track}</span>
+                              <span className={`ag__tag ${b2b ? "-b2b" : ""} inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs`}>
+                                <I.tag/> {s.track}
+                              </span>
                             ) : null}
 
                             {rowStatusChip(s)}
                           </div>
 
+                          {/* Speakers: pills, compact and readable */}
+                          <div className="mt-3">
+                            {speakerCount > 0 ? (
+                              <div className="flex flex-wrap items-center gap-2">
+                                {s.speakers.slice(0, 3).map((sp, i) => (
+                                  <SpeakerPill
+                                    key={`${sp.name}-${i}`}
+                                    name={sp.name}
+                                    title={sp.title}
+                                    size="sm"
+                                    onClick={(e) => { e.stopPropagation(); setOpen(s); }}
+                                  />
+                                ))}
+
+                                {speakerCount > 3 && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setOpen(s); }}
+                                    className="inline-flex items-center justify-center text-sm px-3 py-1 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                    aria-label={`View all ${speakerCount} speakers`}
+                                  >
+                                    +{speakerCount - 3} more
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500">Speaker</div>
+                            )}
+                          </div>
+
                           {Array.isArray(s.tags) && s.tags.length ? (
-                            <div className="ag__tags">
+                            <div className="ag__tags mt-3 flex flex-wrap gap-2">
                               {s.tags.slice(0, 4).map((t) => (
-                                <span key={t} className="ag__tag"><I.tag />{t}</span>
+                                <span key={t} className="ag__tag inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs"><I.tag />{t}</span>
                               ))}
                             </div>
                           ) : null}
@@ -368,39 +432,46 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
         {open && (
           <div className="ag__modal" role="dialog" aria-modal="true" aria-label="Session details" onClick={() => setOpen(null)}>
             <div className="ag__backdrop" />
-            <div className="ag__sheet" onClick={(e)=>e.stopPropagation()}>
-              <header className={`ag__sheetHead ${isB2B(open.track) ? "-b2b" : ""}`}>
-                <h3 className="ag__sheetTitle">{open.sessionTitle}</h3>
-                <button className="ag__x" onClick={() => setOpen(null)} aria-label="Close"><FiX/></button>
+            {/* make modal content scrollable for long lists */}
+            <div className="ag__sheet max-h-[80vh] overflow-auto" onClick={(e)=>e.stopPropagation()}>
+
+              <header className={`ag__sheetHead ${isB2B(open.track) ? "-b2b" : ""} flex items-center justify-between`}>
+                <h3 className="ag__sheetTitle text-xl font-semibold">{open.sessionTitle}</h3>
+                <button className="ag__x p-2 rounded-full hover:bg-gray-100 focus:outline-none" onClick={() => setOpen(null)} aria-label="Close"><FiX/></button>
               </header>
 
-              <div className="ag__sheetMeta">
-                <div className="ag__sheetRow"><FiClock/>{fmtHM(open.startTime)}–{fmtHM(open.endTime)} ({fmtMD(open.startTime)})</div>
-                <div className="ag__sheetRow"><FiMapPin/>{open.room}</div>
-                {open.track ? <div className={`ag__sheetRow ${isB2B(open.track) ? "-b2b" : ""}`}><FiTag/>{open.track}</div> : null}
+              <div className="ag__sheetMeta mt-3 space-y-2">
+                <div className="ag__sheetRow flex items-center gap-2"><FiClock/>{fmtHM(open.startTime)}–{fmtHM(open.endTime)} ({fmtMD(open.startTime)})</div>
+                <div className="ag__sheetRow flex items-center gap-2"><FiMapPin/>{open.room}</div>
+                {open.track ? <div className={`ag__sheetRow ${isB2B(open.track) ? "-b2b" : ""} flex items-center gap-2`}><FiTag/>{open.track}</div> : null}
               </div>
 
-              {open.summary ? <p className="ag__sheetTxt">{open.summary}</p> : null}
+              {open.summary ? <p className="ag__sheetTxt mt-4 text-gray-700">{open.summary}</p> : null}
 
+              {/* Modal speakers grid — NO truncation, allow wrap and full visibility */}
               {!!open.speakers?.length && (
-                <div className="ag__speakers">
-                  {open.speakers.map((sp,i)=>(
-                    <div key={`${sp?.name || "sp"}-${i}`} className="ag__speakerRow">
-                      <span className="ag__ph" style={sp?.photo ? { backgroundImage:`url(${imageLink(sp.photo)})` } : {}} />
-                      <div className="ag__spTxt">
-                        <div className="ag__nm">{sp?.name || "—"}</div>
-                        {sp?.title ? <div className="ag__ro">{sp.title}</div> : null}
+                <div className="ag__speakers mt-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {open.speakers.map((sp, i) => (
+                      <div
+                        key={`${sp?.name || "sp"}-${i}`}
+                        className="flex items-start gap-3 bg-white border border-gray-100 rounded-lg p-3 shadow-sm"
+                      >
+                        <MicAvatar size={44} />
+                        <div className="min-w-0">
+                          {/* show full name + title, wrapping across lines */}
+                          <div className="font-semibold text-gray-900 text-sm whitespace-normal break-words">{sp?.name || "—"}</div>
+                          {sp?.title ? <div className="text-xs text-gray-600 whitespace-normal break-words mt-1">{sp.title}</div> : null}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
               {(() => {
                 const c = mergedCounts?.[open.id] || {};
                 const cap = open.capacity;
-                console.log("c",c)
-                console.log("mergedCounts",mergedCounts)
                 const reg = c.seatsTaken || 0;
                 const myStatus = myMap.get(String(open.id)) || null;
                 const eligible = roleAllowed(open.rolesAllowed, myRole);
@@ -412,7 +483,7 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
                   <>
                     <CapacityBar count={reg} cap={cap} />
 
-                    <div className="ag__ctaRow">
+                    <div className="ag__ctaRow mt-4 flex flex-wrap gap-2">
                       {!eligible ? (
                         <span className="ag__chip -deny"><FiAlertTriangle/> Not eligible</span>
                       ) : myStatus ? (
@@ -423,19 +494,16 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
                         <span className={`ag__chip ${eligible ? "" : "-deny"}`}>Requires: {open.rolesAllowed.join(", ")}</span>
                       ) : <span className="ag__chip">All roles</span>}
 
-                      {/* Day 1 notice */}
                       {isDayOne ? (
                         <span className="ag__chip -warn"><FiAlertTriangle/> Day 1 registration disabled</span>
                       ) : null}
 
-                      {/* Conflict notice — suppressed for B2B */}
                       {!b2b && conflictWith ? (
                         <span className="ag__chip -warn"><FiAlertTriangle/> Conflict with “{conflictWith.title}”</span>
                       ) : null}
                     </div>
 
-                    <div className="ag__actions">
-                      {/* Day 1 → disable signup/waitlist; allow cancel if already registered */}
+                    <div className="ag__actions mt-4">
                       {isDayOne ? (
                         myStatus ? (
                           <button className="ag__btn -outline" onClick={onCancel}>Cancel</button>
@@ -450,7 +518,6 @@ const counts = React.useMemo(() => (dayRes?.counts || {}), [dayRes]);
                         ) : full ? (
                           <button className="ag__btn" onClick={onSign}>Join waitlist</button>
                         ) : (
-                          // For B2B we ignore conflicts completely
                           <button className="ag__btn" onClick={onSign}>Sign me up</button>
                         )
                       )}
