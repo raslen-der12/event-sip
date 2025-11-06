@@ -179,7 +179,7 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
               <div className="gma-card-head">
                 <div className="gma-avatar">
                   {s.photo ? (
-                    <img src={s.photo} alt={s.name} />
+                    <img src={imageLink(s.photo)} alt={s.name} />
                   ) : (
                     <div className="gma-avatar-fallback">
                       {(s.name || "?").slice(0, 1).toUpperCase()}
@@ -425,8 +425,8 @@ function MeetingRow({
       aria-label={t("meetings.openMeetingWith", { name: otherName })}
     >
       <div className="mtg-left">
-        <div className="mtg-avatar" aria-hidden="true" title={t("meetings.viewProfile")}>
-          {otherPhoto ? <img src={otherPhoto} alt="" /> : <span className="mtg-initials">{initials(otherName)}</span>}
+        <div className="mtg-avatar" aria-hidden="true" title="View profile">
+          {otherPhoto ? <img src={imageLink(otherPhoto)} alt="" /> : <span className="mtg-initials">{initials(otherName)}</span>}
         </div>
       </div>
       <div className="mtg-mid">
@@ -516,7 +516,7 @@ function MeetingModal({ meeting, onClose }) {
       <div className="modal-card">
         <button className="modal-close" onClick={onClose} aria-label={t("meetings.close")}>×</button>
         <div className="modal-head">
-          <div className="modal-avatar">{otherPhoto ? <img src={otherPhoto} alt=""/> : <span>{initials(otherName)}</span>}</div>
+          <div className="modal-avatar">{otherPhoto ? <img src={imageLink(otherPhoto)} alt=""/> : <span>{initials(otherName)}</span>}</div>
           <div>
             <h3>{otherName}</h3>
             <div className="muted">{otherRole || "—"} • {t(`meetings.status.${statusKey}`)}</div>

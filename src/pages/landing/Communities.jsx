@@ -1,190 +1,162 @@
-import React from 'react';
-import 'bootstrap-icons/font/bootstrap-icons.css'; // Requires: npm install bootstrap-icons
-import Footer from '../../components/footer/Footer';
-import { cta, footerData, nav, topbar } from '../main.mock';
-import HeaderShell from '../../components/layout/HeaderShell';
+import React, { useMemo } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import HeaderShell from "../../components/layout/HeaderShell";
+import Footer from "../../components/footer/Footer";
+import { topbar, nav, cta, footerData } from "../main.mock";
+import imageLink from "../../utils/imageLink";
+import {
+  useGetCommunityFacetsQuery,
+  useGetCommunityListQuery
+} from "../../features/bp/BPApiSlice";
+import "../marketplace/market.css"; // reuse mk-* cards/grid/chips
 
-// Note: Ensure Tailwind CSS is configured in your project and Poppins font is included via Google Fonts in your CSS or index.html
+const cap = s => String(s||"")
+  .toLowerCase()
+  .replace(/\b\w/g,m=>m.toUpperCase());
 
-const Hero = () => (
-  <section className="flex flex-col justify-center items-center text-center py-20 sm:py-28 px-5 bg-gradient-to-r from-[#1C3664] to-[#EB5434] text-white">
-    <h1 className="text-3xl sm:text-5xl font-bold mb-4">Communities</h1>
-    <p className="text-base sm:text-xl mb-6 max-w-[700px]">
-      Eventra connects professionals, experts, students, and business owners in dedicated communities to network, learn, and grow together.
-    </p>
-    <a
-      href="/register"
-      className="px-7 py-3 bg-white text-[#1C3664] font-semibold rounded-lg transition-all duration-300 hover:bg-gray-100 hover:-translate-y-1"
-    >
-      Join a Community
-    </a>
-  </section>
-);
+const AVATAR_FALLBACK = "/uploads/default/photodef.png"; // same used elsewhere
 
-const CommunityCard = ({ icon, title }) => (
-  <div className="bg-white p-2 rounded-lg text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer">
-    <i className={`bi ${icon} text-lg text-[#EB5434] mb-1`}></i>
-    <h3 className="text-xs font-medium text-[#1C3664]">{title}</h3>
-  </div>
-);
-
-const CommunityGrid = () => {
-  const communities = [
-    { icon: 'bi-lightning-charge', title: 'Coaches' },
-    { icon: 'bi-person-badge', title: 'Experts' },
-    { icon: 'bi-book', title: 'Students' },
-    { icon: 'bi-briefcase', title: 'Employees' },
-    { icon: 'bi-flask', title: 'Researchers' },
-    { icon: 'bi-newspaper', title: 'Media' },
-    { icon: 'bi-gavel', title: 'Lawyers' },
-    { icon: 'bi-code-slash', title: 'Developers' },
-    { icon: 'bi-person-lines-fill', title: 'Trainers' },
-    { icon: 'bi-calculator', title: 'Audit & Accounting' },
-    { icon: 'bi-currency-dollar', title: 'Investment' },
-    { icon: 'bi-shield-check', title: 'Insurance' },
-    { icon: 'bi-bank', title: 'Micro Finance' },
-    { icon: 'bi-bullhorn', title: 'Marketing' },
-    { icon: 'bi-camera-video', title: 'Audio Visual' },
-    { icon: 'bi-cpu', title: 'AI & IoT' },
-    { icon: 'bi-building', title: 'Universities' },
-  ];
-
+function MemberCard({ m }) {
+  const navigate = useNavigate();
+  const avatar = m.avatar ? imageLink(m.avatar) : AVATAR_FALLBACK;
   return (
-    <div className="max-w-6xl mx-auto px-5">
-      <h2 className="text-center text-2xl sm:text-3xl font-semibold text-[#1C3664] my-10 sm:my-16">
-        Our Community Actors
-      </h2>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-        {communities.map((community, index) => (
-          <CommunityCard key={index} icon={community.icon} title={community.title} />
-        ))}
+    <article className="mk-card" style={{paddingBottom:12}}>
+      <div className="mk-card-body">
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
+          <img
+            src={avatar}
+            alt={m.fullName}
+            style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flex:"0 0 44px",background:"#f3f4f6"}}
+          />
+          <div style={{minWidth:0}}>
+            <div className="mk-title" style={{marginBottom:2,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}>
+              {m.fullName}
+            </div>
+            <div className="mk-muted" style={{fontSize:12}}>
+              {m.orgName || "—"} {m.country ? `• ${m.country}` : ""}
+            </div>
+          </div>
+          <span className="mk-chip" style={{marginLeft:"auto"}}>{cap(m.actorType || "Member")}</span>
+        </div>
+
+        <div className="mk-card-actions">
+          <button className="mk-btn ghost" onClick={()=>navigate(`/community/member/${m.id}`)}>
+            View Profile
+          </button>
+          <button className="mk-btn primary" onClick={()=>navigate(`/community/message/${m.id}`)}>
+            Send Message
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
-};
-
-const CtaFooter = () => (
-  <section className="bg-[#1C3664] text-white text-center py-16 px-5 mt-20 rounded-xl m-5 ">
-    <h3 className="text-2xl sm:text-3xl font-semibold mb-5">Connect with Your Community</h3>
-    <a
-      href="/register"
-      className="px-7 py-3 bg-[#EB5434] text-white font-semibold rounded-lg transition-all duration-300 hover:bg-[#ff6b4f] hover:-translate-y-1"
-    >
-      Join Now
-    </a>
-  </section>
-);
-
-// ========= MembersAll (converted & integrated) ==========
-const CATEGORIES = [
-  'Students',
-  'Researchers',
-  'Coaches & Trainers',
-  'Experts & Consultants',
-  'Employees & Professionals',
-  'Entrepreneurs & Startups',
-  'Developers & Engineers',
-  'Marketing & Communication',
-  'Audit, Accounting & Finance',
-  'Investment & Banking',
-  'Insurance & Microfinance',
-  'Legal & Lawyers',
-  'AI, IoT & Emerging Tech',
-  'Audiovisual & Creative Industries',
-  'Media & Journalists',
-  'Universities & Academies',
-  'NGOs & Civil Society',
-  'Public Sector & Government',
-];
-
-// small helper to generate placeholder members (replace with real data)
-const makeMembers = (category, start = 1) => {
-  const types = ['Attendee', 'Expert/Consultant', 'Student', 'Business Owner'];
-  return Array.from({ length: 5 }).map((_, i) => ({
-    id: `${category}-${i}`,
-    name: `${category.split(' ')[0]} Member ${i + 1}`,
-    avatar: `https://i.pravatar.cc/150?img=${(start + i) % 70}`,
-    memberType: types[(i + start) % types.length],
-  }));
-};
-
-const categoriesWithMembers = CATEGORIES.map((c, idx) => ({
-  name: c,
-  members: makeMembers(c, idx * 5 + 3),
-}));
-
-function MembersAll({ className = '' }) {
-  return (
-
-    <section className={`max-w-7xl mx-auto px-5 py-10 ${className}`}>
-      <header className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-[#1C3664]">All Community Members</h2>
-        <p className="text-sm text-gray-500">Browse members by category — responsive, minimal cards with clear hierarchy.</p>
-      </header>
-
-      {/* Sections for each category */}
-      <div className="space-y-10">
-        {categoriesWithMembers.map((cat) => (
-          <section key={cat.name}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-[#1C3664]">{cat.name}</h3>
-              <button
-                className="text-sm font-medium flex items-center gap-2 text-[#1C3664] hover:underline"
-                aria-label={`See all ${cat.name}`}
-              >
-                See All
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {cat.members.map((m) => (
-                <article
-                  key={m.id}
-                  className="relative bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1"
-                >
-                  <span className="absolute left-3 top-3 inline-block px-2 py-0.5 text-[11px] font-medium rounded-full bg-[#1C3664] text-white">{cat.name}</span>
-
-                  <div className="flex flex-col items-center text-center pt-6">
-                    <img className="w-20 h-20 rounded-full object-cover" src={m.avatar} alt={`${m.name} avatar`} />
-                    <h4 className="mt-3 text-sm font-semibold text-gray-900">{m.name}</h4>
-                    <p className="mt-1 text-xs text-gray-500">{m.memberType}</p>
-                  </div>
-
-                  {/* Optional quick actions (minimal) */}
-                  <div className="mt-4 flex items-center justify-center gap-3">
-                    <button className="text-xs px-3 py-1 rounded-md border border-gray-200 text-[#1C3664] hover:bg-gray-50">Profile</button>
-                    <button className="text-xs px-3 py-1 rounded-md bg-[#EB5434] text-white hover:brightness-95">Message</button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <footer className="mt-12 text-sm text-gray-500 text-center">Palette: <span className="font-medium text-[#1C3664]">#1C3664</span> &amp; <span className="font-medium text-[#EB5434]">#EB5434</span></footer>
-    </section>
-);
 }
 
-// ========== Final combined page component ===========
-const Communities = () => (
-          <>
+export default function CommunityPage(){
+  const [sp,setSp] = useSearchParams();
+
+  const eventId   = sp.get("eventId") || "";       // optional context
+  const q         = sp.get("q") || "";
+  const actorType = sp.get("actorType") || "";
+  const country   = sp.get("country") || "";
+  const page      = Math.max(1, parseInt(sp.get("page")||"1",10));
+  const limit     = 24;
+
+  const setParam = (k,v)=>{
+    const next = new URLSearchParams(sp);
+    if (v===undefined || v===null || String(v).trim()==="") next.delete(k);
+    else next.set(k,String(v));
+    if (k!=="page") next.set("page","1");
+    setSp(next,{replace:true});
+  };
+
+  const { data: facets } = useGetCommunityFacetsQuery({ eventId }, { skip: !eventId && false });
+  const types    = facets?.types || [];
+  const countries= facets?.countries || [];
+
+  const { data, isFetching } = useGetCommunityListQuery({
+    eventId, actorType, country, q, page, limit
+  });
+  const items = data?.items || [];
+  const total = data?.total || 0;
+
+  // Active type chip helper
+  const isTypeActive = (t)=> (actorType||"").toLowerCase() === String(t||"").toLowerCase();
+
+  return (
+    <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
-  <div className="font-['Poppins'] bg-[#f9f9f9] text-[#333]">
-    <Hero />
 
+      <div className="mk container-lg">
+        {/* header */}
+        <div className="mk-header card">
+          <div className="mk-h-title">Community</div>
+          <div className="mk-h-sub">People grouped by role</div>
+          <div className="mk-toprow">
+            <input
+              className="mk-input grow"
+              placeholder="Search people or organizations…"
+              value={q}
+              onChange={e=>setParam("q", e.target.value)}
+            />
+            <select className="mk-select"
+              value={country}
+              onChange={e=>setParam("country", e.target.value)}>
+              <option value="">All Countries</option>
+              {countries.map(c=>(
+                <option key={c.code} value={c.code}>{c.code} {c.count?`(${c.count})`:""}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-    {/* Members list placed under the icons as requested */}
-    <MembersAll />
+        {/* actorType chips row */}
+        <div className="mk-chiprow" style={{marginTop:8}}>
+          <button
+            className={"mk-chip"+(actorType?"":" is-active")}
+            onClick={()=>setParam("actorType","")}
+          >All Types</button>
+          {types.map(t=>(
+            <button
+              key={t.name||"unknown"}
+              className={"mk-chip"+(isTypeActive(t.name)?" is-active":"")}
+              onClick={()=>setParam("actorType", t.name)}
+              title={t.count?`${t.count} members`:""}
+            >
+              {cap(t.name||"Unknown")}
+            </button>
+          ))}
+        </div>
 
-    <CtaFooter />
-    
-  </div>
-          <Footer
+        {/* results header + pager select */}
+        <div className="mk-controls">
+          <div/>
+          <div className="mk-right">
+            <span className="mk-muted">{isFetching ? "Loading…" : `${total} members`}</span>
+          </div>
+        </div>
+
+        {/* grid */}
+        <div className="mk-grid">
+          {isFetching && !items.length
+            ? Array.from({length:12}).map((_,i)=><div key={i} className="mk-skel"/>)
+            : items.map(m => <MemberCard key={`${m.kind}-${m.id}`} m={m} />)
+          }
+        </div>
+
+        {/* load more */}
+        <div className="mk-loadmore">
+          <button
+            className="mk-btn outline"
+            disabled={items.length < limit}
+            onClick={()=>setParam("page", String(page+1))}
+          >
+            Load More
+          </button>
+        </div>
+      </div>
+
+      <Footer
         brand={footerData.brand}
         columns={footerData.columns}
         socials={footerData.socials}
@@ -192,6 +164,5 @@ const Communities = () => (
         bottomLinks={footerData.bottomLinks}
       />
     </>
-);
-
-export default Communities;
+  );
+}

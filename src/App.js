@@ -114,7 +114,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword/>} />
         <Route path="/restore-email" element={<RestoreEmail/>} />
         <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/communities" element={<CommunityPage initialActors={COMMUNITY_DEMO} />} />
+        <Route path="/communities" element={<CommunityPage />} />
         <Route path="/communities/:role" element={<CommunityPage initialActors={COMMUNITY_DEMO}/>} />
         <Route path="/register/attendee" element={<AttendeeRegisterPage />} />
         <Route path="/products/:productId" element={<ProductPage />} />

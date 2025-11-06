@@ -239,11 +239,18 @@ export const BPApiSlice = apiSlice.injectEndpoints({
     /* ============================ Market ============================ */
     getMarketFacets: builder.query({
       query: () => ({ url: "biz/market/facets" }),
-      transformResponse: (res) => (res?.success ? res : { success: false, sectors: [], counts: {}, tagsTop: [] }),
+      transformResponse: (res) => res || {},
+      providesTags: ["MarketFacets"],
+      keepUnusedDataFor: 300,
     }),
     getMarketItems: builder.query({
-      query: (id) => `/biz/market/items/${id}`,
-      transformResponse: (res) => (res && res.data ? res.data : res),
+      query: (params) => ({
+        url: "biz/market/items",
+        method: "GET",
+        params,
+      }),
+      transformResponse: (res) => res || { items: [], total: 0 },
+      providesTags: (result, err, args) => [{ type: "MarketItems", id: JSON.stringify(args || {}) }],
     }),
     getMarketItem: builder.query({
       query: (id) => ({ url: `biz/market/item/${id}` }),
@@ -257,6 +264,22 @@ export const BPApiSlice = apiSlice.injectEndpoints({
       if (Array.isArray(res)) return res; // tolerate raw array
       return [];
     }
+  }),
+  getMarketBusinesses: builder.query({
+    query: (params) => ({ url: "/biz/market/businesses", method: "GET", params }),
+    transformResponse: (res) => res || { items: [], total: 0 },
+    providesTags: (result, err, args) => [{ type: "MarketBusinesses", id: JSON.stringify(args || {}) }],
+  }),
+  getCommunityFacets: builder.query({
+    query: (params) => ({ url: '/community/facets', method: 'GET', params }),
+    transformResponse: (res) => res || { types:[], countries:[] },
+    providesTags: ['CommunityFacets'],
+    keepUnusedDataFor: 300,
+  }),
+  getCommunityList: builder.query({
+    query: (params) => ({ url: '/community/list', method: 'GET', params }),
+    transformResponse: (res) => res || { items:[], total:0 },
+    providesTags: (r,e,a)=>[{type:'CommunityList',id:JSON.stringify(a||{})}],
   }),
 
   }),
@@ -329,6 +352,10 @@ export const {
   // market
   useGetMarketFacetsQuery,
   useGetMarketItemsQuery,
+  useLazyGetMarketItemsQuery,
   useGetMarketItemQuery,
   useGetPublicEngagementsQuery,
+  useGetMarketBusinessesQuery,
+  useGetCommunityFacetsQuery,
+  useGetCommunityListQuery,
 } = BPApiSlice;

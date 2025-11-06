@@ -1,359 +1,162 @@
-// Communities.jsx — drop-in replacement that preserves your design and injects CommunityPage logic
-import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Link, useSearchParams, useParams } from 'react-router-dom';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import Footer from '../../components/footer/Footer';
-import { cta, footerData, nav, topbar } from '../main.mock';
-import HeaderShell from '../../components/layout/HeaderShell';
+import React, { useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import HeaderShell from "../../components/layout/HeaderShell";
+import Footer from "../../components/footer/Footer";
+import { topbar, nav, cta, footerData } from "../main.mock";
+import imageLink from "../../utils/imageLink";
+import {
+  useGetCommunityFacetsQuery,
+  useGetCommunityListQuery,
+} from "../../features/bp/BPApiSlice";
+import "../marketplace/market.css"; // reuse mk-* cards/grid/chips
 
-/* ===================== Shared logic from CommunityPage ===================== */
-const SUBROLE_LABELS = [
-  'Students',
-  'Researchers',
-  'Coaches & Trainers',
-  'Experts & Consultants',
-  'Employees & Professionals',
-  'Entrepreneurs & Startups',
-  'Developers & Engineers',
-  'Marketing & Communication',
-  'Audit, Accounting & Finance',
-  'Investment & Banking',
-  'Insurance & Microfinance',
-  'Legal & Lawyers',
-  'AI, IoT & Emerging Tech',
-  'Audiovisual & Creative Industries',
-  'Media & Journalists',
-  'Universities & Academies',
-  'NGOs & Civil Society',
-  'Public Sector & Government',
-];
+const cap = (s)=>String(s||"").replace(/\b\w/g,m=>m.toUpperCase());
+const AVATAR_FALLBACK = "/uploads/default/photodef.png";
 
-const slugOf = (s = '') =>
-  String(s)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-const SUBROLES = Array.from(new Set(SUBROLE_LABELS)).map((label) => ({
-  label,
-  slug: slugOf(label),
-}));
-
-function roleLikeForSubrole(label = '') {
-  const s = label.toLowerCase();
-  if (s.includes('student')) return 'Student';
-  if (s.includes('coach') || s.includes('trainer') || s.includes('consultant')) return 'Consultant';
-  if (s.includes('investment') || s.includes('bank')) return 'Investor';
-  if (s.includes('entrepreneur') || s.includes('startup')) return 'Entrepreneur';
-  if (s.includes('expert') || s.includes('research') || s.includes('developer') || s.includes('engineer') || s.includes('ai') || s.includes('iot'))
-    return 'Expert';
-  return 'Employee';
-}
-
-/* Mock dataset (fallback when no real data is passed in) */
-const FN = ['Sana', 'Amine', 'Yara', 'Luis', 'Meriem', 'Jon', 'Aya', 'Tarek', 'Ines', 'Malek', 'Ziyad', 'Omar', 'Rania', 'Nora', 'Noah'];
-const LN = ['Weber', 'Gomez', 'Hassan', 'Zhou', 'Kim', 'Ben Ali', 'Khan', 'Martin', 'Costa', 'Youssef', 'Ren', 'Mejia', 'Sato'];
-const COUNTRIES = ['Tunisia', 'Germany', 'France', 'USA', 'Italy', 'Spain', 'Morocco', 'Egypt', 'UAE', 'KSA', 'Canada', 'UK'];
-const CITIES = ['Tunis', 'Berlin', 'Paris', 'SF', 'Milan', 'Madrid', 'Casablanca', 'Cairo', 'Dubai', 'Riyadh', 'Toronto', 'London'];
-const ORGS = ['NexLabs', 'BluePeak', 'Innova', 'DataForge', 'GreenBuild', 'Solaris', 'OptiCore', 'NorthBay', 'HelioGrid', 'FlowOps'];
-
-const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-function makeMockActor(sr) {
-  const name = `${rand(FN)} ${rand(LN)}`;
-  return {
-    id: `a_${sr.slug}_${Math.random().toString(36).slice(2, 10)}`,
-    name,
-    org: rand(ORGS),
-    country: rand(COUNTRIES),
-    city: rand(CITIES),
-    subrole: sr.label,
-    subroleSlug: sr.slug,
-    roleLike: roleLikeForSubrole(sr.label),
-    avatar: '', // keep empty to use initials elsewhere if needed
-  };
-}
-
-function buildMockActors() {
-  const out = [];
-  for (const sr of SUBROLES) {
-    const n = randInt(16, 28);
-    for (let i = 0; i < n; i++) out.push(makeMockActor(sr));
-  }
-  return out;
-}
-
-/* Normalize any incoming dataset (real API data or mock) to the same shape */
-function normalizeActors(initialActors) {
-  const list = Array.isArray(initialActors) ? initialActors : buildMockActors();
-  return list.map((x, i) => {
-    const inferredSub =
-      x.subrole ||
-      x.roleLike ||
-      x.role ||
-      rand(SUBROLES).label;
-
-    const sr =
-      SUBROLES.find((s) => s.label === inferredSub) ||
-      SUBROLES.find((s) => s.slug === x.subroleSlug) ||
-      rand(SUBROLES);
-
-    return {
-      id: x.id || `mock_${i}_${Math.random().toString(36).slice(2, 8)}`,
-      name: x.name || x.fullName || x.personal?.fullName || 'Anonymous User',
-      org: x.org || x.organization?.orgName || x.identity?.orgName || '',
-      country: x.country || x.personal?.country || x.identity?.country || '',
-      city: x.city || x.personal?.city || x.identity?.city || '',
-      avatar: x.avatar || x.personal?.profilePic || '',
-      subrole: sr.label,
-      subroleSlug: sr.slug,
-      roleLike: x.roleLike || roleLikeForSubrole(sr.label),
-    };
-  });
-}
-
-/* ===================== Your original visual components (unchanged) ===================== */
-const Hero = () => (
-  <section className="flex flex-col justify-center items-center text-center py-20 sm:py-28 px-5 bg-gradient-to-r from-[#1C3664] to-[#EB5434] text-white">
-    <h1 className="text-3xl sm:text-5xl font-bold mb-4">Communities</h1>
-    <p className="text-base sm:text-xl mb-6 max-w-[700px]">
-      Eventra connects professionals, experts, students, and business owners in dedicated communities to network, learn, and grow together.
-    </p>
-    <a
-      href="/register"
-      className="px-7 py-3 bg-white text-[#1C3664] font-semibold rounded-lg transition-all duration-300 hover:bg-gray-100 hover:-translate-y-1"
-    >
-      Join a Community
-    </a>
-  </section>
-);
-
-const CommunityCard = ({ icon, title, onClick }) => (
-  <div
-    className="bg-white p-2 rounded-lg text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick?.()}
-    title={`Open ${title}`}
-  >
-    <i className={`bi ${icon} text-lg text-[#EB5434] mb-1`}></i>
-    <h3 className="text-xs font-medium text-[#1C3664]">{title}</h3>
-  </div>
-);
-
-const CtaFooter = () => (
-  <section className="bg-[#1C3664] text-white text-center py-16 px-5 mt-20 rounded-xl m-5 ">
-    <h3 className="text-2xl sm:text-3xl font-semibold mb-5">Connect with Your Community</h3>
-    <a
-      href="/register"
-      className="px-7 py-3 bg-[#EB5434] text-white font-semibold rounded-lg transition-all duration-300 hover:bg-[#ff6b4f] hover:-translate-y-1"
-    >
-      Join Now
-    </a>
-  </section>
-);
-
-/* ===================== MembersAll (keeps your design; fed by real logic) ===================== */
-function MembersAll({ className = '', dataset, activeSlug, onRequestSeeAll }) {
-  // Group by subroleSlug
-  const bySubrole = useMemo(() => {
-    const m = new Map();
-    for (const a of dataset) {
-      const k = a.subroleSlug || slugOf(a.subrole);
-      if (!m.has(k)) m.set(k, []);
-      m.get(k).push(a);
-    }
-    return m;
-  }, [dataset]);
-
-  // Determine the sections to render (all or just one), but keep the same look
-  const sections = useMemo(() => {
-    if (!activeSlug || activeSlug === 'all') return SUBROLES;
-    const one = SUBROLES.find((s) => s.slug === activeSlug);
-    return one ? [one] : SUBROLES;
-  }, [activeSlug]);
-
+function MemberCard({ m }) {
+  const navigate = useNavigate();
+  const avatar = m.avatar ? imageLink(m.avatar) : AVATAR_FALLBACK;
   return (
-    <section className={`max-w-7xl mx-auto px-5 py-10 ${className}`}>
-      <header className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-[#1C3664]">All Community Members</h2>
-        <p className="text-sm text-gray-500">Browse members by category — responsive, minimal cards with clear hierarchy.</p>
-      </header>
-
-      <div className="space-y-10">
-        {sections.map((cat) => {
-          const members = bySubrole.get(cat.slug) || [];
-          return (
-            <section key={cat.slug} id={`sub-${cat.slug}`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-[#1C3664]">{cat.label}</h3>
-                <button
-                  className="text-sm font-medium flex items-center gap-2 text-[#1C3664] hover:underline"
-                  aria-label={`See all ${cat.label}`}
-                  onClick={() => onRequestSeeAll?.(cat.slug)}
-                >
-                  See All
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {members.map((m) => (
-                  <article
-                    key={m.id}
-                    className="relative bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1"
-                  >
-                    <span className="absolute left-3 top-3 inline-block px-2 py-0.5 text-[11px] font-medium rounded-full bg-[#1C3664] text-white">
-                      {cat.label}
-                    </span>
-
-                    <div className="flex flex-col items-center text-center pt-6">
-                      {m.avatar ? (
-                        <img className="w-20 h-20 rounded-full object-cover" src={m.avatar} alt={`${m.name} avatar`} />
-                      ) : (
-                        <div className="w-20 h-20 rounded-full grid place-items-center bg-[#1C3664] text-white text-lg font-bold">
-                          {String(m.name || 'AA')
-                            .split(' ')
-                            .map((p) => p[0]?.toUpperCase())
-                            .join('')
-                            .slice(0, 2)}
-                        </div>
-                      )}
-                      <h4 className="mt-3 text-sm font-semibold text-gray-900">{m.name}</h4>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {m.roleLike} {m.org ? `• ${m.org}` : ''}
-                      </p>
-                      <p className="mt-1 text-[11px] text-gray-400">
-                        {[m.city, m.country].filter(Boolean).join(', ')}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-center gap-3">
-                      <Link
-                        to={`/profile/${m.id}`}
-                        className="text-xs px-3 py-1 rounded-md border border-gray-200 text-[#1C3664] hover:bg-gray-50"
-                      >
-                        Profile
-                      </Link>
-                      <Link
-                        to={`/messages`}
-                        className="text-xs px-3 py-1 rounded-md bg-[#EB5434] text-white hover:brightness-95"
-                      >
-                        Message
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+    <article className="mk-card" style={{ paddingBottom: 12 }}>
+      <div className="mk-card-body">
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+          <img src={avatar} alt={m.fullName}
+               style={{ width:44, height:44, borderRadius:"50%", objectFit:"cover", background:"#f3f4f6" }}/>
+          <div style={{ minWidth:0 }}>
+            <div className="mk-title" style={{ marginBottom:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+              {m.fullName}
+            </div>
+            <div className="mk-muted" style={{ fontSize:12 }}>
+              {m.orgName || "—"} {m.country ? `• ${m.country}` : ""}
+            </div>
+          </div>
+        </div>
+        <div className="mk-card-actions">
+          <button className="mk-btn ghost" onClick={()=>navigate(`/community/member/${m.id}`)}>View Profile</button>
+          <button className="mk-btn primary" onClick={()=>navigate(`/community/message/${m.id}`)}>Send Message</button>
+        </div>
       </div>
+    </article>
+  );
+}
 
-      <footer className="mt-12 text-sm text-gray-500 text-center">
-        Palette: <span className="font-medium text-[#1C3664]">#1C3664</span> &amp;{' '}
-        <span className="font-medium text-[#EB5434]">#EB5434</span>
-      </footer>
+function GroupBlock({ g }) {
+  return (
+    <section className="card" style={{ padding:16, marginBottom:16 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+        <div className="mk-h-sub" style={{ fontWeight:700 }}>{cap(g.name)} <span className="mk-muted">({g.count})</span></div>
+      </div>
+      <div className="mk-grid">
+        {(g.items||[]).map(m => <MemberCard key={`g-${g.name}-${m.id}`} m={m} />)}
+      </div>
     </section>
   );
 }
 
-/* ===================== Final page (design unchanged, logic injected) ===================== */
-export default function Communities({ initialActors }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { role } = useParams();
-  const urlRole = (searchParams.get('role') || role || '').toLowerCase();
+export default function CommunityPage() {
+  const [sp, setSp] = useSearchParams();
 
-  // normalized dataset
-  const dataset = useMemo(() => normalizeActors(initialActors), [initialActors]);
+  const eventId  = sp.get("eventId") || "";
+  const q        = sp.get("q") || "";
+  const country  = sp.get("country") || "";
+  const subRole  = sp.get("subRole") || "";      // filter key (NOT actorType)
+  const page     = Math.max(1, parseInt(sp.get("page") || "1", 10));
+  const limit    = 24;
 
-  // community icons (unchanged visual), but now wired to set `?role=<slug>` + scroll
-  const communities = [
-    { icon: 'bi-lightning-charge', title: 'Coaches & Trainers' },
-    { icon: 'bi-person-badge', title: 'Experts & Consultants' },
-    { icon: 'bi-book', title: 'Students' },
-    { icon: 'bi-briefcase', title: 'Employees & Professionals' },
-    { icon: 'bi-flask', title: 'Researchers' },
-    { icon: 'bi-newspaper', title: 'Media & Journalists' },
-    { icon: 'bi-gavel', title: 'Legal & Lawyers' },
-    { icon: 'bi-code-slash', title: 'Developers & Engineers' },
-    { icon: 'bi-person-lines-fill', title: 'Coaches & Trainers' }, // trainer alias
-    { icon: 'bi-calculator', title: 'Audit, Accounting & Finance' },
-    { icon: 'bi-currency-dollar', title: 'Investment & Banking' },
-    { icon: 'bi-shield-check', title: 'Insurance & Microfinance' },
-    { icon: 'bi-bank', title: 'Insurance & Microfinance' }, // close relative
-    { icon: 'bi-bullhorn', title: 'Marketing & Communication' },
-    { icon: 'bi-camera-video', title: 'Audiovisual & Creative Industries' },
-    { icon: 'bi-cpu', title: 'AI, IoT & Emerging Tech' },
-    { icon: 'bi-building', title: 'Universities & Academies' },
-  ];
-
-  const [activeSlug, setActiveSlug] = useState('all');
-  useEffect(() => {
-    if (!urlRole) { setActiveSlug('all'); return; }
-    const exists = SUBROLES.some((s) => s.slug === urlRole);
-    setActiveSlug(exists ? urlRole : 'all');
-  }, [urlRole]);
-
-  const setRoleAndScroll = (slug) => {
-    const next = new URLSearchParams(searchParams);
-    if (!slug || slug === 'all') next.delete('role');
-    else next.set('role', slug);
-    setSearchParams(next, { replace: true });
-
-    // scroll after a tick
-    requestAnimationFrame(() => {
-      const id = slug && slug !== 'all' ? `sub-${slug}` : null;
-      if (id) {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
+  const setParam = (k,v)=>{
+    const next = new URLSearchParams(sp);
+    if (v===undefined || v===null || String(v).trim()==="") next.delete(k); else next.set(k,String(v));
+    if (k!=="page") next.set("page","1");
+    setSp(next,{replace:true});
   };
+
+  // facets (also gives default event)
+  const { data: facets } = useGetCommunityFacetsQuery({ eventId });
+  const events    = facets?.events || [];
+  const defaultId = facets?.defaultEventId || (events[0]?.id || "");
+
+  // ensure a default event is set in URL
+  useEffect(()=>{
+    if (!eventId && defaultId) setParam("eventId", defaultId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, defaultId]);
+
+  const subRoles = facets?.subRoles || [];
+  const countries = facets?.countries || [];
+
+  // data
+  const listParams = { eventId: eventId || defaultId, subRole, country, q, page, limit };
+  const { data, isFetching } = useGetCommunityListQuery(listParams);
+
+  const groups = (!subRole ? (data?.groups || []) : []);
+  const items  = (subRole ? (data?.items || []) : []);
+  const total  = data?.total || 0;
 
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
+      <div className="mk container-lg">
 
-      <div className="font-['Poppins'] bg-[#f9f9f9] text-[#333]">
-        <Hero />
-
-        {/* Community icons grid — same visuals, now wired */}
-        <div className="max-w-6xl mx-auto px-5">
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold text-[#1C3664] my-10 sm:my-16">
-            Our Community Actors
-          </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {communities.map((c, i) => {
-              const sr = SUBROLES.find((s) => s.label === c.title) || SUBROLES[0];
-              return (
-                <CommunityCard
-                  key={`${c.title}-${i}`}
-                  icon={c.icon}
-                  title={c.title}
-                  onClick={() => setRoleAndScroll(sr.slug)}
-                />
-              );
-            })}
+        <div className="mk-header card">
+          <div className="mk-h-title">Community</div>
+          <div className="mk-h-sub">Grouped by Sub-Role</div>
+          <div className="mk-toprow">
+            <input className="mk-input grow" placeholder="Search people or organizations…"
+              value={q} onChange={(e)=>setParam("q", e.target.value)} />
+            <select className="mk-select" value={eventId || defaultId} onChange={(e)=>setParam("eventId", e.target.value)}>
+              {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title || ev.id}</option>)}
+            </select>
+            <select className="mk-select" value={country} onChange={(e)=>setParam("country", e.target.value)}>
+              <option value="">All Countries</option>
+              {countries.map(c => <option key={c.code} value={c.code}>{c.code}{c.count?` (${c.count})`:""}</option>)}
+            </select>
           </div>
         </div>
 
-        {/* Members list (your layout), fed by logic */}
-        <MembersAll
-          dataset={dataset}
-          activeSlug={activeSlug}
-          onRequestSeeAll={(slug) => setRoleAndScroll(slug)}
-        />
+        {/* SubRole chips */}
+        <div className="mk-chiprow">
+          <button className={"mk-chip"+(subRole?"":" is-active")} onClick={()=>setParam("subRole","")}>All Sub-roles</button>
+          {subRoles.map(r=>(
+            <button key={r.name||"Unspecified"}
+              className={"mk-chip"+(subRole===r.name?" is-active":"")}
+              title={r.count?`${r.count} members`:""}
+              onClick={()=>setParam("subRole", r.name)}>
+              {cap(r.name||"Unspecified")}
+            </button>
+          ))}
+        </div>
 
-        <CtaFooter />
+        {/* Summary + pager controls */}
+        <div className="mk-controls">
+          <div/>
+          <div className="mk-right">
+            <span className="mk-muted">{isFetching ? "Loading…" : `${total} members`}</span>
+          </div>
+        </div>
+
+        {/* Content: grouped or flat */}
+        {!subRole ? (
+          <div>
+            {isFetching && !groups.length
+              ? Array.from({length:6}).map((_,i)=><div key={i} className="mk-skel" style={{height:120}}/>)
+              : groups.map(g => <GroupBlock key={`grp-${g.name}`} g={g} />)}
+          </div>
+        ) : (
+          <>
+            <div className="mk-grid">
+              {isFetching && !items.length
+                ? Array.from({length:12}).map((_,i)=><div key={i} className="mk-skel"/>)
+                : items.map(m => <MemberCard key={`m-${m.id}`} m={m} />)}
+            </div>
+            <div className="mk-loadmore">
+              <button className="mk-btn outline"
+                disabled={items.length < limit}
+                onClick={()=>setParam("page", String(page+1))}>
+                Load More
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <Footer

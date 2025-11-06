@@ -449,8 +449,8 @@ function TabContent({
 
   const teamMembers = useMemo(() => {
     return (teamResp || []).map((m) => {
-      const fullName = m.name || [m.firstName, m.lastName].filter(Boolean).join(" ") || "—";
-      const avatar = imageLink(m.avatarUpload) ||
+      const fullName = m.fullName || [m.firstName, m.lastName].filter(Boolean).join(" ") || "—";
+      const avatar = imageLink(m.avatar) ||
         `https://api.dicebear.com/7.x/initials/svg?fontFamily=Montserrat&seed=${encodeURIComponent(fullName.slice(0, 24))}`;
       return {
         id: `${m.entityType}-${m.entityId}`,
