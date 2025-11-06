@@ -8,75 +8,61 @@ import { cta, footerData, nav, topbar } from "../main.mock";
 import HeaderShell from "../../components/layout/HeaderShell";
 import imageLink from "../../utils/imageLink";
 
-const cap = s => String(s || "").replace(/\b\w/g, m => m.toUpperCase());
+const cap = (s) => String(s || "").replace(/\b\w/g, (m) => m.toUpperCase());
 const isOn = (arr, v) => arr.includes(v);
 const normTags = (t) =>
   Array.isArray(t) ? t
-  : typeof t === "string" ? t.split(",").map(s => s.trim()).filter(Boolean)
+  : typeof t === "string" ? t.split(",").map((s) => s.trim()).filter(Boolean)
   : [];
 
-function BusinessCard({ d }) {
-  const navigate = useNavigate();
-  const tags = normTags(d.tags).slice(0, 3);
+// Pick a usable image URL from a value that could be a string or object
+const pickImageUrl = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (typeof val === "object") {
+    return val.url || val.path || val.secure_url || val.src || null;
+  }
+  return null;
+};
 
-  return (
-    <article className="mk-card">
-      <div className="mk-card-media">
-        {d.logo ? <img src={imageLink(d.logo)} alt={d.name} /> : <div className="mk-media-fallback" />}
-        <div className="mk-chip-pill">Business</div>
-      </div>
+// Best item thumbnail: images[0] -> thumbnailUpload -> thumb
+const resolveItemThumb = (d) => {
+  // images may be array of strings or objects
+  if (Array.isArray(d?.images)) {
+    for (const im of d.images) {
+      const u = pickImageUrl(im);
+      if (u) return u;
+    }
+  }
+  // sometimes thumbnail is stored separately
+  const t1 = pickImageUrl(d?.thumbnailUpload);
+  if (t1) return t1;
 
-      <div className="mk-card-body">
-        <div className="mk-title">{d.name}</div>
+  // compatibility with previous mapper field
+  const t2 = pickImageUrl(d?.thumb);
+  if (t2) return t2;
 
-        {/* mk-sub MUST hold the tags */}
-        <div className="mk-sub" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {tags.length
-            ? tags.map((t, i) => (
-                <span key={`${d.id}-tag-${i}`} className="mk-chip" title={t}>
-                  {cap(t)}
-                </span>
-              ))
-            : null}
-        </div>
+  return null;
+};
 
-        {!!(d.featuredItems?.length) && (
-          <>
-            <div className="mk-sec-title">Featured</div>
-            <div className="mk-thumbs">
-              {d.featuredItems.slice(0, 3).map((x) => (
-                <div key={x.id} className="mk-thumb">
-                  {x.thumb ? <img src={imageLink(x.thumb)} alt="" /> : <div className="mk-thumb-fallback" />}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        <div className="mk-card-actions">
-          <button className="mk-btn ghost" onClick={() => navigate(`/BusinessProfile/${d.id}`)}>
-            View Profile
-          </button>
-          <button className="mk-btn primary" onClick={() => navigate(`/products/${d.id}`)}>
-            View Products
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
+// Business profile logo: prefer logoUpload, fallback to logo
+const resolveProfileLogo = (prof) => {
+  return pickImageUrl(prof?.logoUpload) || pickImageUrl(prof?.logo) || null;
+};
 
 function ItemCard({ d }) {
   const navigate = useNavigate();
   const isService = d.kind === "service";
   const prof = d.profile || null;
   const tags = normTags(d.tags).slice(0, 3);
+  const bestThumb = resolveItemThumb(d);
+  const profLogo = prof ? resolveProfileLogo(prof) : null;
 
   return (
     <article className="mk-card">
       {/* Media */}
       <div className="mk-card-media">
-        {d.thumb ? <img src={imageLink(d.thumb)} alt={d.title} /> : <div className="mk-media-fallback" />}
+        {bestThumb ? <img src={imageLink(bestThumb)} alt={d.title}/> : <div className="mk-media-fallback"/>}
         <div className="mk-chip-pill">{isService ? "Service" : "Product"}</div>
         {d.priceValue != null && <div className="mk-price">{`${d.priceCurrency || ""} ${d.priceValue}`.trim()}</div>}
       </div>
@@ -85,7 +71,7 @@ function ItemCard({ d }) {
       <div className="mk-card-body">
         <div className="mk-title">{d.title}</div>
 
-        {/* mk-sub MUST hold the tags (fallback to summary if no tags) */}
+        {/* mk-sub MUST hold the tags (fallback to summary when no tags) */}
         <div className="mk-sub" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {tags.length
             ? tags.map((t, i) => (
@@ -96,11 +82,11 @@ function ItemCard({ d }) {
             : <span className="mk-muted">{d.summary || "—"}</span>}
         </div>
 
-        {/* Business profile strip INSIDE the item card */}
+        {/* Embedded business strip */}
         {prof && (
           <div className="mk-profile-mini">
-            {prof.logo ? (
-              <img className="mk-profile-logo" src={imageLink(prof.logo)} alt={prof.name} />
+            {profLogo ? (
+              <img className="mk-profile-logo" src={imageLink(profLogo)} alt={prof.name}/>
             ) : (
               <div className="mk-profile-logo mk-logo-fallback" />
             )}
@@ -117,13 +103,17 @@ function ItemCard({ d }) {
         <div className="mk-card-actions">
           <button
             className="mk-btn ghost"
-            onClick={() => prof?.id && navigate(`/BusinessProfile/${prof.id}`)}
+            onClick={() => prof?.id && navigate(`/bp/${prof.id}`)}
             disabled={!prof?.id}
             title={prof?.id ? "Open business profile" : "No profile data"}
           >
             View Profile
           </button>
-          <button className="mk-btn primary" onClick={() => navigate(`/products/${d.id}`)} title="Open product/service">
+          <button
+            className="mk-btn primary"
+            onClick={() => navigate(`/market/item/${d.id}`)}
+            title="Open product/service"
+          >
             View {isService ? "Service" : "Product"}
           </button>
         </div>
@@ -132,23 +122,21 @@ function ItemCard({ d }) {
   );
 }
 
-const Card = ({ it }) => (it.type === "business" ? <BusinessCard d={it} /> : <ItemCard d={it} />);
-
 export default function MarketPage() {
   const [sp, setSp] = useSearchParams();
 
-  // defaults: kind=business
-  const q = sp.get("q") || "";
-  const industry = sp.get("industry") || "";
-  const country = sp.get("country") || "";
-  const kind = sp.get("kind") || "business";
-  const sector = sp.get("sector") || "";
+  // Types filter: only product | service | all (default all)
+  const q           = sp.get("q") || "";
+  const industry    = sp.get("industry") || "";
+  const country     = sp.get("country") || "";
+  const kind        = sp.get("kind") || "all";          // default ALL
+  const sector      = sp.get("sector") || "";
   const subsectorId = sp.get("subsectorId") || "";
-  const size = sp.get("size") || "";
-  const sort = sp.get("sort") || "new";
-  const hasImages = sp.get("hasImages") || "";
-  const badges = sp.getAll("badge");
-  const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
+  const size        = sp.get("size") || "";
+  const sort        = sp.get("sort") || "new";
+  const hasImages   = sp.get("hasImages") || "";
+  const badges      = sp.getAll("badge");
+  const page        = Math.max(1, parseInt(sp.get("page") || "1", 10));
 
   const setParam = (k, v) => {
     const next = new URLSearchParams(sp);
@@ -167,6 +155,7 @@ export default function MarketPage() {
     setSp(next, { replace: true });
   };
 
+  // facets
   const { data: facets } = useGetMarketFacetsQuery();
   const sectors = facets?.sectors || [];
   const industries = facets?.industries || [];
@@ -176,34 +165,24 @@ export default function MarketPage() {
 
   const subsectors = useMemo(() => {
     const s = sectors.find((x) => x.sector === sector);
-    return s ? s.subsectors || [] : [];
+    return s ? (s.subsectors || []) : [];
   }, [sectors, sector]);
 
+  // backend query (we’ll ask for kind exactly as chosen, but on 'all' we’ll filter out businesses on the client)
   const query = {
-    q,
-    kind,
-    sector,
-    subsectorId,
-    industry,
-    country,
-    size,
-    badges: badges.join(","),
-    hasImages,
-    sort,
-    page,
-    limit: 24,
+    q, kind, sector, subsectorId, industry, country, size,
+    badges: badges.join(","), hasImages, sort, page, limit: 24
   };
   const { data, isFetching } = useGetMarketItemsQuery(query);
 
-  const items = data?.items || [];
-  const total = data?.total || 0;
-  const businessCount = data?.counts?.businesses ?? items.filter((i) => i.type === "business").length;
-
-  // optional: aggregated tags for sidebar (if backend returns data.tags). We keep it but don't touch mk-sub requirement.
+  // Always display ONLY items (products/services). If backend returns businesses for kind=all, hide them.
+  const raw = data?.items || [];
+  const items = raw.filter((x) => x?.type !== "business");
+  const total = items.length; // visible count
   const tagsAgg = data?.tags || [];
 
   const isTagActive = (t) => q.trim().toLowerCase() === String(t || "").toLowerCase();
-  const onTagClick = (t) => setParam("q", isTagActive(t) ? "" : t);
+  const onTagClick  = (t) => setParam("q", isTagActive(t) ? "" : t);
 
   return (
     <>
@@ -216,7 +195,7 @@ export default function MarketPage() {
           <div className="mk-toprow">
             <input
               className="mk-input grow"
-              placeholder="Search businesses or products…"
+              placeholder="Search products or services…"
               value={q}
               onChange={(e) => setParam("q", e.target.value)}
             />
@@ -224,8 +203,7 @@ export default function MarketPage() {
               <option value="">All Industries</option>
               {industries.map((it) => (
                 <option key={it.name} value={it.name}>
-                  {cap(it.name)}
-                  {it.count ? ` (${it.count})` : ""}
+                  {cap(it.name)}{it.count ? ` (${it.count})` : ""}
                 </option>
               ))}
             </select>
@@ -233,16 +211,16 @@ export default function MarketPage() {
               <option value="">All Countries</option>
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
-                  {c.code.toUpperCase()}
-                  {c.count ? ` (${c.count})` : ""}
+                  {c.code.toUpperCase()}{c.count ? ` (${c.count})` : ""}
                 </option>
               ))}
             </select>
+
+            {/* Types: ONLY product | service | all */}
             <select className="mk-select" value={kind} onChange={(e) => setParam("kind", e.target.value)}>
-              <option value="business">Businesses</option>
+              <option value="all">All</option>
               <option value="product">Products</option>
               <option value="service">Services</option>
-              <option value="all">All Types</option>
             </select>
           </div>
         </div>
@@ -258,8 +236,7 @@ export default function MarketPage() {
                 <option value="">All</option>
                 {sizes.map((s) => (
                   <option key={s.size} value={s.size}>
-                    {s.size}
-                    {s.count ? ` (${s.count})` : ""}
+                    {s.size}{s.count ? ` (${s.count})` : ""}
                   </option>
                 ))}
               </select>
@@ -350,12 +327,10 @@ export default function MarketPage() {
                     </option>
                   ))}
                 </select>
-              ) : (
-                <div />
-              )}
+              ) : <div/>}
               <div className="mk-right">
                 <span className="mk-muted">
-                  {kind === "business" ? `Showing ${businessCount} businesses` : isFetching ? "Loading…" : `${total} results`}
+                  {isFetching ? "Loading…" : `${total} results`}
                 </span>
                 <select className="mk-select" value={sort} onChange={(e) => setParam("sort", e.target.value)}>
                   <option value="new">Newest</option>
@@ -370,7 +345,7 @@ export default function MarketPage() {
             <div className="mk-grid">
               {isFetching && !items.length
                 ? Array.from({ length: 9 }).map((_, i) => <div key={i} className="mk-skel" />)
-                : items.map((it) => <Card key={`${it.type}-${it.id}`} it={it} />)}
+                : items.map((it) => <ItemCard key={`item-${it.id}`} d={it} />)}
             </div>
 
             {/* Pager */}
