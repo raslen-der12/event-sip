@@ -67,13 +67,13 @@ function MemberCard({ m }) {
         <div className="mk-card-actions">
           <button
             className="mk-btn ghost"
-            onClick={() => navigate(`/community/member/${m.id}`)}
+            onClick={() => navigate(`/profile/${m.id}`)}
           >
             View Profile
           </button>
           <button
             className="mk-btn primary"
-            onClick={() => navigate(`/community/message/${m.id}`)}
+            onClick={() => navigate(`/messages?member=${m.id}`)}
           >
             Send Message
           </button>
