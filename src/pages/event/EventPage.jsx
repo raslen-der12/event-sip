@@ -152,7 +152,8 @@ export default function EventPage() {
   loading={isLoading}
   error={isError ? "error" : ""}
 />
-      <ActionRibbon />
+<br></br>
+      {/*<ActionRibbon /> */}
       <Footer
   brand={footerData.brand}
   columns={footerData.columns}
