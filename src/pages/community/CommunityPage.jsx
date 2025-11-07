@@ -145,8 +145,8 @@ function Pagination({ page, total, limit, onGo }) {
       className="mk-pager"
       style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}
     >
-      <button className="mk-btn outline" disabled={page <= 1} onClick={() => onGo(1)} title="First">«</button>
-      <button className="mk-btn outline" disabled={page <= 1} onClick={() => onGo(page - 1)} title="Previous">‹</button>
+      <button className="mk-btn " disabled={page <= 1} onClick={() => onGo(1)} title="First">«</button>
+      <button className="mk-btn " disabled={page <= 1} onClick={() => onGo(page - 1)} title="Previous">‹</button>
 
       {pages.map((v, i) =>
         v === "…" ? (
@@ -154,7 +154,7 @@ function Pagination({ page, total, limit, onGo }) {
         ) : (
           <button
             key={`p-${v}`}
-            className={"mk-btn" + (v === page ? " primary" : " outline")}
+            className={"mk-btn" + (v === page ? " primary" : " ")}
             onClick={() => onGo(v)}
             aria-current={v === page ? "page" : undefined}
           >
@@ -163,8 +163,8 @@ function Pagination({ page, total, limit, onGo }) {
         )
       )}
 
-      <button className="mk-btn outline" disabled={page >= totalPages} onClick={() => onGo(page + 1)} title="Next">›</button>
-      <button className="mk-btn outline" disabled={page >= totalPages} onClick={() => onGo(totalPages)} title="Last">»</button>
+      <button className="mk-btn " disabled={page >= totalPages} onClick={() => onGo(page + 1)} title="Next">›</button>
+      <button className="mk-btn " disabled={page >= totalPages} onClick={() => onGo(totalPages)} title="Last">»</button>
     </nav>
   );
 }
