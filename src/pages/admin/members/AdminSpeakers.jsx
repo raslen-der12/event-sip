@@ -29,8 +29,7 @@ import enLocale from "i18n-iso-countries/langs/en.json";
 // Register locale once (module top-level)
 countries.registerLocale(enLocale);
 
-// Build an array of { code, name } sorted by name.
-// Do this at module init so it isn't recomputed per render.
+
 const ALL_COUNTRIES = Object.entries(
   countries.getNames("en", { select: "official" })
 )
@@ -134,7 +133,7 @@ export default function AdminSpeakers() {
   const [eventFilterId, setEventFilterId] = React.useState("");
   const { data: events = [] } = useGetEventsQuery();
 
-  // Normalize events payload
+  // Normalize events payload (defensive)
   const eventsArr = React.useMemo(() => {
     if (Array.isArray(events)) return events;
     if (Array.isArray(events?.data)) return events.data;
@@ -142,9 +141,9 @@ export default function AdminSpeakers() {
     return [];
   }, [events]);
 
-  // Prepare list query args (same hooks across actors)
+  // Prepare list query args
   const listArgs = React.useMemo(() => {
-    const base = { role: ROLE };
+    const base = { role: typeof ROLE !== "undefined" ? ROLE : "speaker" };
     if (eventFilterId) base.eventId = eventFilterId;
     if (search.trim()) return { ...base, search: search.trim() };
     return { ...base, limit: Number(limit) || 20 };
@@ -157,6 +156,13 @@ export default function AdminSpeakers() {
     refetch,
   } = useGetActorsListAdminQuery(listArgs);
 
+  const items = React.useMemo(() => {
+    if (Array.isArray(list)) return list;
+    if (Array.isArray(list?.data)) return list.data;
+    if (Array.isArray(list?.data?.data)) return list.data.data;
+    return [];
+  }, [list]);
+
   /* ── Modal (full actor) */
   const [activeId, setActiveId] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -168,9 +174,9 @@ export default function AdminSpeakers() {
       setActiveId(qid);
       setModalOpen(true);
     }
+    // intentionally depends on searchParams and activeId
   }, [searchParams, activeId]);
 
-  // note: we need refetch to refresh modal after photo upload
   const {
     data: actor,
     isFetching: fetchingActor,
@@ -190,51 +196,61 @@ export default function AdminSpeakers() {
     sp.delete("id");
     setSearchParams(sp, { replace: true });
   };
-  // helper to reset the createDraft to an empty/new state
+
+  // Helper to get a reliable API base for fetch calls (die-safe on deploy)
+  const getApiBase = React.useCallback(() => {
+    try {
+      const env = (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "");
+      if (env) return env;
+      if (typeof window !== "undefined" && window.__API_BASE__) {
+        return String(window.__API_BASE__).replace(/\/+$/, "");
+      }
+      if (typeof window !== "undefined" && window.location?.origin) {
+        return window.location.origin.replace(/\/+$/, "");
+      }
+    } catch (e) {
+      // ignore
+    }
+    return "";
+  }, []);
+
+  // keep this shape in sync with your initial createDraft state
+  const emptyDraft = {
+    fullName: "",
+    email: "",
+    firstEmail: "",
+    country: "",
+    eventId: "",
+    jobTitle: "",
+    sessionIds: [],
+    photoFile: null,
+    photoPreview: null,
+    phone: "",
+    city: "",
+    orgName: "",
+    businessRole: "",
+    website: "",
+    linkedin: "",
+    bio: "",
+  };
+
   const resetCreateDraftToEmpty = () => {
-    // keep this shape in sync with your initial createDraft state
-    setCreateDraft({
-      fullName: "",
-      email: "",
-      country: "",
-      eventId: "",
-      jobTitle: "",
-      sessionIds: [],
-      photoFile: null,
-      photoPreview: null,
-      phone: "",
-      city: "",
-      orgName: "",
-      businessRole: "",
-    });
+    setCreateDraft({ ...emptyDraft });
     setEditingId(null);
     setIsEditing(false);
   };
 
   /* ── Create speaker (expanded form + sessions assignment) */
   const [creating, setCreating] = React.useState(false);
-  const [createDraft, setCreateDraft] = React.useState({
-    fullName: "",
-    email: "",
-    country: "",
-    eventId: "",
-    jobTitle: "",
-    sessionIds: [],
-    photoFile: null, // <-- added
-    photoPreview: null, // <-- added
-    bio: "",
-  });
+  const [createDraft, setCreateDraft] = React.useState({ ...emptyDraft });
   const [isEditing, setIsEditing] = React.useState(false);
   const [editingId, setEditingId] = React.useState(null);
-  const [roleKind, setRoleKind] = React.useState(""); // optional “role-like”
+  const [roleKind, setRoleKind] = React.useState("");
   const token = useSelector(selectCurrentToken);
 
-  // ---------- Edit helpers (paste right after createDraft/isEditing state) ----------
-  // Replace existing handleEditClick with this defensive version
-  // Extremely defensive handleEditClick — paste over your existing function
+  // Edit helpers
   const handleEditClick = async (actorRowOrId) => {
     try {
-      // if passed whole object with enough data, use it directly
       let actor = actorRowOrId;
       let maybeId =
         typeof actorRowOrId === "string"
@@ -243,19 +259,14 @@ export default function AdminSpeakers() {
 
       const hasEnough = !!(
         actorRowOrId &&
-        (actorRowOrId.personal ||
-          actorRowOrId.organization ||
-          actorRowOrId.talk)
+        (actorRowOrId.personal || actorRowOrId.organization || actorRowOrId.talk)
       );
       if (!hasEnough && maybeId) {
-        // build backend base
-        const base =
-          (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "") ||
-          "http://localhost:3500";
+        const base = getApiBase();
+        const fallback = base || "";
         const safeId = encodeURIComponent(String(maybeId));
-        const url = `${base}/actors/${safeId}`;
+        const url = `${fallback}/actors/${safeId}`.replace(/\/+actors/, "/actors");
 
-        // prefer Redux token, fallback to cookie jwt
         const pickTokenFromCookie = (name = "jwt") => {
           try {
             const m = document.cookie.match(
@@ -293,25 +304,20 @@ export default function AdminSpeakers() {
           return;
         }
         const parsed = await res.json();
-        actor = parsed?.data || parsed;
+        actor = parsed?.data?.actor || parsed?.data || parsed;
       }
 
-      // normalize shapes
       const personal = actor.personal || actor.identity || {};
       const org = actor.organization || actor.business || actor.identity || {};
       const sessions = Array.isArray(actor.sessionIds)
         ? actor.sessionIds
-        : actor.sessions || [];
+        : Array.isArray(actor.sessions)
+        ? actor.sessions
+        : [];
 
-      // prefill your create form state
       setCreateDraft((d) => ({
         ...d,
-        fullName: (
-          personal.fullName ||
-          personal.exhibitorName ||
-          d.fullName ||
-          ""
-        ).trim(),
+        fullName: (personal.fullName || personal.exhibitorName || d.fullName || "").trim(),
         email: ((personal.email || "") + "").toLowerCase().trim(),
         firstEmail: ((personal.firstEmail || personal.email || "") + "")
           .toLowerCase()
@@ -324,12 +330,14 @@ export default function AdminSpeakers() {
         businessRole: (org.businessRole || d.businessRole || "").trim(),
         sessionIds: sessions || [],
         eventId: actor.id_event || actor.eventId || d.eventId || "",
+        bio: personal.bio || d.bio || "",
+        website: (actor.links && actor.links.website) || d.website || "",
+        linkedin: (actor.links && actor.links.linkedin) || d.linkedin || "",
       }));
 
       setEditingId(actor._id || actor.id || maybeId);
       setIsEditing(true);
       setCreating(true);
-
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("handleEditClick error:", err);
@@ -340,19 +348,9 @@ export default function AdminSpeakers() {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditingId(null);
-    setCreateDraft({
-      fullName: "",
-      email: "",
-      country: "",
-      eventId: "",
-      jobTitle: "",
-      sessionIds: [],
-      photoFile: null,
-      photoPreview: null,
-    });
+    setCreateDraft({ ...emptyDraft });
     if (typeof setRoleKind === "function") setRoleKind("");
   };
-  // -------------------------------------------------------------------------------
 
   // upload hook
   const [uploadActorPhoto, { isLoading: uploadingPhoto }] =
@@ -368,18 +366,14 @@ export default function AdminSpeakers() {
     );
 
   const cleanSessions = React.useMemo(() => {
-    const raw =
-      sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
+    const raw = sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
     return (Array.isArray(raw) ? raw : []).filter(
-      (s) =>
-        String(s?.track || "")
-          .trim()
-          .toLowerCase() !== "formation"
+      (s) => String(s?.track || "").trim().toLowerCase() !== "formation"
     );
   }, [sessionsPack]);
 
   const pickerSessions = React.useMemo(() => {
-    return cleanSessions.map((s) => {
+    return (cleanSessions || []).map((s) => {
       const start = s.startAt || s.startTime || s.start || s.startsAt || null;
       const end = s.endAt || s.endTime || s.end || s.endsAt || null;
       return {
@@ -399,123 +393,99 @@ export default function AdminSpeakers() {
 
   const toggleSess = (id) => {
     setCreateDraft((prev) => {
-      const has = prev.sessionIds.includes(id);
+      const has = prev.sessionIds.map(String).includes(String(id));
       return {
         ...prev,
         sessionIds: has
-          ? prev.sessionIds.filter((x) => x !== id)
+          ? prev.sessionIds.filter((x) => String(x) !== String(id))
           : [...prev.sessionIds, id],
       };
     });
   };
 
   const canCreate =
-    createDraft.fullName.trim() &&
-    createDraft.email.trim() &&
-    createDraft.country.trim() &&
+    (createDraft.fullName || "").trim() &&
+    (createDraft.email || "").trim() &&
+    (createDraft.country || "").trim() &&
     createDraft.eventId &&
+    Array.isArray(createDraft.sessionIds) &&
     createDraft.sessionIds.length > 0;
 
   const [createActor, { isLoading: creatingReq }] = useCreateActorMutation();
 
-  // cleanup previews when component unmounts or preview changes
+  // cleanup previews when photoPreview changes or component unmounts
   React.useEffect(() => {
+    const preview = createDraft.photoPreview;
     return () => {
-      if (createDraft.photoPreview) {
+      if (preview) {
         try {
-          URL.revokeObjectURL(createDraft.photoPreview);
-        } catch {}
+          URL.revokeObjectURL(preview);
+        } catch (e) {
+          // ignore
+        }
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [createDraft.photoPreview]);
 
-  const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!"; // temporary password generator
+  const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!";
 
   const onCreateSubmit = async (e) => {
-  e.preventDefault();
-  if (!canCreate) return;
+    e.preventDefault();
+    if (!canCreate) return;
 
-  // client-side normalization + enforce server-side limits
+    const payload = {
+      personal: {
+        fullName: (createDraft.fullName || "").trim(),
+        email: (createDraft.email || "").trim(),
+        firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
+        country: (createDraft.country || "").trim().toUpperCase(),
+        phone: (createDraft.phone || "").trim(),
+        city: (createDraft.city || "").trim(),
+        bio: (createDraft.bio || "").trim().slice(0, 300),
+      },
+      organization: {
+        orgName: (createDraft.orgName || "").trim(),
+        jobTitle: (createDraft.jobTitle || "").trim(),
+        businessRole: (createDraft.businessRole || "").trim(),
+      },
+      links: {
+        website: createDraft.website || "",
+        linkedin: createDraft.linkedin || "",
+      },
+      sessionIds: createDraft.sessionIds || [],
+      eventId: createDraft.eventId || undefined,
+    };
 
-  const payload = {
-    personal: {
-      fullName: (createDraft.fullName || "").trim(),
-      email: (createDraft.email || "").trim(),
-      firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
-      country: (createDraft.country || "").trim().toUpperCase(),
-      phone: (createDraft.phone || "").trim(),
-      city: (createDraft.city || "").trim(),
-      bio: (createDraft.bio || '').trim().slice(0, 300), // <= 300 chars
-    },
-    organization: {
-      orgName: (createDraft.orgName || "").trim(),
-      jobTitle: (createDraft.jobTitle || "").trim(),
-      businessRole: (createDraft.businessRole || "").trim(),
-    },
-    links: {
-      website: createDraft.website || "",
-      linkedin: createDraft.linkedin || "",
-    },
-    sessionIds: createDraft.sessionIds || [],
-    eventId: createDraft.eventId || undefined,
-  };
+    try {
+      const base = getApiBase() || "";
 
-  try {
-    const base =
-      (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "") ||
-      "http://localhost:3500";
+      if (isEditing && editingId) {
+        const url = `${base}/actors/update/${encodeURIComponent(editingId)}`;
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch(url, {
+          method: "PATCH",
+          credentials: "include",
+          headers,
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Update failed: " + res.status);
+        await res.json();
+        alert("Speaker updated");
+      } else {
+        await createActor({ ...payload, role: "speaker" }).unwrap();
+        alert("Speaker created");
+      }
 
-    if (isEditing && editingId) {
-      const url = `${base}/actors/update/${encodeURIComponent(editingId)}`;
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      const res = await fetch(url, {
-        method: "PATCH",
-        credentials: "include",
-        headers,
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Update failed: " + res.status);
-      await res.json();
-      alert("Speaker updated");
-    } else {
-      // existing create flow (POST /actors/create)
-      const url = `${base}/actors/create`;
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      const res = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        headers,
-        body: JSON.stringify({ ...payload, role: "speaker" }),
-      });
-      if (!res.ok) throw new Error("Create failed: " + res.status);
-      await res.json();
-      alert("Speaker created");
+      setIsEditing(false);
+      setEditingId(null);
+      setCreateDraft({ ...emptyDraft });
+      refetch();
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Submit failed — see console.");
     }
-
-    // Clean up UI and refetch
-    setIsEditing(false);
-    setEditingId(null);
-    setCreateDraft({
-      fullName: "",
-      email: "",
-      country: "",
-      eventId: "",
-      jobTitle: "",
-      bio: "",             // reset bio too
-      sessionIds: [],
-      photoFile: null,
-      photoPreview: null,
-    });
-    refetch(); // call whatever fetch function you use to reload list
-  } catch (err) {
-    console.error("Submit error:", err);
-    alert("Submit failed — see console.");
-  }
-};
-
+  };
 
   /* Top-bar actions */
   const seeMore = () => {
@@ -616,9 +586,8 @@ export default function AdminSpeakers() {
             <button
               className="btn brand ml-4"
               onClick={() => {
-                // always open create form (not edit)
                 resetCreateDraftToEmpty();
-                setCreating(true);
+                setCreating((c) => !c);
               }}
             >
               {creating ? "Close form" : "Create speaker"}
@@ -638,10 +607,7 @@ export default function AdminSpeakers() {
                     className="input"
                     value={createDraft.fullName}
                     onChange={(e) =>
-                      setCreateDraft({
-                        ...createDraft,
-                        fullName: e.target.value,
-                      })
+                      setCreateDraft({ ...createDraft, fullName: e.target.value })
                     }
                   />
                 </label>
@@ -665,21 +631,20 @@ export default function AdminSpeakers() {
                       className="input"
                       value={createDraft.country}
                       onChange={(e) =>
-                        setCreateDraft({
-                          ...createDraft,
-                          country: e.target.value,
-                        })
+                        setCreateDraft({ ...createDraft, country: e.target.value })
                       }
                     >
                       <option value="">— Select —</option>
-                      {ALL_COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.name} ({c.code})
-                        </option>
-                      ))}
+                      {(typeof ALL_COUNTRIES !== "undefined" ? ALL_COUNTRIES : []).map(
+                        (c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.name} ({c.code})
+                          </option>
+                        )
+                      )}
                     </select>
                     <div className="flag-preview">
-                      {flagChip(createDraft.country)}
+                      {typeof flagChip === "function" ? flagChip(createDraft.country) : null}
                     </div>
                   </div>
                 </label>
@@ -702,7 +667,6 @@ export default function AdminSpeakers() {
                   </select>
                 </label>
 
-                {/* Job title input (matches other fields) */}
                 <label className="att-field">
                   <div className="att-lbl">Job Title</div>
                   <input
@@ -710,16 +674,12 @@ export default function AdminSpeakers() {
                     type="text"
                     value={createDraft.jobTitle || ""}
                     onChange={(e) =>
-                      setCreateDraft((d) => ({
-                        ...d,
-                        jobTitle: e.target.value,
-                      }))
+                      setCreateDraft((d) => ({ ...d, jobTitle: e.target.value }))
                     }
                     placeholder="Ex: Product Manager, Développeur Front, Designer"
                   />
                 </label>
 
-                {/* Bio input (matches other fields) */}
                 <label className="att-field">
                   <div className="att-lbl">Bio</div>
                   <textarea
@@ -759,8 +719,7 @@ export default function AdminSpeakers() {
                     })}
                   </select>
                   <div className="att-hint muted">
-                    Sessions list will load after selecting the event.
-                    “Formation” track is excluded.
+                    Sessions list will load after selecting the event. “Formation” track is excluded.
                   </div>
                 </label>
               </div>
@@ -815,14 +774,11 @@ export default function AdminSpeakers() {
               </button>
 
               {isEditing ? (
-                // show a cancel edit button when editing
                 <button
                   type="button"
                   className="btn ml-4"
                   onClick={() => {
-                    // cancel editing and reset form
                     resetCreateDraftToEmpty();
-                    // optionally close form UI
                     setCreating(false);
                   }}
                 >
@@ -851,14 +807,14 @@ export default function AdminSpeakers() {
         </div>
 
         <div className="att-grid">
-          {isLoading && !list.length ? (
+          {isLoading && !items.length ? (
             skeletons(12)
-          ) : list.length ? (
-            list.map((it) => (
+          ) : items.length ? (
+            items.map((it) => (
               <SpeakerRow
-                key={getId(it)}
+                key={getId ? getId(it) : it._id || it.id}
                 item={it}
-                onOpen={() => openModal(getId(it))}
+                onOpen={() => openModal(getId ? getId(it) : it._id || it.id)}
                 onEdit={() => handleEditClick(it)}
               />
             ))
@@ -937,7 +893,7 @@ function SpeakerRow({ item, onOpen, onEdit }) {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
             type="button"
-            className="btn tiny" // match your app btn classes (or use att-row styles)
+            className="btn tiny"
             onClick={(e) => {
               e.stopPropagation();
               if (typeof onEdit === "function") onEdit(item);
@@ -993,7 +949,7 @@ function ActorDetails({ actor, refetchActor }) {
   const goProfile = () => navigate(`/admin/members/speaker/${id}`);
   const goMessage = () => navigate(`/admin/messages?actor=${id}&role=speaker`);
 
-  // Local upload state for modal (admin can replace photo)
+  // Local upload state for modal
   const [localFile, setLocalFile] = React.useState(null);
   const [localPreview, setLocalPreview] = React.useState(null);
   const [uploadErr, setUploadErr] = React.useState(null);
@@ -1044,7 +1000,6 @@ function ActorDetails({ actor, refetchActor }) {
 
   return (
     <div className="att-detail att-detail--with-scroll">
-      {/* header area: left fixed column + right flexible content */}
       <div className="att-d-head att-d-head--split">
         <div className="att-d-left">
           <button
@@ -1054,11 +1009,7 @@ function ActorDetails({ actor, refetchActor }) {
             aria-label="Open profile"
           >
             {hasRealPhoto ? (
-              <img
-                className="att-d-img"
-                src={imageLink(photo)}
-                alt={A.fullName}
-              />
+              <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
             ) : (
               <span className="att-fallback">
                 {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
@@ -1106,9 +1057,7 @@ function ActorDetails({ actor, refetchActor }) {
                     Cancel
                   </button>
                 </div>
-                {uploadErr && (
-                  <div className="muted att-upload-error">{uploadErr}</div>
-                )}
+                {uploadErr && <div className="muted att-upload-error">{uploadErr}</div>}
               </div>
             ) : (
               <div className="att-upload-hint muted">PNG / JPG • max 5MB</div>
@@ -1126,23 +1075,15 @@ function ActorDetails({ actor, refetchActor }) {
                 flexWrap: "wrap",
               }}
             >
-              <button
-                className="att-d-name linklike"
-                onClick={goProfile}
-                title={A.fullName}
-              >
+              <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
                 {A.fullName || "—"}
               </button>
 
-              <span
-                className={`pill-verify big ${base.verified ? "ok" : "no"}`}
-              >
+              <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
                 {base.verified ? "Email verified" : "Unverified"}
               </span>
 
-              <span
-                className={`pill-status big ${base.adminVerified || "pending"}`}
-              >
+              <span className={`pill-status big ${base.adminVerified || "pending"}`}>
                 {base.adminVerified || "pending"}
               </span>
             </div>
@@ -1161,10 +1102,7 @@ function ActorDetails({ actor, refetchActor }) {
             </span>
             {actor?.roleKind ? (
               <span className="muted ml-10">
-                Role-like:{" "}
-                <strong style={{ whiteSpace: "normal" }}>
-                  {actor.roleKind}
-                </strong>
+                Role-like: <strong style={{ whiteSpace: "normal" }}>{actor.roleKind}</strong>
               </span>
             ) : null}
           </div>
@@ -1185,12 +1123,7 @@ function ActorDetails({ actor, refetchActor }) {
               </a>
             ) : null}
             {fmtUrl(base?.links?.linkedin) ? (
-              <a
-                className="linklike"
-                href={fmtUrl(base.links.linkedin)}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="linklike" href={fmtUrl(base.links.linkedin)} target="_blank" rel="noreferrer">
                 LinkedIn
               </a>
             ) : null}
@@ -1208,7 +1141,6 @@ function ActorDetails({ actor, refetchActor }) {
         </div>
       </div>
 
-      {/* content area: scrolls inside modal */}
       <div className="att-sections att-sections--compact">
         <AttSection title="Talk">
           <KV k="Title" v={T.title} />
@@ -1244,9 +1176,7 @@ function ActorDetails({ actor, refetchActor }) {
             <div className="att-sessions">
               {sess.map((s) => (
                 <div key={s._id || s.id} className="sess-row">
-                  <div className="sess-title line-1">
-                    {s.title || "Untitled"}
-                  </div>
+                  <div className="sess-title line-1">{s.title || "Untitled"}</div>
                   <div className="sess-sub tiny">
                     <span className="tag">{s.track || "Session"}</span>
                     <span className="sep">•</span>
