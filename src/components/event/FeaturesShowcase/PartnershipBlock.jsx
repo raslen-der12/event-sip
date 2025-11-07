@@ -47,79 +47,89 @@ export default function PartnershipBlock({
   const imageAltText = imageAlt ?? t("partnership.imageAlt", "A Simplified Event Management Experience");
   const imageCaptionText = imageCaption ?? t("partnership.imageCaption", "A Simplified Event Management Experience");
 
-  return (
-    <section className="py-16 bg-[#F9FAFB] text-gray-800">
-      <div className="container mx-auto px-4 md:px-8">
-        <div
-          className={`flex flex-col md:flex-row items-center gap-10 ${
-            reverse ? "md:flex-row-reverse" : ""
-          }`}
+return (
+  <section className="py-20 bg-[#F9FAFB] text-gray-800 overflow-hidden">
+    <div className="container mx-auto px-4 md:px-8">
+      <div
+        className={`flex flex-col md:flex-row items-center gap-14 ${
+          reverse ? "md:flex-row-reverse" : ""
+        }`}
+      >
+        {/* LEFT: Text Section */}
+        <motion.div
+          initial={{ opacity: 0, x: reverse ? 80 : -80 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          viewport={{ once: true }}
+          className="flex-1"
         >
-          {/* LEFT: Text Section */}
-          <motion.div
-            initial={{ opacity: 0, x: reverse ? 80 : -80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="flex-1"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <h2 className="fsx-title text-1xl md:text-3xl font-semibold">
-                {headingText}
-              </h2>
+          {/* Title */}
+          <div className="mb-6">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0f172a] leading-tight tracking-tight">
+              <span className="block text-[#0077b6]">
+                Partenariat Stratégique
+              </span>
+              <span className="block text-[#1e293b] mt-2 whitespace-nowrap">
+                IPDAYS <span className="text-[#0077b6]">×</span> GITS 2025
+              </span>
+            </h2>
+          </div>
+
+          {/* Strapline */}
+          {strapText && (
+            <p className="text-lg md:text-xl text-[#374151] mb-6 font-medium">
+              {strapText}
+            </p>
+          )}
+
+          {/* Body paragraphs */}
+          <div className="space-y-3 text-gray-600 leading-relaxed">
+            {Array.isArray(paragraphsData)
+              ? paragraphsData.map((p, i) => <p key={i}>{p}</p>)
+              : <p>{paragraphsData}</p>
+            }
+          </div>
+
+          {/* CTA */}
+          {ctaHrefText && ctaLabelText && (
+            <div className="mt-8">
+              <a
+                href={ctaHrefText}
+                className="inline-block bg-[#0077b6] hover:bg-[#005f8a] text-white font-semibold py-3 px-8 rounded-2xl shadow-lg transition-transform hover:-translate-y-1"
+              >
+                {ctaLabelText}
+              </a>
             </div>
+          )}
+        </motion.div>
 
-            {strapText && (
-              <p className="text-lg md:text-xl text-[#374151] mb-6 font-medium">
-                {strapText}
-              </p>
-            )}
-
-            <div className="space-y-3 text-gray-600 leading-relaxed">
-              {Array.isArray(paragraphsData)
-                ? paragraphsData.map((p, i) => <p key={i}>{p}</p>)
-                : <p>{paragraphsData}</p>
-              }
-            </div>
-
-            {ctaHrefText && ctaLabelText && (
-              <div className="mt-8">
-                <a
-                  href={ctaHrefText}
-                  className="inline-block bg-[#0077b6] hover:bg-[#005f8a] text-white font-semibold py-3 px-6 rounded-2xl shadow-md transition-all"
-                >
-                  {ctaLabelText}
-                </a>
-              </div>
-            )}
-          </motion.div>
-
-          {/* RIGHT: Image Section */}
-          <motion.div
-            initial={{ opacity: 0, x: reverse ? -80 : 80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="flex-1 relative"
-          >
-            <div className="rounded-2xl overflow-hidden shadow-md">
-              <img
-                src={imageSrc}
-                alt={imageAltText}
-                loading="lazy"
-                className="w-full h-auto object-cover"
-              />
-            </div>
-            {imageCaptionText && (
-              <p className="text-sm text-gray-500 mt-3 italic text-center">
-                {imageCaptionText}
-              </p>
-            )}
-          </motion.div>
-        </div>
+        {/* RIGHT: Image Section */}
+        <motion.div
+          initial={{ opacity: 0, x: reverse ? -80 : 80 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          viewport={{ once: true }}
+          className="flex-1 relative"
+        >
+          <div className="rounded-2xl overflow-hidden shadow-xl">
+            <img
+              src={imageSrc}
+              alt={imageAltText}
+              loading="lazy"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+          {imageCaptionText && (
+            <p className="text-sm text-gray-500 mt-3 italic text-center">
+              {imageCaptionText}
+            </p>
+          )}
+        </motion.div>
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
+
 }
 
 PartnershipBlock.propTypes = {
