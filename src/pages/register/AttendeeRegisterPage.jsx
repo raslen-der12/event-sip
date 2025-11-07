@@ -1508,7 +1508,7 @@ export default function AttendeeRegisterPage() {
               <div className="h">
                 {t(
                   "partnership.parallelTracksHint",
-                  "Parallel tracks: you can choose a <b>masterclass</b> and an <b>atelier</b> in the same slot, but not two from the same family."
+                  "Parallel tracks: you can choose a masterclass and an atelier in the same slot, but not two from the same family."
                 )}
               </div>
             </div>

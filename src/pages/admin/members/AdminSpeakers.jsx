@@ -1,6 +1,8 @@
 // src/pages/admin/members/AdminSpeakers.jsx
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectCurrentToken } from "../../../features/auth/authSlice";
 import ReactCountryFlag from "react-country-flag";
 import "./admin.attendees.css"; // reuse same styles
 import SessionPicker from "../../../components/admin/SessionPicker";
@@ -27,8 +29,7 @@ import enLocale from "i18n-iso-countries/langs/en.json";
 // Register locale once (module top-level)
 countries.registerLocale(enLocale);
 
-// Build an array of { code, name } sorted by name.
-// Do this at module init so it isn't recomputed per render.
+
 const ALL_COUNTRIES = Object.entries(
   countries.getNames("en", { select: "official" })
 )
@@ -132,7 +133,7 @@ export default function AdminSpeakers() {
   const [eventFilterId, setEventFilterId] = React.useState("");
   const { data: events = [] } = useGetEventsQuery();
 
-  // Normalize events payload
+  // Normalize events payload (defensive)
   const eventsArr = React.useMemo(() => {
     if (Array.isArray(events)) return events;
     if (Array.isArray(events?.data)) return events.data;
@@ -140,9 +141,9 @@ export default function AdminSpeakers() {
     return [];
   }, [events]);
 
-  // Prepare list query args (same hooks across actors)
+  // Prepare list query args
   const listArgs = React.useMemo(() => {
-    const base = { role: ROLE };
+    const base = { role: typeof ROLE !== "undefined" ? ROLE : "speaker" };
     if (eventFilterId) base.eventId = eventFilterId;
     if (search.trim()) return { ...base, search: search.trim() };
     return { ...base, limit: Number(limit) || 20 };
@@ -155,6 +156,13 @@ export default function AdminSpeakers() {
     refetch,
   } = useGetActorsListAdminQuery(listArgs);
 
+  const items = React.useMemo(() => {
+    if (Array.isArray(list)) return list;
+    if (Array.isArray(list?.data)) return list.data;
+    if (Array.isArray(list?.data?.data)) return list.data.data;
+    return [];
+  }, [list]);
+
   /* ── Modal (full actor) */
   const [activeId, setActiveId] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -166,9 +174,9 @@ export default function AdminSpeakers() {
       setActiveId(qid);
       setModalOpen(true);
     }
+    // intentionally depends on searchParams and activeId
   }, [searchParams, activeId]);
 
-  // note: we need refetch to refresh modal after photo upload
   const {
     data: actor,
     isFetching: fetchingActor,
@@ -189,19 +197,160 @@ export default function AdminSpeakers() {
     setSearchParams(sp, { replace: true });
   };
 
-  /* ── Create speaker (expanded form + sessions assignment) */
-  const [creating, setCreating] = React.useState(false);
-  const [createDraft, setCreateDraft] = React.useState({
+  // Helper to get a reliable API base for fetch calls (die-safe on deploy)
+  const getApiBase = React.useCallback(() => {
+    try {
+      const env = (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "");
+      if (env) return env;
+      if (typeof window !== "undefined" && window.__API_BASE__) {
+        return String(window.__API_BASE__).replace(/\/+$/, "");
+      }
+      if (typeof window !== "undefined" && window.location?.origin) {
+        return window.location.origin.replace(/\/+$/, "");
+      }
+    } catch (e) {
+      // ignore
+    }
+    return "";
+  }, []);
+
+  // keep this shape in sync with your initial createDraft state
+  const emptyDraft = {
     fullName: "",
     email: "",
+    firstEmail: "",
     country: "",
     eventId: "",
     jobTitle: "",
     sessionIds: [],
-    photoFile: null, // <-- added
-    photoPreview: null, // <-- added
-  });
-  const [roleKind, setRoleKind] = React.useState(""); // optional “role-like”
+    photoFile: null,
+    photoPreview: null,
+    phone: "",
+    city: "",
+    orgName: "",
+    businessRole: "",
+    website: "",
+    linkedin: "",
+    bio: "",
+  };
+
+  const resetCreateDraftToEmpty = () => {
+    setCreateDraft({ ...emptyDraft });
+    setEditingId(null);
+    setIsEditing(false);
+  };
+
+  /* ── Create speaker (expanded form + sessions assignment) */
+  const [creating, setCreating] = React.useState(false);
+  const [createDraft, setCreateDraft] = React.useState({ ...emptyDraft });
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editingId, setEditingId] = React.useState(null);
+  const [roleKind, setRoleKind] = React.useState("");
+  const token = useSelector(selectCurrentToken);
+
+  // Edit helpers
+  const handleEditClick = async (actorRowOrId) => {
+    try {
+      let actor = actorRowOrId;
+      let maybeId =
+        typeof actorRowOrId === "string"
+          ? actorRowOrId
+          : actorRowOrId?._id || actorRowOrId?.id;
+
+      const hasEnough = !!(
+        actorRowOrId &&
+        (actorRowOrId.personal || actorRowOrId.organization || actorRowOrId.talk)
+      );
+      if (!hasEnough && maybeId) {
+        const base = getApiBase();
+        const fallback = base || "";
+        const safeId = encodeURIComponent(String(maybeId));
+        const url = `${fallback}/actors/${safeId}`.replace(/\/+actors/, "/actors");
+
+        const pickTokenFromCookie = (name = "jwt") => {
+          try {
+            const m = document.cookie.match(
+              new RegExp(
+                "(?:^|; )" +
+                  name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") +
+                  "=([^;]*)"
+              )
+            );
+            return m ? decodeURIComponent(m[1]) : null;
+          } catch (e) {
+            return null;
+          }
+        };
+        const finalToken = token || pickTokenFromCookie("jwt");
+
+        if (!finalToken) {
+          alert("You are not authenticated. Please login and try again.");
+          return;
+        }
+
+        const headers = {
+          Accept: "application/json",
+          Authorization: `Bearer ${finalToken}`,
+        };
+        const res = await fetch(url, {
+          method: "GET",
+          credentials: "include",
+          headers,
+        });
+        if (!res.ok) {
+          const txt = await res.text().catch(() => `HTTP ${res.status}`);
+          console.warn("Failed to fetch actor for edit:", res.status, txt);
+          alert("Unable to load actor for editing (server error).");
+          return;
+        }
+        const parsed = await res.json();
+        actor = parsed?.data?.actor || parsed?.data || parsed;
+      }
+
+      const personal = actor.personal || actor.identity || {};
+      const org = actor.organization || actor.business || actor.identity || {};
+      const sessions = Array.isArray(actor.sessionIds)
+        ? actor.sessionIds
+        : Array.isArray(actor.sessions)
+        ? actor.sessions
+        : [];
+
+      setCreateDraft((d) => ({
+        ...d,
+        fullName: (personal.fullName || personal.exhibitorName || d.fullName || "").trim(),
+        email: ((personal.email || "") + "").toLowerCase().trim(),
+        firstEmail: ((personal.firstEmail || personal.email || "") + "")
+          .toLowerCase()
+          .trim(),
+        country: (personal.country || d.country || "").trim(),
+        phone: (personal.phone || d.phone || "").trim(),
+        city: (personal.city || d.city || "").trim(),
+        jobTitle: (org.jobTitle || d.jobTitle || "").trim(),
+        orgName: (org.orgName || org.name || d.orgName || "").trim(),
+        businessRole: (org.businessRole || d.businessRole || "").trim(),
+        sessionIds: sessions || [],
+        eventId: actor.id_event || actor.eventId || d.eventId || "",
+        bio: personal.bio || d.bio || "",
+        website: (actor.links && actor.links.website) || d.website || "",
+        linkedin: (actor.links && actor.links.linkedin) || d.linkedin || "",
+      }));
+
+      setEditingId(actor._id || actor.id || maybeId);
+      setIsEditing(true);
+      setCreating(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("handleEditClick error:", err);
+      alert("Failed to open editor — see console.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingId(null);
+    setCreateDraft({ ...emptyDraft });
+    if (typeof setRoleKind === "function") setRoleKind("");
+  };
 
   // upload hook
   const [uploadActorPhoto, { isLoading: uploadingPhoto }] =
@@ -217,18 +366,14 @@ export default function AdminSpeakers() {
     );
 
   const cleanSessions = React.useMemo(() => {
-    const raw =
-      sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
+    const raw = sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
     return (Array.isArray(raw) ? raw : []).filter(
-      (s) =>
-        String(s?.track || "")
-          .trim()
-          .toLowerCase() !== "formation"
+      (s) => String(s?.track || "").trim().toLowerCase() !== "formation"
     );
   }, [sessionsPack]);
 
   const pickerSessions = React.useMemo(() => {
-    return cleanSessions.map((s) => {
+    return (cleanSessions || []).map((s) => {
       const start = s.startAt || s.startTime || s.start || s.startsAt || null;
       const end = s.endAt || s.endTime || s.end || s.endsAt || null;
       return {
@@ -248,99 +393,97 @@ export default function AdminSpeakers() {
 
   const toggleSess = (id) => {
     setCreateDraft((prev) => {
-      const has = prev.sessionIds.includes(id);
+      const has = prev.sessionIds.map(String).includes(String(id));
       return {
         ...prev,
         sessionIds: has
-          ? prev.sessionIds.filter((x) => x !== id)
+          ? prev.sessionIds.filter((x) => String(x) !== String(id))
           : [...prev.sessionIds, id],
       };
     });
   };
 
   const canCreate =
-    createDraft.fullName.trim() &&
-    createDraft.email.trim() &&
-    createDraft.country.trim() &&
+    (createDraft.fullName || "").trim() &&
+    (createDraft.email || "").trim() &&
+    (createDraft.country || "").trim() &&
     createDraft.eventId &&
+    Array.isArray(createDraft.sessionIds) &&
     createDraft.sessionIds.length > 0;
 
   const [createActor, { isLoading: creatingReq }] = useCreateActorMutation();
 
-  // cleanup previews when component unmounts or preview changes
+  // cleanup previews when photoPreview changes or component unmounts
   React.useEffect(() => {
+    const preview = createDraft.photoPreview;
     return () => {
-      if (createDraft.photoPreview) {
+      if (preview) {
         try {
-          URL.revokeObjectURL(createDraft.photoPreview);
-        } catch {}
+          URL.revokeObjectURL(preview);
+        } catch (e) {
+          // ignore
+        }
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [createDraft.photoPreview]);
 
-  const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!"; // temporary password generator
+  const generateTempPwd = () => Math.random().toString(36).slice(-10) + "A1!";
 
   const onCreateSubmit = async (e) => {
     e.preventDefault();
     if (!canCreate) return;
 
     const payload = {
-      role: ROLE,
-      eventId: createDraft.eventId,
-      roleKind: roleKind || undefined,
       personal: {
         fullName: (createDraft.fullName || "").trim(),
         email: (createDraft.email || "").trim(),
         firstEmail: (createDraft.firstEmail || createDraft.email || "").trim(),
         country: (createDraft.country || "").trim().toUpperCase(),
         phone: (createDraft.phone || "").trim(),
+        city: (createDraft.city || "").trim(),
+        bio: (createDraft.bio || "").trim().slice(0, 300),
       },
       organization: {
-        jobTitle: (createDraft.jobTitle || "").trim(),
         orgName: (createDraft.orgName || "").trim(),
+        jobTitle: (createDraft.jobTitle || "").trim(),
         businessRole: (createDraft.businessRole || "").trim(),
       },
+      links: {
+        website: createDraft.website || "",
+        linkedin: createDraft.linkedin || "",
+      },
       sessionIds: createDraft.sessionIds || [],
-      // ensure pwd exists because your schema requires it
-      pwd: createDraft.pwd || generateTempPwd(),
+      eventId: createDraft.eventId || undefined,
     };
 
     try {
-      const created = await createActor(payload).unwrap();
-      const newId = created?.data?._id || created?._id || created?.id;
+      const base = getApiBase() || "";
 
-      if (newId && createDraft.photoFile) {
-        try {
-          await uploadActorPhoto({
-            id: newId,
-            file: createDraft.photoFile,
-          }).unwrap();
-        } catch (upErr) {
-          console.error("Photo upload failed:", upErr);
-          alert("Speaker created but image upload failed.");
-        }
+      if (isEditing && editingId) {
+        const url = `${base}/actors/update/${encodeURIComponent(editingId)}`;
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch(url, {
+          method: "PATCH",
+          credentials: "include",
+          headers,
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Update failed: " + res.status);
+        await res.json();
+        alert("Speaker updated");
+      } else {
+        await createActor({ ...payload, role: "speaker" }).unwrap();
+        alert("Speaker created");
       }
 
-      setCreating(false);
-      setCreateDraft({
-        fullName: "",
-        email: "",
-        firstEmail: "",
-        country: "",
-        eventId: "",
-        sessionIds: [],
-        photoFile: null,
-        photoPreview: null,
-        jobTitle: "",
-        orgName: "",
-        businessRole: "",
-      });
-      setRoleKind("");
+      setIsEditing(false);
+      setEditingId(null);
+      setCreateDraft({ ...emptyDraft });
       refetch();
     } catch (err) {
-      console.error("Create speaker failed:", err);
-      alert(err?.data?.message || "Create failed");
+      console.error("Submit error:", err);
+      alert("Submit failed — see console.");
     }
   };
 
@@ -439,9 +582,13 @@ export default function AdminSpeakers() {
             >
               {isFetching ? "Loading…" : "Refresh"}
             </button>
+
             <button
               className="btn brand ml-4"
-              onClick={() => setCreating((v) => !v)}
+              onClick={() => {
+                resetCreateDraftToEmpty();
+                setCreating((c) => !c);
+              }}
             >
               {creating ? "Close form" : "Create speaker"}
             </button>
@@ -460,10 +607,7 @@ export default function AdminSpeakers() {
                     className="input"
                     value={createDraft.fullName}
                     onChange={(e) =>
-                      setCreateDraft({
-                        ...createDraft,
-                        fullName: e.target.value,
-                      })
+                      setCreateDraft({ ...createDraft, fullName: e.target.value })
                     }
                   />
                 </label>
@@ -487,21 +631,20 @@ export default function AdminSpeakers() {
                       className="input"
                       value={createDraft.country}
                       onChange={(e) =>
-                        setCreateDraft({
-                          ...createDraft,
-                          country: e.target.value,
-                        })
+                        setCreateDraft({ ...createDraft, country: e.target.value })
                       }
                     >
                       <option value="">— Select —</option>
-                      {ALL_COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.name} ({c.code})
-                        </option>
-                      ))}
+                      {(typeof ALL_COUNTRIES !== "undefined" ? ALL_COUNTRIES : []).map(
+                        (c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.name} ({c.code})
+                          </option>
+                        )
+                      )}
                     </select>
                     <div className="flag-preview">
-                      {flagChip(createDraft.country)}
+                      {typeof flagChip === "function" ? flagChip(createDraft.country) : null}
                     </div>
                   </div>
                 </label>
@@ -524,20 +667,30 @@ export default function AdminSpeakers() {
                   </select>
                 </label>
 
-                {/* Job title input */}
-                <label className="mp-field">
-                  <span className="mp-label">Intitulé du poste</span>
+                <label className="att-field">
+                  <div className="att-lbl">Job Title</div>
                   <input
-                    className="mp-input"
+                    className="input"
                     type="text"
                     value={createDraft.jobTitle || ""}
                     onChange={(e) =>
-                      setCreateDraft((d) => ({
-                        ...d,
-                        jobTitle: e.target.value,
-                      }))
+                      setCreateDraft((d) => ({ ...d, jobTitle: e.target.value }))
                     }
-                    placeholder="Ex : Product Manager, Développeur Front, Designer"
+                    placeholder="Ex: Product Manager, Développeur Front, Designer"
+                  />
+                </label>
+
+                <label className="att-field">
+                  <div className="att-lbl">Bio</div>
+                  <textarea
+                    className="input"
+                    value={createDraft.bio || ""}
+                    onChange={(e) =>
+                      setCreateDraft((d) => ({ ...d, bio: e.target.value }))
+                    }
+                    placeholder="Short bio — e.g. Senior Frontend Engineer, 10+ years, loves accessibility"
+                    rows={4}
+                    maxLength={300}
                   />
                 </label>
 
@@ -566,8 +719,7 @@ export default function AdminSpeakers() {
                     })}
                   </select>
                   <div className="att-hint muted">
-                    Sessions list will load after selecting the event.
-                    “Formation” track is excluded.
+                    Sessions list will load after selecting the event. “Formation” track is excluded.
                   </div>
                 </label>
               </div>
@@ -604,18 +756,40 @@ export default function AdminSpeakers() {
 
             <div className="att-create-actions">
               <button
+                type="submit"
                 className="btn brand"
                 disabled={!canCreate || creatingReq || uploadingPhoto}
               >
                 {creatingReq
-                  ? "Creating…"
+                  ? isEditing
+                    ? "Saving…"
+                    : "Creating…"
                   : uploadingPhoto
-                  ? "Uploading photo…"
+                  ? isEditing
+                    ? "Uploading photo…"
+                    : "Uploading photo…"
+                  : isEditing
+                  ? "Save changes"
                   : "Create speaker"}
               </button>
+
+              {isEditing ? (
+                <button
+                  type="button"
+                  className="btn ml-4"
+                  onClick={() => {
+                    resetCreateDraftToEmpty();
+                    setCreating(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
+
               <span className="att-hint muted ml-8">
-                The speaker will be created and linked to the selected event
-                sessions.
+                {isEditing
+                  ? "You are editing an existing speaker. Click Save changes to apply."
+                  : "The speaker will be created and linked to the selected event sessions."}
               </span>
             </div>
           </form>
@@ -633,14 +807,15 @@ export default function AdminSpeakers() {
         </div>
 
         <div className="att-grid">
-          {isLoading && !list.length ? (
+          {isLoading && !items.length ? (
             skeletons(12)
-          ) : list.length ? (
-            list.map((it) => (
+          ) : items.length ? (
+            items.map((it) => (
               <SpeakerRow
-                key={getId(it)}
+                key={getId ? getId(it) : it._id || it.id}
                 item={it}
-                onOpen={() => openModal(getId(it))}
+                onOpen={() => openModal(getId ? getId(it) : it._id || it.id)}
+                onEdit={() => handleEditClick(it)}
               />
             ))
           ) : (
@@ -665,7 +840,7 @@ export default function AdminSpeakers() {
 
 /* ───────────────────────── Small components ───────────────────────── */
 
-function SpeakerRow({ item, onOpen }) {
+function SpeakerRow({ item, onOpen, onEdit }) {
   const name = item?.personal?.fullName || item?.name || "—";
   const email = item?.personal?.email || item?.email || "—";
   const countryKey =
@@ -674,8 +849,23 @@ function SpeakerRow({ item, onOpen }) {
   const verified = !!(item?.verified ?? item?.verifiedEmail);
   const eventId = item?.id_event || item?.eventId || item?.event?._id;
 
+  const onKey = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (typeof onOpen === "function") onOpen();
+    }
+  };
+
   return (
-    <button className="att-row" onClick={onOpen} title="Open">
+    <div
+      className="att-row"
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={onKey}
+      title="Open"
+      style={{ display: "flex", alignItems: "center" }}
+    >
       <div className="att-avatar">
         {pic && !isDefaultPhoto(pic) ? (
           <img className="att-img" src={imageLink(pic)} alt={name} />
@@ -685,7 +875,8 @@ function SpeakerRow({ item, onOpen }) {
           </span>
         )}
       </div>
-      <div className="att-meta">
+
+      <div className="att-meta" style={{ flex: 1 }}>
         <div className="att-name line-1">{name}</div>
         <div className="att-sub line-1">{email}</div>
         <div className="att-sub tiny">
@@ -697,12 +888,27 @@ function SpeakerRow({ item, onOpen }) {
           ) : null}
         </div>
       </div>
+
       <div className="att-right">
-        <span className={`pill-verify ${verified ? "ok" : "no"}`}>
-          {verified ? "Email verified" : "Unverified"}
-        </span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn tiny"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (typeof onEdit === "function") onEdit(item);
+            }}
+            title="Edit"
+          >
+            Edit
+          </button>
+
+          <span className={`pill-verify ${verified ? "ok" : "no"}`}>
+            {verified ? "Email verified" : "Unverified"}
+          </span>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -743,7 +949,7 @@ function ActorDetails({ actor, refetchActor }) {
   const goProfile = () => navigate(`/admin/members/speaker/${id}`);
   const goMessage = () => navigate(`/admin/messages?actor=${id}&role=speaker`);
 
-  // Local upload state for modal (admin can replace photo)
+  // Local upload state for modal
   const [localFile, setLocalFile] = React.useState(null);
   const [localPreview, setLocalPreview] = React.useState(null);
   const [uploadErr, setUploadErr] = React.useState(null);
@@ -794,7 +1000,6 @@ function ActorDetails({ actor, refetchActor }) {
 
   return (
     <div className="att-detail att-detail--with-scroll">
-      {/* header area: left fixed column + right flexible content */}
       <div className="att-d-head att-d-head--split">
         <div className="att-d-left">
           <button
@@ -804,11 +1009,7 @@ function ActorDetails({ actor, refetchActor }) {
             aria-label="Open profile"
           >
             {hasRealPhoto ? (
-              <img
-                className="att-d-img"
-                src={imageLink(photo)}
-                alt={A.fullName}
-              />
+              <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
             ) : (
               <span className="att-fallback">
                 {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
@@ -856,9 +1057,7 @@ function ActorDetails({ actor, refetchActor }) {
                     Cancel
                   </button>
                 </div>
-                {uploadErr && (
-                  <div className="muted att-upload-error">{uploadErr}</div>
-                )}
+                {uploadErr && <div className="muted att-upload-error">{uploadErr}</div>}
               </div>
             ) : (
               <div className="att-upload-hint muted">PNG / JPG • max 5MB</div>
@@ -876,23 +1075,15 @@ function ActorDetails({ actor, refetchActor }) {
                 flexWrap: "wrap",
               }}
             >
-              <button
-                className="att-d-name linklike"
-                onClick={goProfile}
-                title={A.fullName}
-              >
+              <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
                 {A.fullName || "—"}
               </button>
 
-              <span
-                className={`pill-verify big ${base.verified ? "ok" : "no"}`}
-              >
+              <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
                 {base.verified ? "Email verified" : "Unverified"}
               </span>
 
-              <span
-                className={`pill-status big ${base.adminVerified || "pending"}`}
-              >
+              <span className={`pill-status big ${base.adminVerified || "pending"}`}>
                 {base.adminVerified || "pending"}
               </span>
             </div>
@@ -911,10 +1102,7 @@ function ActorDetails({ actor, refetchActor }) {
             </span>
             {actor?.roleKind ? (
               <span className="muted ml-10">
-                Role-like:{" "}
-                <strong style={{ whiteSpace: "normal" }}>
-                  {actor.roleKind}
-                </strong>
+                Role-like: <strong style={{ whiteSpace: "normal" }}>{actor.roleKind}</strong>
               </span>
             ) : null}
           </div>
@@ -935,12 +1123,7 @@ function ActorDetails({ actor, refetchActor }) {
               </a>
             ) : null}
             {fmtUrl(base?.links?.linkedin) ? (
-              <a
-                className="linklike"
-                href={fmtUrl(base.links.linkedin)}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="linklike" href={fmtUrl(base.links.linkedin)} target="_blank" rel="noreferrer">
                 LinkedIn
               </a>
             ) : null}
@@ -958,7 +1141,6 @@ function ActorDetails({ actor, refetchActor }) {
         </div>
       </div>
 
-      {/* content area: scrolls inside modal */}
       <div className="att-sections att-sections--compact">
         <AttSection title="Talk">
           <KV k="Title" v={T.title} />
@@ -994,9 +1176,7 @@ function ActorDetails({ actor, refetchActor }) {
             <div className="att-sessions">
               {sess.map((s) => (
                 <div key={s._id || s.id} className="sess-row">
-                  <div className="sess-title line-1">
-                    {s.title || "Untitled"}
-                  </div>
+                  <div className="sess-title line-1">{s.title || "Untitled"}</div>
                   <div className="sess-sub tiny">
                     <span className="tag">{s.track || "Session"}</span>
                     <span className="sep">•</span>

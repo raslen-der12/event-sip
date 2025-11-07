@@ -368,9 +368,7 @@ export default function BusinessProfilePage({ profile: propProfile, onMessage, o
                   <button type="button" className="btn" onClick={onMsg}>
                     Message company
                   </button>
-                  <button type="button" className="btn btn-outline" onClick={onMeet}>
-                    Request meeting
-                  </button>
+
                 </div>
               </div>
 

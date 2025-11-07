@@ -6,7 +6,6 @@ import {
   FiCornerUpRight, FiXCircle, FiCheckCircle, FiMessageSquare, FiRefreshCw,
   FiTrash2, FiMapPin, FiTag
 } from "react-icons/fi";
-
 import {
   useGetMeetingsQuery,
   useGetSuggestedListQuery,
@@ -15,14 +14,13 @@ import {
 import "../attendees/global-meet.css";
 import { useGetEventQuery } from "../../features/events/eventsApiSlice";
 import { useGetAvailableSlotsQuery } from "../../features/Actor/toolsApiSlice";
-
 import "./meetings.css";
 import Footer from "../../components/footer/Footer";
 import { cta, footerData, nav, topbar } from "../main.mock";
 import HeaderShell from "../../components/layout/HeaderShell";
 import imageLink from "../../utils/imageLink";
 import useAuth from "../../lib/hooks/useAuth";
-
+import { useTranslation } from "react-i18next";
 /* ------------------------ UTILITIES ------------------------ */
 const fmtDay = (iso) => {
   try {
@@ -67,7 +65,6 @@ const fmtLocalTime = (iso) => {
     return "—";
   }
 };
-
 /* ADD THIS BLOCK */
 const fmtBookedDate = (iso) => {
   try {
@@ -80,7 +77,6 @@ const fmtBookedDate = (iso) => {
     return "—";
   }
 };
-
 const startOfWeekMonday = (d) => {
   const x = new Date(d || Date.now());
   const day = (x.getDay() + 6) % 7; // Monday=0
@@ -99,17 +95,16 @@ const ymdLocal = (date) => {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 };
-
 const whereStr = (ev) => [ev?.city, ev?.country].filter(Boolean).join(", ");
 const compactB2X = (s = "") => String(s).replace(/^(\s*B2[BCG])\b.*$/i, "$1");
-const statusMeta = (s) => {
+const statusClassName = (s) => {
   const k = String(s || "").toLowerCase();
-  if (k === "pending") return { label: "Pending", className: "-pending" };
-  if (k === "rescheduled") return { label: "Rescheduled", className: "-resched" };
-  if (k === "confirmed") return { label: "Confirmed", className: "-ok" };
-  if (k === "rejected") return { label: "Rejected", className: "-bad" };
-  if (k === "cancelled" || k === "canceled") return { label: "Cancelled", className: "-muted" };
-  return { label: "—", className: "-muted" };
+  if (k === "pending") return "-pending";
+  if (k === "rescheduled") return "-resched";
+  if (k === "confirmed") return "-ok";
+  if (k === "rejected") return "-bad";
+  if (k === "cancelled" || k === "canceled") return "-muted";
+  return "-muted";
 };
 function initials(name = "") {
   const p = String(name).trim().split(/\s+/).slice(0, 2);
@@ -119,17 +114,15 @@ const trimWords = (t = "", limit = 10) => {
   const a = String(t).trim().split(/\s+/);
   return a.length > limit ? a.slice(0, limit).join(" ") + "…" : t;
 };
-
 /* ------------------------ CHILD: EventMini ------------------------ */
 function EventMini({ eventId, children }) {
   const { data } = useGetEventQuery(eventId, { skip: !eventId });
   const ev = data || {};
   return children(ev);
 }
-
-/* ------------------------ SUGGESTIONS LIST (fixed) ------------------------ */
 /* ------------------------ SUGGESTIONS LIST (gma-style) ------------------------ */
 function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
+  const { t } = useTranslation();
   const { data, isFetching, refetch } =
     useGetSuggestedListQuery({ actorId: myId }, { skip: !myId });
   console.log("data",data);
@@ -140,27 +133,24 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
       (Array.isArray(data?.items) && data.items) ||
       (Array.isArray(data) && data) ||
       [];
-
     return raw
       .map((a) => {
         const p = a.profile || a;
-
-        const id        = p.id || p._id || a.id || a._id || "";
-        const role      = (p.role || a.role || "attendee").toLowerCase();
-        const name      = p.name || p.fullName || p.exhibitorName || p.orgName || "—";
-        const photo     = imageLink(p.avatar || p.photo || p.profilePic || "");
-        const tag       = String(p.tag || a.tag || a.purpose || "");
-        const matchPct  = typeof (a.matchPct ?? p.matchPct) === "number" ? (a.matchPct ?? p.matchPct) : undefined;
-        const virtual   = !!(p.virtualMeet ?? a.virtualMeet ?? a.virtual);
-        const eventId   = a.id_event || a.eventId || p.eventId || "";
-        const country   = p.country || a.country || p.personal?.country || "";
-        const city      = p.city || a.city || p.personal?.city || "";
-        const jobTitle  = p.jobTitle || a.jobTitle || p.organization?.jobTitle || "";
-        const orgName   = p.orgName || a.orgName || p.organization?.orgName || "";
+        const id = p.id || p._id || a.id || a._id || "";
+        const role = (p.role || a.role || "attendee").toLowerCase();
+        const name = p.name || p.fullName || p.exhibitorName || p.orgName || "—";
+        const photo = imageLink(p.avatar || p.photo || p.profilePic || "");
+        const tag = String(p.tag || a.tag || a.purpose || "");
+        const matchPct = typeof (a.matchPct ?? p.matchPct) === "number" ? (a.matchPct ?? p.matchPct) : undefined;
+        const virtual = !!(p.virtualMeet ?? a.virtualMeet ?? a.virtual);
+        const eventId = a.id_event || a.eventId || p.eventId || "";
+        const country = p.country || a.country || p.personal?.country || "";
+        const city = p.city || a.city || p.personal?.city || "";
+        const jobTitle = p.jobTitle || a.jobTitle || p.organization?.jobTitle || "";
+        const orgName = p.orgName || a.orgName || p.organization?.orgName || "";
         const objectives = Array.isArray(p.objectives || a.objectives || p.matchingIntent?.objectives)
           ? (p.objectives || a.objectives || p.matchingIntent?.objectives)
           : [];
-
         return {
           id, role, name, photo, tag, matchPct, virtual,
           eventId, country, city, jobTitle, orgName, objectives,
@@ -172,16 +162,15 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
   return (
     <section className={`sugg-section mt-6 ${isFetching ? "is-dim" : ""}`}>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-bold">Suggested Matches</h2>
+        <h2 className="text-xl font-bold">{t("meetings.suggestedMatches")}</h2>
         <button className="btn -pri" onClick={() => refetch()}>
-          Generate AI Suggestions
+          {t("meetings.generateAiSuggestions")}
         </button>
       </div>
-
       {!myId ? (
-        <div className="muted">Sign in to see suggestions.</div>
+        <div className="muted">{t("meetings.signInToSeeSuggestions")}</div>
       ) : !list.length ? (
-        <div className="muted">No suggestions right now.</div>
+        <div className="muted">{t("meetings.noSuggestionsRightNow")}</div>
       ) : (
         <div className="gma-grid">
           {list.map((s) => (
@@ -197,29 +186,26 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
                     </div>
                   )}
                 </div>
-
                 <div className="gma-meta">
                   <div className="gma-name">{s.name}</div>
                   <div className="gma-sub">
                     {/* country • city */}
                     {s.country ? <span className={`fi fi-${String(s.country).toLowerCase()}`} style={{ marginRight: 6 }} /> : null}
                     {s.country || "—"}{s.city ? ` • ${s.city}` : ""}
-                    {s.virtual ? <span className="gma-chip" style={{ marginLeft: 8 }}>Virtual</span> : null}
+                    {s.virtual ? <span className="gma-chip" style={{ marginLeft: 8 }}>{t("meetings.virtual")}</span> : null}
                   </div>
                   <div className="gma-sub tiny">
                     {s.jobTitle || "—"}{s.orgName ? ` @ ${s.orgName}` : ""} • {s.role}
                   </div>
-
                   {/* match chip */}
                   {typeof s.matchPct === "number" && (
                     <div className="gma-tags">
-                      <span className="gma-chip gma-match" title="Match score">⭐ {s.matchPct}%</span>
+                      <span className="gma-chip gma-match" title={t("meetings.matchScore")}>⭐ {s.matchPct}%</span>
                       {s.tag ? <span className="gma-chip">{s.tag}</span> : null}
                     </div>
                   )}
                 </div>
               </div>
-
               {/* objectives/tags */}
               {!!s.objectives?.length && (
                 <div className="gma-tags">
@@ -231,42 +217,40 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
                     : null}
                 </div>
               )}
-
               {/* event badge (re-use EventMini) */}
               {s.eventId ? (
                 <div className="gma-tags" style={{ marginTop: 6 }}>
                   <EventMini eventId={s.eventId}>
                     {(ev) => (
                       <span className="gma-evbadge">
-                        {ev?.title || ev?.name || `Event ${String(s.eventId).slice(-6)}`}
+                        {ev?.title || ev?.name || t("meetings.eventFallback", { id: String(s.eventId).slice(-6) })}
                       </span>
                     )}
                   </EventMini>
                 </div>
               ) : null}
-
               {/* actions */}
               <div className="gma-actions">
                 <button
                   className="gma-btn -outline"
-                  title="View profile"
+                  title={t("meetings.viewProfile")}
                   onClick={() => onOpen?.(s.id)}
                 >
-                  <FiUser /> Profile
+                  <FiUser /> {t("meetings.profile")}
                 </button>
                 <button
                   className="gma-btn -outline"
-                  title="Message"
+                  title={t("meetings.message")}
                   onClick={() => onMessage?.(s.id)}
                 >
-                  <FiMessageSquare /> Message
+                  <FiMessageSquare /> {t("meetings.message")}
                 </button>
                 <button
                   className="gma-btn"
-                  title="Book meeting"
+                  title={t("meetings.bookMeeting")}
                   onClick={() => onBook?.(s.id)}
                 >
-                  <FiCalendar /> Book
+                  <FiCalendar /> {t("meetings.book")}
                 </button>
               </div>
             </article>
@@ -276,69 +260,60 @@ function SuggestionsList({ myId, onOpen, onBook, onFav, onMessage }) {
     </section>
   );
 }
-
-
 /* ------------------------ Reschedule Modal ------------------------ */
 function RescheduleModal({ meId, meeting, onClose, onSubmit }) {
+  const { t } = useTranslation();
   // meeting is guaranteed when this component is rendered
   const m = meeting;
   console.log(m);
   const eventId = m.eventId;
   const isSender = String(m.senderId) === String(meId);
   const otherId = isSender ? m.receiverId : m.senderId;
-
   // lock the day to the meeting’s current (or proposed) slot
-  const baseISO =  m.slotISO || "2025-11-13T13:00:00.000+00:00";
+  const baseISO = m.slotISO || "2025-11-13T13:00:00.000+00:00";
   console.log("baseISO",baseISO);
-  const dayStr  = baseISO ? new Date(baseISO).toISOString().slice(0,10) : "";
-
+  const dayStr = baseISO ? new Date(baseISO).toISOString().slice(0,10) : "";
   // fetch available slots for THAT day (local time variations are shown by label only)
   const { data: slotsRaw, isFetching: slotsLoading } =
     useGetAvailableSlotsQuery(
       { eventId, actorId: otherId, date: dayStr },
       { skip: !eventId || !otherId || !dayStr }
     );
-
   const slots = useMemo(() => {
     const raw = (Array.isArray(slotsRaw?.data) && slotsRaw.data) ||
                 (Array.isArray(slotsRaw) && slotsRaw) || [];
     return raw.map((r) => {
-      const iso   = r.iso || r.slotISO || r.startISO || r;
+      const iso = r.iso || r.slotISO || r.startISO || r;
       const isCap = r.isCap !== undefined ? !!r.isCap : true;
       return iso
         ? { iso, isCap, label: `${fmtLocalDate(iso)} • ${fmtLocalTime(iso)}${isCap ? "" : " [FULL]"}` }
         : null;
     }).filter(Boolean);
   }, [slotsRaw]);
-
   const [slotISO, setSlotISO] = useState("");
-
   const submit = (e) => {
     e.preventDefault();
     if (!slotISO) return;
     onSubmit(slotISO);
   };
-
   return (
     <div className="modal-wrap" role="dialog" aria-modal="true">
       <div className="modal-backdrop" onClick={onClose} />
-      <div className="modal-card resched-card" role="document" aria-label="Reschedule meeting">
+      <div className="modal-card resched-card" role="document" aria-label={t("meetings.proposeNewTime")}>
         <div className="modal-head-row">
-          <h3>Propose a new time</h3>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+          <h3>{t("meetings.proposeNewTime")}</h3>
+          <button className="modal-close" onClick={onClose} aria-label={t("meetings.close")}>×</button>
         </div>
-
         <form onSubmit={submit} className="resched-form">
           <div className="resched-field">
-            <span className="resched-label"><FiCalendar/> Date</span>
+            <span className="resched-label"><FiCalendar/> {t("meetings.date")}</span>
             <div className="clean-input" aria-readonly="true">
               {dayStr ? fmtLocalDate(`${dayStr}T00:00:00Z`) : "—"}
             </div>
-            <div className="muted small">The date is fixed to the meeting’s day.</div>
+            <div className="muted small">{t("meetings.dateFixedToMeetingDay")}</div>
           </div>
-
           <label className="resched-field">
-            <span className="resched-label"><FiClock/> Available slots (local time)</span>
+            <span className="resched-label"><FiClock/> {t("meetings.availableSlotsLocalTime")}</span>
             <select
               className="clean-input"
               value={slotISO}
@@ -346,38 +321,36 @@ function RescheduleModal({ meId, meeting, onClose, onSubmit }) {
               required
               disabled={!slots.length || slotsLoading}
             >
-              <option value="">{slotsLoading ? "Loading…" : "Select a slot…"}</option>
+              <option value="">{slotsLoading ? t("meetings.loading") : t("meetings.selectASlot")}</option>
               {slots.map((s) => (
                 <option
                   key={s.iso}
                   value={s.iso}
                   disabled={!s.isCap}
-                  title={!s.isCap ? "B2B room is full for this slot" : undefined}
+                  title={!s.isCap ? t("meetings.b2bRoomFullForSlot") : undefined}
                 >
                   {s.label}
                 </option>
               ))}
             </select>
             {!slotsLoading && !slots.length ? (
-              <div className="muted small" style={{marginTop:6}}>No free slots for this date.</div>
+              <div className="muted small" style={{marginTop:6}}>{t("meetings.noFreeSlotsForDate")}</div>
             ) : null}
           </label>
-
           <div className="resched-actions">
             <button
               type="submit"
               className={`mtg-btn -confirm ${!slotISO ? "is-disabled" : ""}`}
               disabled={!slotISO}
             >
-              <FiRefreshCw/> Propose
+              <FiRefreshCw/> {t("meetings.propose")}
             </button>
             <button type="button" className="mtg-btn -ghost" onClick={onClose}>
-              <FiXCircle/> Cancel
+              <FiXCircle/> {t("meetings.cancel")}
             </button>
           </div>
         </form>
       </div>
-
       {/* modal styles (scoped) */}
       <style>{`
         .modal-wrap{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center}
@@ -393,8 +366,6 @@ function RescheduleModal({ meId, meeting, onClose, onSubmit }) {
     </div>
   );
 }
-
-
 /* ------------------------ ROW ------------------------ */
 function MeetingRow({
   m,
@@ -404,32 +375,32 @@ function MeetingRow({
   onMessage,
   onOpen,
 }) {
+  const { t } = useTranslation();
   const iAmSender = String(m?.senderId || "") === String(myId);
-  const st = statusMeta(m?.status);
-
+  const statusKey = String(m?.status || "unknown").toLowerCase();
+  const st = { className: statusClassName(m?.status) };
+  const statusLabel = t(`meetings.status.${statusKey}`);
   // choose display slot
   const showSlot = m?.status === "rescheduled" ? m?.proposedNewAt : (m?.slotISO || m?.requestedAt);
-  const day  = fmtDay(showSlot);
+  const day = fmtDay(showSlot);
   const time = fmtTime(showSlot);
-
   // normalized “other” meta (the API already sends these)
-  const otherName  = m?.otherName  || (iAmSender ? m?.receiverName  : m?.senderName)  || "—";
+  const otherName = m?.otherName || (iAmSender ? m?.receiverName : m?.senderName) || "—";
   const otherPhoto = m?.otherPhoto || (iAmSender ? m?.receiverPhoto : m?.senderPhoto) || "";
-  const otherRole  = iAmSender ? m?.receiverRole : m?.senderRole;
-  const senderVirtual   = !!m?.senderVirtual;
+  const otherRole = iAmSender ? m?.receiverRole : m?.senderRole;
+  const senderVirtual = !!m?.senderVirtual;
   const receiverVirtual = !!m?.receiverVirtual;
   const bothVirtual = senderVirtual && receiverVirtual;
   const halfVirtual = senderVirtual !== receiverVirtual;
-  const modeLabel = bothVirtual ? "Online" : (halfVirtual ? "Hybrid" : "In-person");
+  const modeLabel = t(`meetings.mode.${bothVirtual ? 'online' : halfVirtual ? 'hybrid' : 'inperson'}`);
   const modeClass = bothVirtual ? "-online" : (halfVirtual ? "-hybrid" : "-inperson");
   /* === PATCH END === */
   // prefer server-validated actions; fallback to local matrix when absent
   const actions = useMemo(() => {
     if (Array.isArray(m?.allowedActions)) return m.allowedActions;
-    const whoProposed  = String(m?.proposedBy || "");
-    const iAmProposer  = whoProposed && whoProposed === String(myId);
+    const whoProposed = String(m?.proposedBy || "");
+    const iAmProposer = whoProposed && whoProposed === String(myId);
     const s = String(m?.status || "").toLowerCase();
-
     if (s === "pending") {
       return iAmSender ? ["cancel","reschedule","delete"] : ["confirm","reject","reschedule"];
     }
@@ -437,36 +408,32 @@ function MeetingRow({
       return iAmProposer ? ["cancel","reschedule","delete"] : ["confirm","reject","reschedule"];
     }
     if (s === "confirmed") return ["reschedule","cancel"];
-    if (s === "rejected")  return iAmSender ? [] : ["delete"];
+    if (s === "rejected") return iAmSender ? [] : ["delete"];
     if (s === "cancelled" || s === "canceled") return ["delete"];
     return [];
   }, [m?.allowedActions, m?.proposedBy, m?.status, myId, iAmSender]);
-
   const onBtn = (act) => (e) => {
     e.stopPropagation();
     if (act === "reschedule") openReschedule(m);
     else onAction(m, act);
   };
- 
   return (
     <article
       className="mtg-item clean-card compact"
       tabIndex={0}
       onClick={()=>onOpen?.(m)}
-      aria-label={`Open meeting with ${otherName}`}
+      aria-label={t("meetings.openMeetingWith", { name: otherName })}
     >
       <div className="mtg-left">
         <div className="mtg-avatar" aria-hidden="true" title="View profile">
           {otherPhoto ? <img src={imageLink(otherPhoto)} alt="" /> : <span className="mtg-initials">{initials(otherName)}</span>}
         </div>
       </div>
-
       <div className="mtg-mid">
         <div className="mtg-topline">
           <h3 className="mtg-name" title={otherName}>{otherName}</h3>
-          <div className={`mtg-status-pill ${st.className}`}>{st.label}</div>
+          <div className={`mtg-status-pill ${st.className}`}>{statusLabel}</div>
         </div>
-
         <div className="mtg-row">
           <span className="mtg-chip"><FiUser/> {otherRole || "—"}</span>
           <span className="mtg-chip"><FiTag/> {compactB2X(m?.purpose || m?.subject || "—")}</span>
@@ -474,24 +441,21 @@ function MeetingRow({
             <span className={`mtg-chip mode ${modeClass}`}>{modeLabel}</span>
           )}
         </div>
-
         <div className="mtg-row">
           <span className="mtg-chip"><FiCalendar/> {day}</span>
           <span className="mtg-chip"><FiClock/> {time}</span>
           <span className="mtg-chip">
-            <FiCornerUpRight/> {String(m?.senderId) === String(myId) ? "Sent by you" : "Received by you"}
+            <FiCornerUpRight/> {String(m?.senderId) === String(myId) ? t("meetings.sentByYou") : t("meetings.receivedByYou")}
           </span>
         </div>
         {m?.createdAt && (
   <span className="mtg-chip -muted">
-    Booked on {fmtBookedDate(m.createdAt)}
+    {t("meetings.bookedOn", { date: fmtBookedDate(m.createdAt) })}
   </span>
 )}
-
         <div className="mtg-row">
           <span className="mtg-chip -muted"><FiMail/> {m?.subject || "—"}</span>
         </div>
-
         <EventMini eventId={m?.eventId}>
           {(ev) => {
             const titleTrim = trimWords(ev?.title || "—", 10);
@@ -510,74 +474,68 @@ function MeetingRow({
           }}
         </EventMini>
       </div>
-
       <div className="mtg-ctl">
         {actions.includes("confirm") && (
-          <button className="mtg-btn -confirm" onClick={onBtn("confirm")}><FiCheckCircle/> Confirm</button>
+          <button className="mtg-btn -confirm" onClick={onBtn("confirm")}><FiCheckCircle/> {t("meetings.confirm")}</button>
         )}
         {actions.includes("reject") && (
-          <button className="mtg-btn -danger" onClick={onBtn("reject")}><FiXCircle/> Reject</button>
+          <button className="mtg-btn -danger" onClick={onBtn("reject")}><FiXCircle/> {t("meetings.reject")}</button>
         )}
         {actions.includes("cancel") && (
-          <button className="mtg-btn -danger" onClick={onBtn("cancel")}><FiXCircle/> Cancel</button>
+          <button className="mtg-btn -danger" onClick={onBtn("cancel")}><FiXCircle/> {t("meetings.cancel")}</button>
         )}
         {actions.includes("reschedule") && (
-          <button className="mtg-btn -ghost" onClick={onBtn("reschedule")}><FiRefreshCw/> Reschedule</button>
+          <button className="mtg-btn -ghost" onClick={onBtn("reschedule")}><FiRefreshCw/> {t("meetings.reschedule")}</button>
         )}
         {actions.includes("delete") && (
-          <button className="mtg-btn -warn" onClick={onBtn("delete")}><FiTrash2/> Delete</button>
+          <button className="mtg-btn -warn" onClick={onBtn("delete")}><FiTrash2/> {t("meetings.delete")}</button>
         )}
         <button className="mtg-btn -ghost" onClick={(e)=>onMessage?.(m.otherId)}>
-          <FiMessageSquare/> Message
+          <FiMessageSquare/> {t("meetings.message")}
         </button>
       </div>
     </article>
   );
 }
-
-
 /* ------------------------ Meeting Modal ------------------------ */
 function MeetingModal({ meeting, onClose }) {
+  const { t } = useTranslation();
   if (!meeting) return null;
-
   const iAmSender = String(meeting?.senderId || "") === String(meeting?.meId || meeting?.actorId || "");
-  const otherName  = meeting?.otherName  || (iAmSender ? meeting?.receiverName  : meeting?.senderName)  || "—";
+  const otherName = meeting?.otherName || (iAmSender ? meeting?.receiverName : meeting?.senderName) || "—";
   const otherPhoto = meeting?.otherPhoto || (iAmSender ? meeting?.receiverPhoto : meeting?.senderPhoto) || "";
-  const otherRole  = iAmSender ? meeting?.receiverRole : meeting?.senderRole;
+  const otherRole = iAmSender ? meeting?.receiverRole : meeting?.senderRole;
   const otherEmail = meeting?.otherEmail || (iAmSender ? meeting?.receiverEmail : meeting?.senderEmail) || "";
-
   const slot = meeting?.status === "rescheduled"
     ? meeting?.proposedNewAt
     : (meeting?.slotISO || meeting?.requestedAt);
-
+  const statusKey = String(meeting?.status || "unknown").toLowerCase();
   return (
     <div className="modal-wrap" role="dialog" aria-modal="true">
       <div className="modal-backdrop" onClick={onClose} />
       <div className="modal-card">
-        <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+        <button className="modal-close" onClick={onClose} aria-label={t("meetings.close")}>×</button>
         <div className="modal-head">
           <div className="modal-avatar">{otherPhoto ? <img src={imageLink(otherPhoto)} alt=""/> : <span>{initials(otherName)}</span>}</div>
           <div>
             <h3>{otherName}</h3>
-            <div className="muted">{otherRole || "—"} • {meeting?.status || "—"}</div>
+            <div className="muted">{otherRole || "—"} • {t(`meetings.status.${statusKey}`)}</div>
             <div className="muted">{otherEmail || "—"}</div>
           </div>
         </div>
-
         <div className="modal-body">
-          <h4>Meeting</h4>
+          <h4>{t("meetings.meeting")}</h4>
           <p><strong>{fmtLocalDate(slot)}</strong> · {fmtLocalTime(slot)}</p>
-          {meeting?.roomId ? <p>Room: {meeting.roomId}</p> : null}
+          {meeting?.roomId ? <p>{t("meetings.room", { room: meeting.roomId })}</p> : null}
           <p className="muted">{meeting?.subject}</p>
-          <p style={{marginTop:8}}>{meeting?.notes || "No additional notes."}</p>
+          <p style={{marginTop:8}}>{meeting?.notes || t("meetings.noAdditionalNotes")}</p>
           {meeting?.createdAt && (
           <p className="muted" style={{ marginTop: 6, fontSize: '0.875rem' }}>
-            Booked on {fmtBookedDate(meeting.createdAt)}
+            {t("meetings.bookedOn", { date: fmtBookedDate(meeting.createdAt) })}
           </p>
         )}
         </div>
       </div>
-
       <style>{`
         .modal-wrap{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center}
         .modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:1000}
@@ -590,14 +548,12 @@ function MeetingModal({ meeting, onClose }) {
     </div>
   );
 }
-
-
 /* ------------------------ MAIN PAGE ------------------------ */
 export default function MeetingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { ActorId } =useAuth();
   const { data, isLoading, isError, refetch } = useGetMeetingsQuery();
-
   const items = useMemo(() => {
     const arr =
       (Array.isArray(data?.items) && data.items) ||
@@ -606,9 +562,7 @@ export default function MeetingsPage() {
       [];
     return arr.filter(Boolean);
   }, [data]);
-
   const myId = ActorId || data?.me?.id || data?.actorId || "";
-
   // UI state
   const [searchQ, setSearchQ] = useState("");
   const [filterCompany, setFilterCompany] = useState("");
@@ -621,13 +575,10 @@ export default function MeetingsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showSectorDropdown, setShowSectorDropdown] = useState(false);
   const didInitWeek = useRef(false);
-
-  const sectors = ["Sustainability", "Agriculture", "Industry", "Retail", "Services", "Tech", "Finance"];
-
+  const sectorKeys = ["Sustainability", "Agriculture", "Industry", "Retail", "Services", "Tech", "Finance"];
   const toggleSector = (sector) => {
     setFilterSectors((prev) => (prev.includes(sector) ? prev.filter((s) => s !== sector) : [...prev, sector]));
   };
-
   // Stats
   const stats = useMemo(() => {
     const total = items.length;
@@ -639,7 +590,6 @@ export default function MeetingsPage() {
     const availableSlots = 0;
     return { total, confirmed, pending, cancelled, availableSlots };
   }, [items]);
-
   // Filtering
   const filtered = useMemo(() => {
     let arr = items.slice();
@@ -666,7 +616,6 @@ export default function MeetingsPage() {
     }
     return arr;
   }, [items, searchQ, filterCompany, filterSectors, filterDate, filterStatus]);
-
   // Init week to first meeting day
   useEffect(() => {
     if (didInitWeek.current) return;
@@ -680,7 +629,6 @@ export default function MeetingsPage() {
       didInitWeek.current = true;
     }
   }, [items]);
-
   // Jump to week of filter date
   useEffect(() => {
     if (!filterDate) return;
@@ -696,17 +644,14 @@ export default function MeetingsPage() {
     setToasts((t) => [...t, { id, text, ...opts }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), opts.duration || 4500);
   };
-
   // RTK action
   const [makeAction] = useMakeMeetingActionMutation();
-
   // Reschedule modal
   const [reschedMeeting, setReschedMeeting] = useState(null);
   const openMeetingModal = (m) => setSelectedMeeting(m);
   const closeMeetingModal = () => setSelectedMeeting(null);
   const openReschedule = (m) => setReschedMeeting(m);
   const closeReschedule = () => setReschedMeeting(null);
-
   const runAction = async (m, action, extra = {}) => {
     try {
       await makeAction({
@@ -715,23 +660,21 @@ export default function MeetingsPage() {
         actorId: myId,
         ...(action === "reschedule" ? { proposedNewAt: extra.proposedNewAt } : {})
       }).unwrap();
-      pushToast(`Action "${action}" applied.`);
+      pushToast(t("meetings.actionApplied", { action }));
       await refetch();
     } catch (e) {
       const msg = e?.data?.message || e?.message || String(e);
-      pushToast(msg || "Action failed", { type: "err", duration: 6000 });
+      pushToast(msg || t("meetings.actionFailed"), { type: "err", duration: 6000 });
     }
   };
   const onAction = (m, act) => {
     if (act === "reschedule") return openReschedule(m);
     runAction(m, act);
   };
-
   /* -------------------- WEEK CALENDAR (08:00–18:00 default, auto-expand) -------------------- */
   const weekStart = useMemo(() => startOfWeekMonday(currentDate), [currentDate]);
   const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
-
   // Determine hour range: default 08..18, but expand to include any meeting hours so nothing is hidden
   const hourRange = useMemo(() => {
     let minH = 8, maxH = 18;
@@ -753,22 +696,18 @@ export default function MeetingsPage() {
     maxH = Math.max(minH, Math.min(23, maxH));
     return { minH, maxH };
   }, [filtered, weekStart]);
-
   const hoursArr = useMemo(() => {
     const out = [];
     for (let h = hourRange.minH; h <= hourRange.maxH; h++) out.push(h);
     return out;
   }, [hourRange]);
-
   const headerLabel = useMemo(() => {
     const a = weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     const b = weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
     return `${a} – ${b}`;
   }, [weekStart, weekEnd]);
-
   const prevWeek = () => setCurrentDate(addDays(weekStart, -7));
   const nextWeek = () => setCurrentDate(addDays(weekStart, 7));
-
   // Pre-group meetings by day+hour for faster render
   const mtgMap = useMemo(() => {
     const map = new Map(); // key: `${ymd}-${hour}` -> array
@@ -782,42 +721,37 @@ export default function MeetingsPage() {
     }
     return map;
   }, [filtered]);
-
   const cellMeetings = (date, hour) => {
     return mtgMap.get(`${ymdLocal(date)}-${hour}`) || [];
   };
-
   const isB2BHour = (h) => h >= 14 && h < 18; // subtle highlight (optional visual cue)
-
   return (
     <>
       <HeaderShell top={topbar} nav={nav} cta={cta} />
-
       <main className="mtg clean-page">
         <div className="container clean-container">
           {/* Header */}
           <div className="mtg-head clean-head">
             <div className="head-left">
-              <button className="mtg-back minimal" onClick={() => navigate(-1)} aria-label="Return">
+              <button className="mtg-back minimal" onClick={() => navigate(-1)} aria-label={t("meetings.return")}>
                 <FiChevronLeft />
               </button>
               <div>
-                <h1 className="mtg-title">My B2B Meetings</h1>
+                <h1 className="mtg-title">{t("meetings.myB2bMeetings")}</h1>
                 <p className="muted small">
-                  View your matches, manage your meetings, and explore new business connections.
+                  {t("meetings.viewMatchesManage")}
                 </p>
               </div>
             </div>
           </div>
-
           {/* Stats */}
-          <div className="stats-row clean-stats" role="navigation" aria-label="Meeting stats">
+          <div className="stats-row clean-stats" role="navigation" aria-label={t("meetings.meetingStats")}>
             <button
               className={`stat-card -total ${filterStatus === "" ? "active" : ""}`}
               onClick={() => setFilterStatus("")}
               aria-pressed={filterStatus === ""}
             >
-              <div className="stat-label">Total</div>
+              <div className="stat-label">{t("meetings.total")}</div>
               <div className="stat-value">{stats.total}</div>
             </button>
             <button
@@ -825,7 +759,7 @@ export default function MeetingsPage() {
               onClick={() => setFilterStatus("confirmed")}
               aria-pressed={filterStatus === "confirmed"}
             >
-              <div className="stat-label">Confirmed</div>
+              <div className="stat-label">{t("meetings.status.confirmed")}</div>
               <div className="stat-value">{stats.confirmed}</div>
             </button>
             <button
@@ -833,7 +767,7 @@ export default function MeetingsPage() {
               onClick={() => setFilterStatus("pending")}
               aria-pressed={filterStatus === "pending"}
             >
-              <div className="stat-label">Pending</div>
+              <div className="stat-label">{t("meetings.status.pending")}</div>
               <div className="stat-value">{stats.pending}</div>
             </button>
             <button
@@ -841,7 +775,7 @@ export default function MeetingsPage() {
               onClick={() => setFilterStatus("cancelled")}
               aria-pressed={filterStatus === "cancelled"}
             >
-              <div className="stat-label">Cancelled / Rescheduled</div>
+              <div className="stat-label">{t("meetings.cancelledRescheduled")}</div>
               <div className="stat-value">{stats.cancelled}</div>
             </button>
             <button
@@ -849,46 +783,45 @@ export default function MeetingsPage() {
               onClick={() => setFilterStatus("slots")}
               aria-pressed={filterStatus === "slots"}
               disabled
-              title="Coming soon"
+              title={t("meetings.comingSoon")}
             >
-              <div className="stat-label">Available Slots</div>
+              <div className="stat-label">{t("meetings.availableSlots")}</div>
               <div className="stat-value">{stats.availableSlots}</div>
             </button>
           </div>
-
           {/* Filters */}
           <div className="mtg-filters">
             <input
               className="clean-input"
-              placeholder="Search Requested Meetings"
+              placeholder={t("meetings.searchRequestedMeetings")}
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              aria-label="Search Requested Meetings"
+              aria-label={t("meetings.searchRequestedMeetings")}
             />
             <input
               className="clean-input small"
-              placeholder="Name"
+              placeholder={t("meetings.name")}
               value={filterCompany}
               onChange={(e) => setFilterCompany(e.target.value)}
-              aria-label="Filter by participant name"
+              aria-label={t("meetings.filterByParticipantName")}
             />
             <div className="sector-dropdown">
               <button
                 className="clean-input small sector-btn"
                 onClick={() => setShowSectorDropdown(!showSectorDropdown)}
               >
-                Sectors {filterSectors.length ? `(${filterSectors.length})` : ""}
+                {t("meetings.sectors")} {filterSectors.length ? `(${filterSectors.length})` : ""}
               </button>
               {showSectorDropdown && (
                 <div className="sector-menu">
-                  {["Sustainability","Agriculture","Industry","Retail","Services","Tech","Finance"].map((sector) => (
+                  {sectorKeys.map((sector) => (
                     <label key={sector} className="sector-item">
                       <input
                         type="checkbox"
                         checked={filterSectors.includes(sector)}
                         onChange={() => toggleSector(sector)}
                       />
-                      {sector}
+                      {t(`meetings.sector.${sector.toLowerCase()}`)}
                     </label>
                   ))}
                 </div>
@@ -899,36 +832,34 @@ export default function MeetingsPage() {
               className="clean-input small"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              aria-label="Filter by date"
+              aria-label={t("meetings.filterByDate")}
             />
             <select
               className="clean-input small"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              aria-label="Filter by status"
+              aria-label={t("meetings.filterByStatus")}
             >
-              <option value="">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="rescheduled">Rescheduled</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="rejected">Rejected</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="">{t("meetings.allStatuses")}</option>
+              <option value="pending">{t("meetings.status.pending")}</option>
+              <option value="rescheduled">{t("meetings.status.rescheduled")}</option>
+              <option value="confirmed">{t("meetings.status.confirmed")}</option>
+              <option value="rejected">{t("meetings.status.rejected")}</option>
+              <option value="cancelled">{t("meetings.status.cancelled")}</option>
             </select>
           </div>
-
           <div className="main-col">
             {/* Suggestions */}
-            
-
+           
             {/* View Toggle */}
-            <div className="view-toggle clean-toggle" role="tablist" aria-label="View mode" style={{ marginBottom: 16 }}>
+            <div className="view-toggle clean-toggle" role="tablist" aria-label={t("meetings.viewMode")} style={{ marginBottom: 16 }}>
               <button
                 className={`view-btn ${viewMode === "list" ? "active" : ""}`}
                 onClick={() => setViewMode("list")}
                 role="tab"
                 aria-selected={viewMode === "list"}
               >
-                List
+                {t("meetings.list")}
               </button>
               <button
                 className={`view-btn ${viewMode === "calendar" ? "active" : ""}`}
@@ -936,10 +867,9 @@ export default function MeetingsPage() {
                 role="tab"
                 aria-selected={viewMode === "calendar"}
               >
-                Calendar
+                {t("meetings.calendar")}
               </button>
             </div>
-
             {/* List / WEEK CALENDAR */}
             {isLoading ? (
               <div className="mtg-list">
@@ -948,9 +878,9 @@ export default function MeetingsPage() {
                 ))}
               </div>
             ) : isError ? (
-              <div className="mtg-empty">Couldn’t load meetings.</div>
+              <div className="mtg-empty">{t("meetings.couldntLoadMeetings")}</div>
             ) : !filtered.length ? (
-              <div className="mtg-empty">No meetings match your filters.</div>
+              <div className="mtg-empty">{t("meetings.noMeetingsMatchFilters")}</div>
             ) : viewMode === "list" ? (
               <div className="mtg-list">
                 {filtered.map((m) => (
@@ -969,15 +899,14 @@ export default function MeetingsPage() {
               <div className="week-cal">
                 {/* Nav */}
                 <div className="cal-nav">
-                  <button onClick={prevWeek} title="Previous week">
+                  <button onClick={prevWeek} title={t("meetings.previousWeek")}>
                     <FiChevronLeft />
                   </button>
                   <h3>{headerLabel}</h3>
-                  <button onClick={nextWeek} title="Next week">
+                  <button onClick={nextWeek} title={t("meetings.nextWeek")}>
                     <FiChevronRight />
                   </button>
                 </div>
-
                 {/* Grid */}
                 <div className="week-grid">
                   {/* Header row */}
@@ -987,7 +916,6 @@ export default function MeetingsPage() {
                       {d.toLocaleDateString(undefined, { weekday: "short" })} {d.getDate()}
                     </div>
                   ))}
-
                   {/* Rows by hour (auto-expanded) */}
                   {hoursArr.map((h) => (
                     <React.Fragment key={`r${h}`}>
@@ -1009,14 +937,12 @@ export default function MeetingsPage() {
                     </React.Fragment>
                   ))}
                 </div>
-
                 {/* scoped styles */}
                 <style>{`
                   .week-cal{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff}
                   .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #e2e8f0}
                   .cal-nav h3{margin:0;font-weight:700}
                   .cal-nav button{border:none;background:transparent;cursor:pointer;padding:6px 8px;color:#334155}
-
                   .week-grid{display:grid;grid-template-columns: 80px repeat(7, 1fr);grid-auto-rows:auto}
                   .wg-timehead{background:#f8fafc;border-right:1px solid #e2e8f0}
                   .wg-dayhead{padding:8px 10px;background:#f8fafc;border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;font-weight:600}
@@ -1042,7 +968,7 @@ export default function MeetingsPage() {
               myId={myId}
               onOpen={(id) => navigate(`/profile/${id}`)}
               onBook={handleBook}
-              onFav={() => pushToast("Added to favorites.")}
+              onFav={() => pushToast(t("meetings.addedToFavorites"))}
               onMessage={handleMessage}
             />
           {/* Modals */}
@@ -1058,7 +984,6 @@ export default function MeetingsPage() {
               }}
             />
           ) : null}
-
           {/* Toasts */}
           <div className="toasts" aria-live="polite">
             {toasts.map((t) => (
@@ -1067,7 +992,6 @@ export default function MeetingsPage() {
           </div>
         </div>
       </main>
-
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}
