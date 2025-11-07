@@ -5,6 +5,7 @@ export const topbar = {
   socials: [{ fb: "https://www.facebook.com/share/1BTdfK3er7/?mibextid=wwXIfr", ig: "https://www.instagram.com/seketak_solutions?igsh=M2RjYmF5cnVubzA0", yt: "https://youtube.com/@seketak?si=zxyzezoCp_kaTnwt",in:"https://www.linkedin.com/company/seketak-solutions/" }]
 
 };
+const hrefForRole = (label) => `/communities?subRole=${encodeURIComponent(label)}&view=role`;
 
 export const nav = [
   { label: "Home", href: "/" },
@@ -13,24 +14,24 @@ export const nav = [
     label: "Communities",
     children: [
       { label: "All", href: "/communities" },
-      { label: "Students", href: "/communities/students" },
-      { label: "Researchers", href: "/communities/researchers" },
-      { label: "Coaches & Trainers", href: "/communities/coaches-trainers" },
-      { label: "Experts & Consultants", href: "/communities/experts-consultants" },
-      { label: "Employees & Professionals", href: "/communities/employees-professionals" },
-      { label: "Entrepreneurs & Startups", href: "/communities/entrepreneurs-startups" },
-      { label: "Developers & Engineers", href: "/communities/developers-engineers" },
-      { label: "Marketing & Communication", href: "/communities/marketing-communication" },
-      { label: "Audit, Accounting & Finance", href: "/communities/audit-accounting-finance" },
-      { label: "Investment & Banking", href: "/communities/investment-banking" },
-      { label: "Insurance & Microfinance", href: "/communities/insurance-microfinance" },
-      { label: "Legal & Lawyers", href: "/communities/legal-lawyers" },
-      { label: "AI, IoT & Emerging Tech", href: "/communities/ai-iot-emerging-tech" },
-      { label: "Audiovisual & Creative Industries", href: "/communities/audiovisual-creative" },
-      { label: "Media & Journalists", href: "/communities/media-journalists" },
-      { label: "Universities & Academies", href: "/communities/universities-academies" },
-      { label: "NGOs & Civil Society", href: "/communities/ngos-civil-society" },
-      { label: "Public Sector & Government", href: "/communities/public-sector-government" },
+  { label: "Students", href: hrefForRole("Students") },
+  { label: "Researchers", href: hrefForRole("Researchers") },
+  { label: "Coaches & Trainers", href: hrefForRole("Coaches & Trainers") },
+  { label: "Experts & Consultants", href: hrefForRole("Experts & Consultants") },
+  { label: "Employees & Professionals", href: hrefForRole("Employees & Professionals") },
+  { label: "Entrepreneurs & Startups", href: hrefForRole("Entrepreneurs & Startups") },
+  { label: "Developers & Engineers", href: hrefForRole("Developers & Engineers") },
+  { label: "Marketing & Communication", href: hrefForRole("Marketing & Communication") },
+  { label: "Audit, Accounting & Finance", href: hrefForRole("Audit, Accounting & Finance") },
+  { label: "Investment & Banking", href: hrefForRole("Investment & Banking") },
+  { label: "Insurance & Microfinance", href: hrefForRole("Insurance & Microfinance") },
+  { label: "Legal & Lawyers", href: hrefForRole("Legal & Lawyers") },
+  { label: "AI, IoT & Emerging Tech", href: hrefForRole("AI, IoT & Emerging Tech") },
+  { label: "Audiovisual & Creative Industries", href: hrefForRole("Audiovisual & Creative Industries") },
+  { label: "Media & Journalists", href: hrefForRole("Media & Journalists") },
+  { label: "Universities & Academies", href: hrefForRole("Universities & Academies") },
+  { label: "NGOs & Civil Society", href: hrefForRole("NGOs & Civil Society") },
+  { label: "Public Sector & Government", href: hrefForRole("Public Sector & Government") },
     ],
   },
 

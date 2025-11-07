@@ -91,3 +91,13 @@
 @media (min-width: 1024px) {
   .co-meta .chip .clip { max-width: 220px; }
 }
+/* --- Communities pager --- */
+.mk-pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.mk-pager .mk-btn{min-width:36px;height:36px;padding:0 12px;line-height:34px;border-radius:10px}
+.mk-pager .mk-btn.outline{background:transparent;border:1px solid rgba(0,0,0,.12)}
+.mk-pager .mk-btn.primary[aria-current="page"]{box-shadow:0 0 0 2px var(--mk-primary,#6c5ce7) inset}
+.mk-pager .mk-btn[disabled]{opacity:.55;cursor:not-allowed}
+.mk-pager .ellipsis{padding:6px 8px;color:var(--mk-muted,#6b7280)}
+@media (max-width:640px){
+  .mk-pager .mk-btn{min-width:32px;height:34px;line-height:32px;padding:0 10px;border-radius:8px}
+}
