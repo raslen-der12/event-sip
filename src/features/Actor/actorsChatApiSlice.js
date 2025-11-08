@@ -45,7 +45,7 @@ export const actorsChatApi = apiSlice.injectEndpoints(
     // Room messages
     getRoomMessages: builder.query({
       query: ({ roomId, before, limit = 40 }) => ({
-        url: `/actors/chat/${roomId}${qs({ before, limit })}`,
+        url: `/actors/chat/${roomId}/messages${qs({ before, limit })}`,
         method: 'GET',
       }),
       transformResponse: unwrap,

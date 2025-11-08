@@ -241,6 +241,11 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       ],
       keepUnusedDataFor: 60,
     }),
+    getUnreadCounts: builder.query({
+      query: () => ({ url: `/actors/chat/recent`, method: 'GET' }),
+      transformResponse: unwrap,
+      providesTags: (_res) => [{ type: 'UnreadCounts', id: 'MAP' }],
+    }),
   }),
 });
 
@@ -263,5 +268,6 @@ export const {
   useAckActorNotificationMutation,
   useGetMeetingPrefsQuery,
   useResolveShareLinkQuery,
-  useListSpeakerSessionsQuery
+  useListSpeakerSessionsQuery,
+  useGetUnreadCountsQuery
 } = toolsApiSlice;

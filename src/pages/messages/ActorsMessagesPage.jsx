@@ -14,7 +14,7 @@ import {
   useUploadFilesMutation,
 } from "../../features/Actor/actorsChatApiSlice";
 
-import { useGetActorsToChatQuery } from "../../features/Actor/toolsApiSlice";
+import { useGetActorsToChatQuery ,  useGetUnreadCountsQuery,} from "../../features/Actor/toolsApiSlice";
 import useAuth from "../../lib/hooks/useAuth";
 import imageLink from "../../utils/imageLink";
 import HeaderShell from "../../components/layout/HeaderShell";
@@ -106,7 +106,10 @@ export default function ActorsMessages(){
     const arr = Array.isArray(resp?.suggestions) ? resp.suggestions : [];
     return arr.map(normProfile).filter(x=>x.id && x.id!==meId);
   }, [resp, meId]);
-
+  const { data: unreadRaw } = useGetUnreadCountsQuery(undefined, { pollingInterval: 8000 });
+  const unreadMap = React.useMemo(() => {
+    return (unreadRaw?.data ?? unreadRaw ?? {}) || {};
+  }, [unreadRaw]);
   const recent = React.useMemo(() => {
     const arr = Array.isArray(resp?.chats) ? resp.chats : [];
     return arr.map(normProfile).filter(x=>x.id && x.id!==meId);
@@ -296,6 +299,7 @@ export default function ActorsMessages(){
                 <button
                   key={p.id}
                   className={`dm-item ${String(p.id)===String(activePeerId) ? "is-active" : ""}`}
+                  style={{ position:'relative' }}
                   onClick={()=> isValidId(p.id) && navig(`?member=${p.id}`, { replace:false })}
                 >
                   <div className="dm-avatar" style={p.photo ? { backgroundImage:`url(${imageLink(p.photo)})` } : {}}>
@@ -308,6 +312,16 @@ export default function ActorsMessages(){
                       {p.country ? <span className="dm-subtle">{p.country}</span> : null}
                     </div>
                   </div>
+                  {tab==="recent" && (unreadMap[String(p.id)]||0) > 0 && (
+                    <span
+                      title={`${unreadMap[String(p.id)]} unread`}
+                      style={{
+                        position:'absolute', right:12, top:'50%', transform:'translateY(-50%)',
+                        minWidth:18, height:18, padding:'0 6px', borderRadius:999,
+                        fontSize:11, lineHeight:'18px', textAlign:'center', fontWeight:700,
+                        background:'#7c3aed', color:'#fff'
+                      }}>{unreadMap[String(p.id)]}</span>
+                  )}
                 </button>
               ))}
               <div className="dm-more">
