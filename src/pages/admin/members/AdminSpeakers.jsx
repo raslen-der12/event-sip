@@ -199,20 +199,30 @@ export default function AdminSpeakers() {
 
   // Helper to get a reliable API base for fetch calls (die-safe on deploy)
   const getApiBase = React.useCallback(() => {
-    try {
-      const env = (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "");
-      if (env) return env;
-      if (typeof window !== "undefined" && window.__API_BASE__) {
-        return String(window.__API_BASE__).replace(/\/+$/, "");
-      }
-      if (typeof window !== "undefined" && window.location?.origin) {
-        return window.location.origin.replace(/\/+$/, "");
-      }
-    } catch (e) {
-      // ignore
+  try {
+    // 1) explicit build-time env (production or explicit dev)
+    const env = (process.env.REACT_APP_API_BASE || "").replace(/\/+$/, "");
+    if (env) return env;
+
+    // 2) runtime override via window global (index.html injection)
+    if (typeof window !== "undefined" && window.__API_BASE__) {
+      return String(window.__API_BASE__).replace(/\/+$/, "");
     }
-    return "";
-  }, []);
+
+    // 3) local dev: if frontend served from localhost, hit local backend on 3500
+    if (typeof window !== "undefined" && /^(localhost|127\.)$/.test(window.location.hostname)) {
+      return "http://localhost:3500";
+    }
+
+    // 4) fallback: prefer same-origin (good for single-host deploys)
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin.replace(/\/+$/, "");
+    }
+  } catch (e) {
+    // ignore
+  }
+  return "";
+}, []);
 
   // keep this shape in sync with your initial createDraft state
   const emptyDraft = {
