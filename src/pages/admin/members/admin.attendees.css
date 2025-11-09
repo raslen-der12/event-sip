@@ -79,7 +79,7 @@
 
 /* Details inside modal */
 .att-detail { display: grid; gap: 14px; }
-.att-d-head { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; }
+.att-d-head { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; gap:60px }
 .att-d-avatar { width: 92px; height: 92px; border-radius: 18px; background: #eef2f7; border: 0; padding: 0; overflow: hidden; cursor: pointer; }
 .att-d-img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit; }
 

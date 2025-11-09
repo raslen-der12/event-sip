@@ -106,6 +106,8 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       query: ({
         eventId,
         receiverId,
+        senderId,
+        senderRole,
         receiverRole,
         dateTimeISO,
         subject,
@@ -117,6 +119,8 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
           eventId,
           receiverId,
           receiverRole,
+          senderId,
+          senderRole,
           dateTimeISO,
           subject,
           message,

@@ -84,6 +84,7 @@ import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
 import AdminBpTools from './pages/admin/bp/AdminBpTools';
 
 import ExhibitorsBusinessProfilesPage from './pages/businessProfile/ExhibitorsBusinessProfilesPage';
+import AdminMatchmaking from './pages/actors/meets/AdminMatchmaking';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -173,6 +174,7 @@ function App() {
             <Route path="messages" element={<AdminMessages />} />
             <Route path="tools/selects" element={<AdminSelects />} />
             <Route path="/admin/b2b" element={<B2BMeetingsDashboard/>} />
+            <Route path="/admin/b2b/matchMake" element={<AdminMatchmaking/>}/>
             <Route path="/admin/scanActor" element={<AdminScanActor/>} />
             <Route path="/admin/scanMeet" element={<AdminScanMeet/>} />
             <Route path="/admin/scanActor" element={<AdminScanActor/>} />

@@ -48,6 +48,9 @@ const UNITS = [
   { value:'per month', label:'per month' },
   { value:'per km', label:'per km' },
 ];
+const MAX_IMG_BYTES = 3 * 1024 * 1024; // 3 MB
+const tooBig = (f) => !!f && typeof f.size === 'number' && f.size > MAX_IMG_BYTES;
+const MB = (n) => (n / (1024 * 1024)).toFixed(1);
 /* ---------- Fallback banner (SVG mesh) ---------- */
 const STANDARD_BANNER =
   "data:image/svg+xml;utf8," +
@@ -274,7 +277,7 @@ function FileDrop({
   onPick,
   accept = "image/*",
   label = "Upload",
-  sub = "PNG/JPG under 5MB",
+  sub = "PNG/JPG under 3MB",
 }) {
   const ref = useRef(null);
   const [over, setOver] = useState(false);
@@ -708,6 +711,10 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
 
   /* ----------- Media handlers ----------- */
   async function onLogo(file) {
+    if (tooBig(file)) {
+      alert(`Logo is too large (${MB(file.size)} MB). Max allowed is 3 MB.`);
+      return;
+    }
     const fd = new FormData();
     fd.append("file", file);
     const up = await uploadFile(fd).unwrap();
@@ -718,6 +725,10 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
   }
 
   async function onBanner(file) {
+    if (tooBig(file)) {
+      alert(`Banner is too large (${MB(file.size)} MB). Max allowed is 3 MB.`);
+      return;
+    }
     const fd = new FormData();
     fd.append("file", file);
     const up = await uploadFile(fd).unwrap();
@@ -728,10 +739,13 @@ setCountries(Array.isArray(profile.countries) ? profile.countries.map(toKey) : [
   }
 
   async function onAddGallery(files) {
-    const { uploadIds, uploadPaths } = await uploadFilesCollectIdsAndPaths(
-      uploadFile,
-      files
-    );
+    const overs = (files || []).filter(tooBig);
+    if (overs.length) {
+      alert(`${overs.length} image(s) exceed 3 MB and were skipped.`);
+    }
+    const ok = (files || []).filter((f) => !tooBig(f));
+    if (!ok.length) return;
+    const { uploadIds, uploadPaths } = await uploadFilesCollectIdsAndPaths(uploadFile, ok);
     if (uploadIds.length || uploadPaths.length) {
       await addToGallery({ uploadIds, uploadPaths }).unwrap();
       await refetchBP();
@@ -838,22 +852,11 @@ async function onRemoveGalleryImage(image) {
       setEditingItem(null);
     } else {
       const created = await createItem(payload).unwrap();
-      const newId =
-        created?.id ||
-        created?._id ||
-        created?.data?.id ||
-        created?.data?._id ||
-        null;
+      
 
       await refetchItems();
 
-      if (newId) {
-        // open it for immediate image uploads
-        await refreshEditingItemLocal(newId);
-      } else {
-        // fallback: clear editor if API didn’t return an id
-        setEditingItem(null);
-      }
+      setEditingItem(null);
     }
   }
 
@@ -867,10 +870,13 @@ async function onRemoveGalleryImage(image) {
   async function onAddItemImages(files) {
     if (!editingItem?._id) return;
 
-    const { uploadIds, uploadPaths } = await uploadFilesCollectIdsAndPaths(
-      uploadFile,
-      files
-    );
+    const overs = (files || []).filter(tooBig);
+    if (overs.length) {
+      setItemErr(`${overs.length} image(s) exceed 3 MB and were skipped.`);
+    }
+    const ok = (files || []).filter((f) => !tooBig(f));
+    if (!ok.length) return;
+    const { uploadIds, uploadPaths } = await uploadFilesCollectIdsAndPaths(uploadFile, ok);
     if (uploadIds.length === 0 && uploadPaths.length === 0) return;
 
     const resp = await addItemImages({

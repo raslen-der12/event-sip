@@ -303,6 +303,9 @@ export default function BusinessProfilePage({ profile: propProfile, onMessage, o
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     if (peerId) navigate(`/team?prefill=${peerId}`);
   };
+  const onMeetMain = () => {
+    if (peerId) navigate(`/meeting/${peerId}`);
+  };
 
   return (
     <>
@@ -343,7 +346,9 @@ export default function BusinessProfilePage({ profile: propProfile, onMessage, o
                   <div className="bp-id">
                     <h1 className="bpp-name align-items-start">{p.name}</h1>
                     {p.tagline && <p className="bp-tag">{p.tagline}</p>}
-                    {apiProfileRaw?.about && <p className="bp-about">{apiProfileRaw.about}</p>}
+                    {apiProfileRaw?.about && (
+                      <AboutBlock text={String(apiProfileRaw.about || '')} />
+                    )}
                     <div className="bp-meta">
                       {p.location && (
                         <span className="chip">
@@ -367,6 +372,9 @@ export default function BusinessProfilePage({ profile: propProfile, onMessage, o
                 <div className="bp-cta">
                   <button type="button" className="btn" onClick={onMsg}>
                     Message company
+                  </button>
+                  <button type="button" className="btn bg-dark" onClick={onMeetMain}>
+                    Book meet
                   </button>
 
                 </div>
@@ -536,6 +544,52 @@ function TabContent({
     </>
   );
 }
+function AboutBlock({ text }) {
+  const [open, setOpen] = React.useState(false);
+  const long = (text || '').length > 260; // show toggle only if long
+  const clampStyle = open ? {} : {
+    display: '-webkit-box',
+    WebkitLineClamp: 5,           // lines when collapsed
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden'
+  };
+  return (
+    <div className="bp-about-wrap" style={{ position:'relative', maxWidth:780 }}>
+      <p
+        id="bp-about"
+        className="bp-about"
+        style={{
+          marginTop:8,
+         whiteSpace:'pre-line',
+          wordBreak:'break-word',
+          color:'#e6eefc',
+          ...clampStyle
+        }}
+      >
+        {text}
+      </p>
+      
+      {long && (
+        <button
+          type="button"
+          className="bp-about-toggle"
+          aria-controls="bp-about"
+          aria-expanded={open ? 'true' : 'false'}
+          onClick={() => setOpen(v => !v)}
+          style={{
+            marginTop:6, fontSize:13, fontWeight:600,
+            textDecoration:'underline', background:'none',
+            border:0, color:'#fff', cursor:'pointer'
+          }}
+        >
+          {open ? 'Show less' : 'Read more'}
+        </button>
+      )}
+    </div>
+  );
+}
+AboutBlock.displayName = 'AboutBlock';
+AboutBlock.defaultProps = { text: '' };
 
 BusinessProfilePage.propTypes = {
   profile: PropTypes.shape({

@@ -180,7 +180,16 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
-    })
+    getAdminSuggestions: builder.query({
+      query: ({ eventId, limit = 50, pool = 400 } = {}) => ({
+        url: `/meets/admin/suggested`,
+        method: 'GET',
+        params: { eventId, limit, pool }
+      }),
+      transformResponse: (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []),
+      providesTags: (result) => [{ type: 'AdminMatchSuggestions', id: 'LIST' }]
+    }),
+  })
 })
 
 export const {
@@ -205,5 +214,6 @@ export const {
     useAdminScanSessionMutation,
     useAdminScanMeetMutation,
     useExportConfirmedMeetsQuery, 
-    useListEventSessionsMiniQuery
+    useListEventSessionsMiniQuery,
+    useGetAdminSuggestionsQuery
 } = toolsApiSlice
