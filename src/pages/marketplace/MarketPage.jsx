@@ -18,10 +18,10 @@ const uniq = (a) => Array.from(new Set(a));
 function BusinessCard({ d }) {
   const navigate = useNavigate();
   // Use first featured item image as banner; fallback to logo; fallback to empty block
-  const bannerSrc =
+  const bannerSrc = imageLink(d.bannerUpload) ||
+    (d.logoUpload ? imageLink(d.logoUpload) : null) ||
     (d.featuredItems?.find((x) => x.thumb)?.thumb &&
-      imageLink(d.featuredItems.find((x) => x.thumb).thumb)) ||
-    (d.logoUpload ? imageLink(d.logoUpload) : null);
+      imageLink(d.featuredItems.find((x) => x.thumb).thumb)) //http://localhost:3500/uploads/bp/2025-11-08/e0cad7dd-53b0-4b6a-a702-5d8cb7523153.jpeg
   return (
     <article className="mk-card">
       {/* Top banner */}
