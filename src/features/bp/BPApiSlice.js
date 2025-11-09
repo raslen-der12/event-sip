@@ -281,6 +281,21 @@ export const BPApiSlice = apiSlice.injectEndpoints({
     transformResponse: (res) => res || { items:[], total:0 },
     providesTags: (r,e,a)=>[{type:'CommunityList',id:JSON.stringify(a||{})}],
   }),
+  getPublicExhibitors: builder.query({
+      // params: { page?, limit?, q?, eventId? }
+      query: (params = {}) => ({
+        url: "biz/bp/public-exhibitors",
+        method: "GET",
+        params: {
+          page: params.page ?? 1,
+          limit: params.limit ?? 24,
+          q: params.q ?? "",
+          ...(params.eventId ? { eventId: params.eventId } : {})
+        }
+      }),
+      // don't unwrap; keep { ok, page, limit, total, data }
+      providesTags: (_res, _err, arg) => [{ type: "PublicExhibitors", id: String(arg?.eventId || "ALL") }]
+    }),
 
   }),
   overrideExisting: true,
@@ -358,4 +373,5 @@ export const {
   useGetMarketBusinessesQuery,
   useGetCommunityFacetsQuery,
   useGetCommunityListQuery,
+  useGetPublicExhibitorsQuery,
 } = BPApiSlice;

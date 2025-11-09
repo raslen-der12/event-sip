@@ -148,3 +148,55 @@
   background:linear-gradient(90deg,#f1f2f6,#fafafd,#f1f2f6); animation: exgSk 1.2s linear infinite;
 }
 @keyframes exgSk{ from{background-position:-200% 0} to{background-position:200% 0} }
+/* --- dropdown industry filter --- */
+.exg-industry {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.exg-select-f {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 220px;
+  height: 36px;
+  padding: 0 2rem 0 .75rem;
+  border: 1px solid #e5e7eb;            /* zinc-200 */
+  border-radius: 9999px;                 /* pill */
+  background-color: #fff;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 8 10 12 14 8'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right .6rem center;
+  background-size: 14px;
+  font: inherit;
+  font-size: .9rem;
+  color: #111827;                        /* zinc-900 */
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.exg-select-f:hover { border-color: #d1d5db; }       /* zinc-300 */
+
+.exg-select-f:focus {
+  outline: 0;
+  border-color: #3b82f6;                 /* blue-500 */
+  box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+}
+
+.exg-select-f:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* (optional) dark theme support if you use .dark on <html> or <body> */
+.dark .exg-select-f {
+  background-color: #18181b;             /* zinc-900 */
+  color: #e5e7eb;                         /* zinc-200 */
+  border-color: #3f3f46;                  /* zinc-700 */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 8 10 12 14 8'/></svg>");
+}
+
+.dark .exg-select-f:hover { border-color: #52525b; }  /* zinc-600 */

@@ -6,6 +6,7 @@ import {
   useAdminListItemsQuery,
   useAdminListProfilesQuery,
   useAdminGetProfileQuery,
+  useAdminSetExhibitorMutation,
 } from "../../../features/bp/BPAdminApiSlice";
 import imageLink from "../../../utils/imageLink";
 import "./admin-bp.css";
@@ -50,7 +51,22 @@ const I = {
       <path d="M22 16.92V21a1 1 0 0 1-1.09 1A19.91 19.91 0 0 1 3 5.09 1 1 0 0 1 4 4h4.09a1 1 0 0 1 1 .75l1 3a1 1 0 0 1-.27 1L8.91 10a16 16 0 0 0 6.19 6.19l1.5-1.91a1 1 0 0 1 1-.27l3 1a1 1 0 0 1 .75 1z" fill="currentColor"/>
     </svg>
   ),
+  // exhibitor toggle icons
+  star: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m12 3 2.9 5.9 6.1.9-4.4 4.3 1 6.1L12 17.8 6.4 20.2l1-6.1L3 9.8l6.1-.9L12 3z" fill="currentColor"/>
+    </svg>
+  ),
+  starOff: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m12 3 2.9 5.9 6.1.9-4.4 4.3 1 6.1L12 17.8 6.4 20.2l1-6.1L3 9.8l6.1-.9L12 3z" fill="none" stroke="currentColor" strokeWidth="1.8"/>
+    </svg>
+  ),
 };
+
+/* ========== Micro button presets (no CSS file changes) ========== */
+const microBtn = { height: 26, padding: "0 10px", fontSize: 12, lineHeight: "26px" };
+const iconBtn  = { width: 26, height: 26, padding: 0, display: "inline-grid", placeItems: "center" };
 
 /* ========== Safe text helpers ========== */
 const pickTextFromObj = (o = {}) => {
@@ -233,22 +249,23 @@ function PendingRow({ p, onOpen, onPublish }) {
         ) : <div className="abp-logo abp-logo-ph" />}
         <div>
           <div className="abp-strong">{toText(p.name)}</div>
-          <div className="abp-sub">{p.slug || p.id}</div>
+          {p.isExibitor ? <span className="abp-badge ok" style={{marginTop:6}}>Exhibitor</span> : null}
         </div>
       </div>
-      <div className="abp-row-r" style={{ gap: 8 }}>
+      <div className="abp-row-r" style={{ gap: 6 }}>
         <button
           className="abp-btn d-flex align-items-center"
+          style={microBtn}
           onClick={(e) => { e.stopPropagation(); onPublish(p.id, true); }}
         >
-          <I.check /> Publish
+          <I.check /> <span style={{ marginLeft:6 }}>Publish</span>
         </button>
       </div>
     </div>
   );
 }
 
-function PublishedRow({ p, onOpen, onUnpublish }) {
+function PublishedRow({ p, onOpen, onUnpublish, onToggleExh }) {
   return (
     <div className="abp-row" role="button" onClick={() => onOpen(p)} title="Open details">
       <div className="abp-row-l">
@@ -257,19 +274,29 @@ function PublishedRow({ p, onOpen, onUnpublish }) {
         ) : <div className="abp-logo abp-logo-ph" />}
         <div>
           <div className="abp-strong">{toText(p.name)}</div>
-          <div className="abp-sub">{p.slug}</div>
-          {/* show at most 1 industry chip in list (as requested earlier) */}
           <Chips list={Array.isArray(p.industries) ? p.industries : []} soft max={1} />
+          {p.isExibitor ? <span className="abp-badge ok" style={{marginTop:6}}>Exhibitor</span> : null}
         </div>
       </div>
-      <div className="abp-row-r" style={{ gap: 8 }}>
+      <div className="abp-row-r" style={{ gap: 6, alignItems: "center" }}>
         <span className="abp-badge ok">Published</span>
+        {/* compact exhibitor toggle beside status */}
+        <button
+          className="abp-btn abp-btn-ghost"
+          style={iconBtn}
+          onClick={(e) => { e.stopPropagation(); onToggleExh(p.id, p.isExibitor); }}
+          aria-label={p.isExibitor ? "Unmark exhibitor" : "Mark as exhibitor"}
+          title={p.isExibitor ? "Unmark exhibitor" : "Mark as exhibitor"}
+        >
+          {p.isExibitor ? <I.star /> : <I.starOff />}
+        </button>
         <button
           className="abp-btn abp-btn-ghost d-flex align-items-center"
+          style={microBtn}
           onClick={(e) => { e.stopPropagation(); onUnpublish(p.id, false); }}
-          title="Unpublish profile "
+          title="Unpublish profile"
         >
-          <I.unpub /> Unpublish
+          <I.unpub /> <span style={{ marginLeft: 6 }}>Unpublish</span>
         </button>
       </div>
     </div>
@@ -336,6 +363,7 @@ export default function AdminBpQueue() {
 
   // publish toggle
   const [publish, { isLoading: isToggling }] = useAdminPublishProfileMutation();
+  const [toggleExh, { isLoading: isExhToggling }] = useAdminSetExhibitorMutation();
 
   // modal selection (load full profile)
   const [selId, setSelId] = useState(null);
@@ -354,7 +382,18 @@ export default function AdminBpQueue() {
       alert("Failed to update publish flag.");
     }
   };
-
+  const doToggleExhibitor = async (profileId, isExibitor) => {
+    try {
+      await toggleExh({ profileId, isExibitor }).unwrap();
+      await Promise.all([refetch(), refetchPub()]);
+      if (selId === profileId) {
+        // let RTK refetch flow update the open modal content
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to update exhibitor flag.");
+    }
+  };
   const onSearch = () => {
     setPage(1);
     setPubPage(1);
@@ -404,7 +443,7 @@ export default function AdminBpQueue() {
             {[6,12,24,36,48].map(n => <option key={n} value={n}>Published: {n}/page</option>)}
           </select>
 
-          <button className="abp-btn" onClick={onSearch}>Search</button>
+          <button className="abp-btn" style={microBtn} onClick={onSearch}>Search</button>
         </div>
       </header>
 
@@ -413,7 +452,7 @@ export default function AdminBpQueue() {
       <div className="abp-grid">
         {/* Pending approvals */}
         <div className="abp-card">
-          <div className="abp-card-head  m-3">
+          <div className="abp-card-head m-3">
             <h3>Pending approvals</h3>
             <span className="abp-sub">{pendingTotal} total</span>
           </div>
@@ -428,30 +467,36 @@ export default function AdminBpQueue() {
           </div>
           {pendingTotal > 0 ? (
             <div className="abp-pager">
-              <button type="button" className="btn-ghost" disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button>
+              <button type="button" className="btn-ghost" style={microBtn} disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button>
               <span className="abp-mono">Page {unpublished.page || page} / {pendingMaxPage}</span>
-              <button type="button" className="btn" disabled={(unpublished.page || page) >= pendingMaxPage} onClick={()=>setPage(p=>Math.min(pendingMaxPage,p+1))}>Next</button>
+              <button type="button" className="btn" style={microBtn} disabled={(unpublished.page || page) >= pendingMaxPage} onClick={()=>setPage(p=>Math.min(pendingMaxPage,p+1))}>Next</button>
             </div>
           ) : null}
         </div>
 
         {/* Published list */}
         <div className="abp-card">
-          <div className="abp-card-head  m-3">
+          <div className="abp-card-head m-3">
             <h3>Published</h3>
             <span className="abp-sub">{publishedTotal} total</span>
           </div>
           <div className="abp-list">
             {publishedRows.map(p => (
-              <PublishedRow key={p.id} p={p} onOpen={onOpen} onUnpublish={(id,flag)=>doTogglePublish(id,flag)} />
+              <PublishedRow
+                key={p.id}
+                p={p}
+                onOpen={onOpen}
+                onUnpublish={(id,flag)=>doTogglePublish(id,flag)}
+                onToggleExh={(id,flag)=>doToggleExhibitor(id,flag)}
+              />
             ))}
             {!publishedRows.length && !isPubLoading && <div className="abp-muted">No published profiles match.</div>}
           </div>
           {publishedTotal > 0 ? (
             <div className="abp-pager">
-              <button type="button" className="btn-ghost" disabled={pubPage<=1} onClick={()=>setPubPage(p=>Math.max(1,p-1))}>Prev</button>
+              <button type="button" className="btn-ghost" style={microBtn} disabled={pubPage<=1} onClick={()=>setPubPage(p=>Math.max(1,p-1))}>Prev</button>
               <span className="abp-mono">Page {pubPage} / {publishedMaxPage}</span>
-              <button type="button" className="btn" disabled={pubPage>=publishedMaxPage} onClick={()=>setPubPage(p=>Math.min(publishedMaxPage,p+1))}>Next</button>
+              <button type="button" className="btn" style={microBtn} disabled={pubPage>=publishedMaxPage} onClick={()=>setPubPage(p=>Math.min(publishedMaxPage,p+1))}>Next</button>
             </div>
           ) : null}
         </div>
@@ -470,12 +515,25 @@ export default function AdminBpQueue() {
                 ) : <div className="abp-logo abp-logo-ph" />}
                 <div>
                   <div className="abp-strong">{toText(sel.name)}</div>
-                  <div className="abp-sub">{sel.slug || sel.id}</div>
                   <Chips list={sel.industries} soft max={3} />
+                  {sel.isExibitor ? <span className="abp-badge ok" style={{marginTop:6}}>Exhibitor</span> : null}
                 </div>
               </div>
-              <div className="abp-row-r">
-                <span className={`abp-badge ${sel.published ? "ok" : ""}`}>{sel.published ? "Published" : "Pending"}</span>
+              <div className="abp-row-r" style={{ gap: 6, alignItems: "center" }}>
+                <span className={`abp-badge ${sel.published ? "ok" : ""}`}>
+                  {sel.published ? "Published" : "Pending"}
+                </span>
+                {/* tiny exhibitor toggle in header (icon-only) */}
+                <button
+                  className="abp-btn abp-btn-ghost"
+                  style={iconBtn}
+                  disabled={isExhToggling}
+                  onClick={()=>doToggleExhibitor(sel.id, sel.isExibitor)}
+                  aria-label={sel.isExibitor ? "Unmark exhibitor" : "Mark as exhibitor"}
+                  title={sel.isExibitor ? "Unmark exhibitor" : "Mark as exhibitor"}
+                >
+                  {sel.isExibitor ? <I.star /> : <I.starOff />}
+                </button>
               </div>
             </div>
 
@@ -487,17 +545,17 @@ export default function AdminBpQueue() {
             <ItemsPeek profileId={sel.id} />
 
             {/* Actions */}
-            <div style={{ display:"flex", gap:10, marginTop:16 }}>
+            <div style={{ display:"flex", gap:8, marginTop:16, flexWrap:"wrap" }}>
               {!sel.published ? (
-                <button className="abp-btn d-flex align-items-center" disabled={isToggling} onClick={()=>doTogglePublish(sel.id, true)} title="Publish profile">
-                  <I.check /> Publish
+                <button className="abp-btn d-flex align-items-center" style={microBtn} disabled={isToggling} onClick={()=>doTogglePublish(sel.id, true)} title="Publish profile">
+                  <I.check /> <span style={{ marginLeft:6 }}>Publish</span>
                 </button>
               ) : (
-                <button className="abp-btn abp-btn-ghost d-flex align-items-center" disabled={isToggling} onClick={()=>doTogglePublish(sel.id, false)} title="Unpublish profile">
-                  <I.unpub /> Unpublish
+                <button className="abp-btn abp-btn-ghost d-flex align-items-center" style={microBtn} disabled={isToggling} onClick={()=>doTogglePublish(sel.id, false)} title="Unpublish profile">
+                  <I.unpub /> <span style={{ marginLeft:6 }}>Unpublish</span>
                 </button>
               )}
-              <button className="abp-btn-ghost" onClick={onClose}>Close</button>
+              <button className="abp-btn-ghost" style={microBtn} onClick={onClose}>Close</button>
             </div>
           </>
         ) : null}

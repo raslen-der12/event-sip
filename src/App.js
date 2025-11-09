@@ -84,7 +84,9 @@ import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
 import AdminBpTools from './pages/admin/bp/AdminBpTools';
 
 import ExhibitorsBusinessProfilesPage from './pages/businessProfile/ExhibitorsBusinessProfilesPage';
-import AdminMatchmaking from './pages/actors/meets/AdminMatchmaking';
+import AdminMatchmaking from './pages/admin/meets/AdminMatchmaking';
+import AdminVirtualMeets from './pages/admin/meets/AdminVirtualMeets';
+import VMeetRedirect from './pages/meetings/VMeetRedirect';
 
 function SocketBootstrap() {
   const s = useStore();
@@ -158,6 +160,8 @@ function App() {
           <Route path="/BusinessProfile" element={<BusinessProfilePage />} />
           <Route path="/meeting/:actorId" element={<MeetingPage />} />
           <Route path="/sessions/:actorId" element={<SessionsPage />} />
+          <Route path="/vmeet/:meetingId" element={<VMeetRedirect />} />
+          <Route path="/vmeet/:meetingId/:actorId" element={<VMeetRedirect />} /> 
 
 
         </Route>
@@ -183,6 +187,7 @@ function App() {
             <Route path="/admin/bp/overview" element={<AdminBpOverview/>}/>
             <Route path="/admin/bp/queue" element={<AdminBpQueue/>}/>
             <Route path="/admin/bp/tools" element={<AdminBpTools/>}/>
+            <Route path="/admin/links/generate" element={<AdminVirtualMeets/>}/>
           </Route>
         </Route>
         

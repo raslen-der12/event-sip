@@ -1,3 +1,4 @@
+// src/pages/exhibitors/ExhibitorsPage.jsx
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderShell from "../../../components/layout/HeaderShell";
@@ -5,7 +6,7 @@ import Footer from "../../../components/footer/Footer";
 import { topbar, cta, footerData } from "../../main.mock";
 import useAuth from "../../../lib/hooks/useAuth";
 import EventExhibitorsGallery from "../../../components/event/exhibitors/EventExhibitorsGallery";
-import { useGetExhibitorsByEventQuery } from "../../../features/events/actorsApiSlice";
+import { useGetPublicExhibitorsQuery } from "../../../features/bp/BPApiSlice";
 import imageLink from "../../../utils/imageLink";
 
 export default function ExhibitorsPage() {
@@ -26,35 +27,35 @@ export default function ExhibitorsPage() {
     navigate(`/meeting/${id}`);
   };
 
-  // ----- server-driven controls -----
+  // server-driven params we actually have (q + limit). Industry/Open are client-only.
   const [q, setQ] = React.useState("");
-  const [onlyOpen, setOnlyOpen] = React.useState(false);
-  const [industry, setIndustry] = React.useState("All");
   const [limit, setLimit] = React.useState(24);
 
-  // debounce q
+  // debounce q to avoid spamming
   const [debouncedQ, setDebouncedQ] = React.useState(q);
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 350);
     return () => clearTimeout(t);
   }, [q]);
 
-  const { data, isLoading, isError, error } = useGetExhibitorsByEventQuery(
-    {
-      eventId,
-      q: debouncedQ || undefined,
-      limit: Number(limit) || undefined,
-      industry: industry && industry !== "All" ? industry : undefined,
-      open: onlyOpen ? 1 : undefined,
-    },
+  const { data, isLoading, isError, error } = useGetPublicExhibitorsQuery(
+    { eventId, q: debouncedQ || undefined, limit: Number(limit) || undefined },
     { skip: !eventId }
   );
+  console.log("data",data);
 
-  const items =
-    (Array.isArray(data) && data) ||
-    (Array.isArray(data?.items) && data.items) ||
-    (Array.isArray(data?.exhibitors) && data.exhibitors) ||
-    [];
+  // Map backend public shape -> gallery card shape
+  const items = React.useMemo(() => {
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    return rows.map((r) => ({
+      id: r.ownerId, // IMPORTANT: links & meeting use OWNER actor id
+      orgName: r.name || "—",
+      industry: (Array.isArray(r.industries) && r.industries[0]) || "",
+      logo: r.logoUpload ? imageLink(r.logoUpload) : null,
+      offering: r.tagline || "", // small text under name
+      openToMeet: false, // unknown in public endpoint (client filter will ignore if false)
+    }));
+  }, [data]);
 
   const nav = [
     { label: "Home", href: "/" },
@@ -63,33 +64,45 @@ export default function ExhibitorsPage() {
     { label: "Attendees", href: `/event/${eventId}/attendees` },
     { label: "Exhibitors", href: `/event/${eventId}/exhibitors` },
     { label: "Schedule", href: `/event/${eventId}/schedule` },
-    // { label: "Tickets", href: `/event/${eventId}/tickets` },
   ];
 
   return (
     <>
-      <HeaderShell top={topbar} nav={nav} cta={cta} logo={eventId === "68e6764bb4f9b08db3ccec04" ? imageLink("/default/IPDAYXGITS.png") : null} />
+      <HeaderShell
+        top={topbar}
+        nav={nav}
+        cta={cta}
+        logo={
+          eventId === "68e6764bb4f9b08db3ccec04"
+            ? imageLink("/default/IPDAYXGITS.png")
+            : null
+        }
+      />
+
       <EventExhibitorsGallery
         heading="Exhibitors"
         subheading="Teams showcasing products & services."
-        serverMode
+        // Use client filtering (since public endpoint doesn't support industry/open):
+        serverMode={false}
         items={items}
         isLoading={isLoading}
         errorText={isError ? (error?.data?.message || "Failed to load exhibitors") : ""}
 
-        // controlled (server) toolbar state
+        // Client toolbar controls (gallery manages these locally in client mode,
+        // but we pass initial values so UX stays consistent)
         query={q}
         onQueryChange={setQ}
-        onlyOpen={onlyOpen}
-        onOnlyOpenChange={setOnlyOpen}
-        industry={industry}
-        onIndustryChange={setIndustry}
+        onlyOpen={false}
+        onOnlyOpenChange={() => {}}
+        industry={"All"}
+        onIndustryChange={() => {}}
         limit={limit}
         onLimitChange={setLimit}
 
         isLoggedIn={!!ActorId}
         onBook={onBook}
       />
+
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}

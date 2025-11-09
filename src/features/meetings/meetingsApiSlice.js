@@ -189,6 +189,39 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       transformResponse: (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []),
       providesTags: (result) => [{ type: 'AdminMatchSuggestions', id: 'LIST' }]
     }),
+    getAdminVirtualMeets: builder.query({
+  query: ({ eventId, status } = {}) => ({
+    url: '/meets/admin/virtuals',
+    method: 'GET',
+    params: { eventId, status }, // status optional: 'pending'|'confirmed'|...
+  }),
+  providesTags: (res) =>
+    res?.data
+      ? [
+          { type: 'AdminVirtualMeets', id: 'LIST' },
+          ...res.data.map((m) => ({ type: 'AdminVirtualMeets', id: String(m._id) })),
+        ]
+      : [{ type: 'AdminVirtualMeets', id: 'LIST' }],
+}),
+
+generateAdminMeetLink: builder.mutation({
+  query: (meetingId) => ({
+    url: `/meets/admin/${encodeURIComponent(meetingId)}/gmeet`,
+    method: 'POST',
+  }),
+  invalidatesTags: (_res, _err, meetingId) => [
+    { type: 'AdminVirtualMeets', id: 'LIST' },
+    { type: 'AdminVirtualMeets', id: String(meetingId) },
+  ],
+}),
+getMeetJoinLink: builder.query({
+  query: ({ meetingId, actorId }) => ({
+    url: `/meets/virtual/${encodeURIComponent(meetingId)}/join`,
+    method: 'GET',
+    params: { actorId },
+  }),
+  // keep the raw shape { ok, link, ... }
+}),
   })
 })
 
@@ -215,5 +248,8 @@ export const {
     useAdminScanMeetMutation,
     useExportConfirmedMeetsQuery, 
     useListEventSessionsMiniQuery,
-    useGetAdminSuggestionsQuery
+    useGetAdminSuggestionsQuery,
+    useGetAdminVirtualMeetsQuery,
+    useGenerateAdminMeetLinkMutation,
+    useGetMeetJoinLinkQuery,
 } = toolsApiSlice

@@ -91,7 +91,21 @@ export const BPAdminApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["BPAdmin", "BPProfiles"],
     }),
-
+    adminSetExhibitor: builder.mutation({
+      // args: { profileId, isExibitor }
+      query: ({ profileId, isExibitor }) => ({
+        url: `/biz/admin/bp/${profileId}/exhibitor`,
+        method: "PATCH",
+        body: { isExibitor: !!isExibitor },
+        credentials: "include",
+      }),
+      invalidatesTags: (r,e,a) => [
+        { type: "BPAdmin", id: String(a?.profileId || "LIST") },
+        { type: "BPAdminProfile", id: String(a?.profileId || "LIST") },
+        { type: "BPAdmin", id: "LIST" },
+        { type: "BPAdmin", id: "OVERVIEW" },
+      ],
+    }),
     adminDeleteProfile: builder.mutation({
       query: (profileId) => ({
         url: `/biz/admin/bp/${profileId}`,
@@ -228,6 +242,7 @@ export const {
   useAdminPublishProfileMutation,
   useAdminBulkPublishMutation,
   useAdminFeatureProfileMutation,
+  useAdminSetExhibitorMutation,
   useAdminDeleteProfileMutation,
   useAdminListItemsQuery,
   useAdminDeleteItemMutation,
