@@ -4,7 +4,7 @@ import EventCard from "./EventCard";
 import "./events.css";
 
 export default function EventsListSection({ heading, subheading, events = [] }) {
-  console.log(events);
+  console.log("events : " ,events);
   return (
     <section className="eventslist">
       <div className="container">

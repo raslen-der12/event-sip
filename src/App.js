@@ -83,6 +83,8 @@ import AdminBpOverview from './pages/admin/bp/AdminBpOverview';
 import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
 import AdminBpTools from './pages/admin/bp/AdminBpTools';
 
+import ScrollToTop from './components/ScrollToTop';
+
 import ExhibitorsBusinessProfilesPage from './pages/businessProfile/ExhibitorsBusinessProfilesPage';
 
 function SocketBootstrap() {
@@ -100,6 +102,7 @@ function App() {
 
   return (
     <>
+    <ScrollToTop />
     <Routes>
       <Route path="*" element={<NotFound />} />
       

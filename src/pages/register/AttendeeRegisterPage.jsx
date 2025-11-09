@@ -1034,6 +1034,7 @@ export default function AttendeeRegisterPage() {
                 <label className="mp-field">
                   <span className="mp-label">
                     {t("partnership.country", "Country")}
+                    <span className="req">*</span>
                   </span>
                   <CountrySelect
                     value={form.country || ""}
