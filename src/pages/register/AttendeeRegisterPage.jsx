@@ -1,7 +1,7 @@
 // src/pages/register/AttendeeRegisterPage.jsx
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import ReactCountryFlag from "react-country-flag";
 import "./attendee-register.css";
 
@@ -719,7 +719,7 @@ export default function AttendeeRegisterPage() {
 
   const trackSections = useMemo(() => {
     if (!Array.isArray(displaySessions) || !displaySessions.length) return [];
-
+    console.log("Computing track sections for sessions:", displaySessions);
     const group = {};
     for (const s of displaySessions) {
       if (track && s.track !== track) continue;
@@ -962,7 +962,7 @@ export default function AttendeeRegisterPage() {
         </section>
 
         {/* Registration Form */}
-        {roleType && !finished && (
+        {roleType && !finished &&  (
           <form
             className="anim-in reg-card"
             onSubmit={submitForm}
@@ -1098,20 +1098,39 @@ export default function AttendeeRegisterPage() {
                   </div>
 
                   <div className="att-field">
-                    <label>
-                      {t("partnership.jobTitle", "Job title")}{" "}
-                      <span className="req">*</span>
-                    </label>
-                    <input
-                      value={form.jobTitle}
-                      onChange={(e) => setField("jobTitle", e.target.value)}
-                    />
-                    {errs.jobTitle && (
-                      <div style={{ color: "#ef4444", fontWeight: 800 }}>
-                        {errs.jobTitle}
+                      <label>
+                        {t("partnership.jobTitle", "Job title")}{" "}
+                        <span className="req">*</span>
+                      </label>
+                      <input
+                        value={form.jobTitle}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 100) {
+                            setField("jobTitle", value);
+                          }
+                        }}
+                        maxLength={100}
+                        title={form.jobTitle}
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap"
+                        }}
+                      />
+                      <div style={{ 
+                        fontSize: "12px", 
+                        color: "#64748b", 
+                        marginTop: "4px" 
+                      }}>
+                        {form.jobTitle.length}/100 characters
                       </div>
-                    )}
-                  </div>
+                      {errs.jobTitle && (
+                        <div style={{ color: "#ef4444", fontWeight: 800 }}>
+                          {errs.jobTitle}
+                        </div>
+                      )}
+                    </div>
                 </>
               )}
 
@@ -1495,6 +1514,8 @@ export default function AttendeeRegisterPage() {
           </form>
         )}
 
+
+
         {/* Session Selection */}
         {roleType && showSessions && !finished && (
           <section
@@ -1534,20 +1555,27 @@ export default function AttendeeRegisterPage() {
                 {trackSections.map((section) => (
                   <div key={section.track} className="att-track-section-v2">
                     <div className="att-track-sep-v2">{section.track}</div>
-                    {section.items?.map((s) => {
-                      const compositeKey = compositeKeyFor(s);
-                      const isSelected =
-                        selectedBySlot[compositeKey]?._id === s._id;
+                    {section.items
+                    ?.filter((s) => {
                       const c = counts?.[s._id] || {};
-                      const reg = Number(
-                        typeof s.seatsTaken === "number" ? s.seatsTaken : NaN
-                      );
+                      const reg = Number(typeof s.seatsTaken === "number" ? s.seatsTaken : NaN);
+                      const regSafe = Number.isFinite(reg)
+                        ? reg
+                        : Number(c.registered || 0);
+                      const cap = s.roomCapacity || 0;
+                      return regSafe < cap; // ✅ show only sessions that are not full
+                    })
+                    .map((s) => {
+                      const compositeKey = compositeKeyFor(s);
+                      const isSelected = selectedBySlot[compositeKey]?._id === s._id;
+                      const c = counts?.[s._id] || {};
+                      const reg = Number(typeof s.seatsTaken === "number" ? s.seatsTaken : NaN);
                       const regSafe = Number.isFinite(reg)
                         ? reg
                         : Number(c.registered || 0);
                       const cap = s.roomCapacity || 0;
                       const pct = cap
-                        ? Math.min(100, Math.round((reg / cap) * 100))
+                        ? Math.min(100, Math.round((regSafe / cap) * 100))
                         : 0;
                       const title = s.title || s.sessionTitle || t("partnership.session", "Session");
                       const when = new Date(s.startISO);
@@ -1555,9 +1583,7 @@ export default function AttendeeRegisterPage() {
                       return (
                         <article
                           key={s._id}
-                          className={`att-session-card-v2 ${
-                            isSelected ? "is-selected" : ""
-                          }`}
+                          className={`att-session-card-v2 ${isSelected ? "is-selected" : ""}`}
                           onClick={() => toggleSession(s)}
                           title={title}
                         >
@@ -1597,9 +1623,7 @@ export default function AttendeeRegisterPage() {
                             {!!s.speakers?.length && (
                               <div className="att-session-meta-v2">
                                 {s.speakers
-                                  .map(
-                                    (x) => (x && (x.name || x.fullName)) || x
-                                  )
+                                  .map((x) => (x && (x.name || x.fullName)) || x)
                                   .join(", ")}
                               </div>
                             )}
@@ -1613,7 +1637,7 @@ export default function AttendeeRegisterPage() {
                             </div>
                           ) : null}
 
-                          {(cap || reg) && (
+                          {(cap || regSafe) && (
                             <div className="cap-mini-v2">
                               <div className="cap-mini-line">
                                 <div
@@ -1670,6 +1694,7 @@ export default function AttendeeRegisterPage() {
                         </article>
                       );
                     })}
+
                   </div>
                 ))}
               </div>
@@ -1698,12 +1723,15 @@ export default function AttendeeRegisterPage() {
             >
               Success Icon {t("partnership.registrationReceived", "Registration received. We also displayed a popup with a quick link.")}
               <div style={{ marginTop: 8 }}>
-                <a className="btn" href="/login">
+
+                {/** WE SHOULD REDIRECT HIM TO LOGIN  */}
+
+                <Link className="btn" to="/login">
                   {t(
                     "partnership.discoverYourAccount",
                     "Discover your B2B account"
                   )}
-                </a>
+                </Link>
               </div>
             </div>
           </div>
