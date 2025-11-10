@@ -1,5 +1,5 @@
 // src/components/profile/panels/IdentityPanel.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
@@ -106,14 +106,44 @@ function UrlRow(props) {
 /* --- Main panel --- */
 export default function IdentityPanel({ role, actor, loading, onPatch }) {
   const { t } = useTranslation();
-
   const r = String(role || "").toLowerCase();
   const isAtt = r === "attendee";
   const isExh = r === "exhibitor";
   const isSpk = r === "speaker";
 
+  const [mergedActor, setMergedActor] = React.useState(actor || {});
+  const A = mergedActor;
+  const AId = actor?.id || actor?._id || null;
+
+  /**ADDING LINKS  */
+  useEffect(() => {
+    const fetchLinks = async () => {
+      console.log('Fetching links for actor ID:', AId);
+      if (!AId || !actor) return;
+      try {
+        const response = await fetch(`http://localhost:3500/actors/links/${AId}`);
+        if (response.ok) {
+          const linksData = await response.json();
+          console.log('Fetched links data:', linksData.data || {});
+          
+          // Merge fetched links with actor
+          setMergedActor({
+            ...actor,
+            links: {
+              ...(actor.links || {}),
+              ...(linksData.data || {})
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch links:', error);
+      }
+    };
+    fetchLinks();
+  }, [AId, actor]);
+
   // Safe paths
-  const A = actor || {};
+  console.log('Merged actor data:', mergedActor);
   const personal = (isAtt || isSpk) ? (A.personal || {}) : {};
   const org = (isAtt || isSpk) ? (A.organization || {}) : {};
   const identity = isExh ? (A.identity || {}) : {};
@@ -205,7 +235,97 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
       setPub({});
       setPriv({});
     }
-  }, [role, actor, editPub, editPriv]);
+  }, [role, AId, mergedActor]);
+  
+  // Initialize pub form when entering edit mode
+  const handleEditPub = () => {
+    if (isAtt) {
+      setPub({
+        fullName: personal.fullName || "",
+        orgName: org.orgName || "",
+        businessRole: org.businessRole || "",
+        city: personal.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    } else if (isExh) {
+      setPub({
+        exhibitorName: identity.exhibitorName || "",
+        orgName: identity.orgName || "",
+        city: identity.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    } else if (isSpk) {
+      setPub({
+        fullName: personal.fullName || "",
+        orgName: org.orgName || "",
+        jobTitle: org.jobTitle || "",
+        city: personal.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    }
+    setEditPub(true);
+  };
+  
+  // Cancel pub edit and reset form
+  const handleCancelPub = () => {
+    if (isAtt) {
+      setPub({
+        fullName: personal.fullName || "",
+        orgName: org.orgName || "",
+        businessRole: org.businessRole || "",
+        city: personal.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    } else if (isExh) {
+      setPub({
+        exhibitorName: identity.exhibitorName || "",
+        orgName: identity.orgName || "",
+        city: identity.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    } else if (isSpk) {
+      setPub({
+        fullName: personal.fullName || "",
+        orgName: org.orgName || "",
+        jobTitle: org.jobTitle || "",
+        city: personal.city || "",
+        website: links.website || "",
+        linkedin: links.linkedin || "",
+      });
+    }
+    setEditPub(false);
+  };
+  
+  // Initialize priv form when entering edit mode
+  const handleEditPriv = () => {
+    if (isExh) {
+      setPriv({
+        contactName: identity.contactName || "",
+        phone: identity.phone || "",
+      });
+    } else {
+      setPriv({ phone: personal.phone || "" });
+    }
+    setEditPriv(true);
+  };
+  
+  // Cancel priv edit and reset form
+  const handleCancelPriv = () => {
+    if (isExh) {
+      setPriv({
+        contactName: identity.contactName || "",
+        phone: identity.phone || "",
+      });
+    } else {
+      setPriv({ phone: personal.phone || "" });
+    }
+    setEditPriv(false);
+  };
 
   // build patches
   function buildPublicPatch() {
@@ -247,15 +367,29 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
           <h3 className="pp-title">{t('identityPanel.titles.visible','Visible information')}</h3>
           <div className="pp-actions">
             {!editPub ? (
-              <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(true)} disabled={disabled}>
+              <button className="pp-btn -ghost" type="button" onClick={handleEditPub} disabled={disabled}>
                 ✏️ {t('identityPanel.buttons.edit','Edit')}
               </button>
             ) : (
               <>
                 <button className="pp-btn" type="button" onClick={async () => {
-                  try { const patch = buildPublicPatch(); if (Object.keys(patch).length) await onPatch?.(patch); setEditPub(false); } catch {}
+                  try { 
+                    const patch = buildPublicPatch(); 
+                    if (Object.keys(patch).length) {
+                      await onPatch?.(patch);
+                      // Update mergedActor with the new changes
+                      setMergedActor(prev => {
+                        const updated = { ...prev };
+                        Object.keys(patch).forEach(key => {
+                          updated[key] = { ...(updated[key] || {}), ...patch[key] };
+                        });
+                        return updated;
+                      });
+                    }
+                    setEditPub(false); 
+                  } catch {}
                 }} disabled={disabled}>{t('identityPanel.buttons.save','Save')}</button>
-                <button className="pp-btn -ghost" type="button" onClick={() => setEditPub(false)}>{t('identityPanel.buttons.cancel','Cancel')}</button>
+                <button className="pp-btn -ghost" type="button" onClick={handleCancelPub}>{t('identityPanel.buttons.cancel','Cancel')}</button>
               </>
             )}
           </div>
@@ -268,9 +402,11 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
                 <>
                   <TextRow label={t('identityPanel.labels.fullName','Full name')} value={personal.fullName} />
                   <TextRow label={t('identityPanel.labels.organization','Organization')} value={org.orgName} />
-                  <TextRow label={t('identityPanel.labels.roleTitle','Role / Title')} value={org.jobTitle} />
+                  <TextRow label={t('identityPanel.labels.roleTitle','Role / Title')} value={org.businessRole } />
                   <TextRow label={t('identityPanel.labels.country','Country')} value={countryCode} extra={countryBadge} />
                   <TextRow label={t('identityPanel.labels.city','City')} value={personal.city} />
+                  <LinkRow label={t('identityPanel.labels.website','Website')} href={links.website} />
+                  <LinkRow label={t('identityPanel.labels.linkedin','LinkedIn')} href={links.linkedin} />
                 </>
               )}
               {isExh && (
@@ -342,15 +478,29 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
           <h3 className="pp-title">{t('identityPanel.titles.private','Private information')}</h3>
           <div className="pp-actions">
             {!editPriv ? (
-              <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(true)} disabled={disabled}>
+              <button className="pp-btn -ghost" type="button" onClick={handleEditPriv} disabled={disabled}>
                 ✏️ {t('identityPanel.buttons.edit','Edit')}
               </button>
             ) : (
               <>
                 <button className="pp-btn" type="button" onClick={async () => {
-                  try { const patch = buildPrivatePatch(); if (Object.keys(patch).length) await onPatch?.(patch); setEditPriv(false); } catch {}
+                  try { 
+                    const patch = buildPrivatePatch(); 
+                    if (Object.keys(patch).length) {
+                      await onPatch?.(patch);
+                      // Update mergedActor with the new changes
+                      setMergedActor(prev => {
+                        const updated = { ...prev };
+                        Object.keys(patch).forEach(key => {
+                          updated[key] = { ...(updated[key] || {}), ...patch[key] };
+                        });
+                        return updated;
+                      });
+                    }
+                    setEditPriv(false); 
+                  } catch {}
                 }} disabled={disabled}>{t('identityPanel.buttons.save','Save')}</button>
-                <button className="pp-btn -ghost" type="button" onClick={() => setEditPriv(false)}>{t('identityPanel.buttons.cancel','Cancel')}</button>
+                <button className="pp-btn -ghost" type="button" onClick={handleCancelPriv}>{t('identityPanel.buttons.cancel','Cancel')}</button>
               </>
             )}
           </div>
