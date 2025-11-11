@@ -121,7 +121,7 @@ export default function IdentityPanel({ role, actor, loading, onPatch }) {
       console.log('Fetching links for actor ID:', AId);
       if (!AId || !actor) return;
       try {
-        const response = await fetch(`http://localhost:3500/actors/links/${AId}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/actors/links/${AId}`);
         if (response.ok) {
           const linksData = await response.json();
           console.log('Fetched links data:', linksData.data || {});
