@@ -100,45 +100,49 @@ export const actorsChatApi = apiSlice.injectEndpoints(
       transformResponse: unwrap,
     }),
     getAttendeesForMeeting: builder.query({
-      // args: { eventId?, country?, q?, onlyOpen? (default true) }
-      query: (args = {}) => {
-        const p = new URLSearchParams();
-        if (args.eventId) p.set("eventId", args.eventId);
-        if (args.country) p.set("country", args.country);
-        if (args.q) p.set("q", args.q);
-        if (args.meId) p.set("meId", args.meId);
-        // default to open=true so page loads “only open to meet”
-        p.set("onlyOpen", String(args.onlyOpen ?? true));
-        return { url: `/actors/attendees/for-meeting?${p.toString()}` };
-      },
-      // Normalize to a safe shape the page expects
-      transformResponse: (res) => {
-        const rows = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
-        return rows.map((a) => {
-          const id = a?._id || a?.id;
-          const A = a?.personal || {};
-          const B = a?.organization || {};
-          const M = a?.matchingIntent || {};
-          return {
-            _id: id,
-            id_event: a?.id_event || a?.eventId || null,
-            fullName: A.fullName || "",
-            email: A.email || "",
-            country: A.country || "",
-            city: A.city || "",
-            profilePic: A.profilePic || "",
-            langs: Array.isArray(A.preferredLanguages) ? A.preferredLanguages : [],
-            orgName: B.orgName || "",
-            jobTitle: B.jobTitle || "",
-            openMeetings: !!M.openToMeetings,
-            objectives: Array.isArray(M.objectives) ? M.objectives : [],
-            links: a?.links || {},
-            verified: !!a?.verified,
-            matchPct : typeof a?.matchPct === 'number' ? a.matchPct : 0,
-          };
-        });
-      },
-    }),
+  query: (args = {}) => {
+    const p = new URLSearchParams();
+    if (args.eventId) p.set("eventId", args.eventId);
+    if (args.country) p.set("country", args.country);
+    if (args.q)       p.set("q", args.q);
+    if (args.meId)    p.set("meId", args.meId);
+
+    // always explicit booleans (no empty values)
+    p.set("onlyOpen", (args.onlyOpen === false) ? "false" : "true");
+    if (typeof args.attendedOnly !== "undefined") {
+      p.set("attendedOnly", args.attendedOnly ? "true" : "false");
+    }
+
+    if (args.limit) p.set("limit", String(args.limit));
+    return { url: `/actors/attendees/for-meeting?${p.toString()}` };
+  },
+  transformResponse: (res) => {
+    const rows = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+    return rows.map((a) => {
+      const id = a?._id || a?.id;
+      const A = a?.personal || {};
+      const B = a?.organization || {};
+      const M = a?.matchingIntent || {};
+      return {
+        _id: id,
+        id_event: a?.id_event || a?.eventId || null,
+        fullName: A.fullName || "",
+        email: A.email || "",
+        country: A.country || "",
+        city: A.city || "",
+        profilePic: A.profilePic || "",
+        langs: Array.isArray(A.preferredLanguages) ? A.preferredLanguages : [],
+        orgName: B.orgName || "",
+        jobTitle: B.jobTitle || "",
+        openMeetings: !!M.openToMeetings,
+        objectives: Array.isArray(M.objectives) ? M.objectives : [],
+        links: a?.links || {},
+        verified: !!a?.verified,
+        matchPct : typeof a?.matchPct === 'number' ? a.matchPct : 0,
+      };
+    });
+  },
+})
   }),
   overrideExisting: true,
 });

@@ -1,12 +1,12 @@
-import logo from './logo.svg';
-import { Routes, Route } from 'react-router-dom';
-import Main from './pages/Main';
+import logo from "./logo.svg";
+import { Routes, Route, Outlet } from "react-router-dom";
+import Main from "./pages/Main";
 import "./index.css";
 import "./styles/tokens.css";
 import "leaflet/dist/leaflet.css";
 import AdminShell from "./components/admin/AdminShell";
 import { adminNav, adminUser } from "./pages/admin/admin.mock";
-import RequireAuth from './features/auth/RequireAuth';
+import RequireAuth from "./features/auth/RequireAuth";
 import Unauthorized from "./pages/Unauthorized";
 import AdminHome from "./pages/admin/AdminHome";
 import AdminEvents from "./pages/admin/events/AdminEvents";
@@ -14,190 +14,303 @@ import AdminEvents from "./pages/admin/events/AdminEvents";
 import RegisterLanding from "./pages/register/RegisterLanding";
 import AttendeeRegisterPage from "./pages/register/AttendeeRegisterPage";
 import ExhibitorRegisterPage from "./pages/register/ExhibitorRegisterPage";
-import LoginPage from './pages/Login';
-import VerifEmail from './pages/register/VerifEmail';
-import PersistLogin from './pages/Login/PersistLogin';
+import LoginPage from "./pages/Login";
+import VerifEmail from "./pages/register/VerifEmail";
+import PersistLogin from "./pages/Login/PersistLogin";
 
-import ProfilePage from './pages/profile/ProfilePage';
-import EventPage from './pages/event/EventPage';
-import EventPageOld from './pages/event/EventPageOld';
-import EventSpeakersPage from './pages/event/speakers/EventSpeakersPage';
-import EventAttendeesPage from './pages/event/attendees/EventAttendeesPage';
-import ExhibitorsPage from './pages/event/eshibitors/ExhibitorsPage';
-import ProfilePP from './pages/actors/ProfilePP';
-import MeetingPage from './pages/meetings/MeetingPage';
-import MeetingsPage from './pages/meetings/MeetingsPage';
-import EventTicketsPage from './pages/tickets/EventTicketsPage';
-import TicketPurchasePage from './pages/tickets/TicketPurchasePage';
-import GlobalSpeakersPage from './pages/globalSpeakers/GlobalSpeakersPage';
-import EventsPage from './pages/events/EventsPage';
-import AdminEventEditor from './pages/admin/events/AdminEventEditor';
-import AdminMemberRequests from './pages/admin/members/AdminMemberRequests';
-import AdminAttendees from './pages/admin/members/AdminAttendees';
-import AdminExhibitors from './pages/admin/members/AdminExhibitors';
-import AdminSpeakers from './pages/admin/members/AdminSpeakers';
-import AdminMessages from './pages/admin/messages/AdminMessages';
-import ActorsMessagesPage from './pages/messages/ActorsMessagesPage';
-import SchedulePage from './pages/schedule/SchedulePage';
-import AdminSelects from './pages/admin/tools/AdminSelects';
-import SessionsPage from './pages/sessions/SessionsPage';
-import NotFound from './pages/NotFound';
-import { useStore } from 'react-redux';
-import { useEffect } from 'react';
-import { adminSocket } from './services/adminSocket';
-import BusinessProfilePage from './pages/businessProfile/BusinessProfilePage';
-import BusinessProfileFormPage from './pages/businessProfile/BusinessProfileFormPage';
-import BusnessProfileEditor from './pages/businessProfile/BusnessProfileEditor';
+import ProfilePage from "./pages/profile/ProfilePage";
+import EventPage from "./pages/event/EventPage";
+import EventPageOld from "./pages/event/EventPageOld";
+import EventSpeakersPage from "./pages/event/speakers/EventSpeakersPage";
+import EventAttendeesPage from "./pages/event/attendees/EventAttendeesPage";
+import ExhibitorsPage from "./pages/event/eshibitors/ExhibitorsPage";
+import ProfilePP from "./pages/actors/ProfilePP";
+import MeetingPage from "./pages/meetings/MeetingPage";
+import MeetingsPage from "./pages/meetings/MeetingsPage";
+import EventTicketsPage from "./pages/tickets/EventTicketsPage";
+import TicketPurchasePage from "./pages/tickets/TicketPurchasePage";
+import GlobalSpeakersPage from "./pages/globalSpeakers/GlobalSpeakersPage";
+import EventsPage from "./pages/events/EventsPage";
+import AdminEventEditor from "./pages/admin/events/AdminEventEditor";
+import AdminMemberRequests from "./pages/admin/members/AdminMemberRequests";
+import AdminAttendees from "./pages/admin/members/AdminAttendees";
+import AdminExhibitors from "./pages/admin/members/AdminExhibitors";
+import AdminSpeakers from "./pages/admin/members/AdminSpeakers";
+import AdminMessages from "./pages/admin/messages/AdminMessages";
+import ActorsMessagesPage from "./pages/messages/ActorsMessagesPage";
+import SchedulePage from "./pages/schedule/SchedulePage";
+import AdminSelects from "./pages/admin/tools/AdminSelects";
+import SessionsPage from "./pages/sessions/SessionsPage";
+import NotFound from "./pages/NotFound";
+import { useStore } from "react-redux";
+import { useEffect } from "react";
+import { adminSocket } from "./services/adminSocket";
+import BusinessProfilePage from "./pages/businessProfile/BusinessProfilePage";
+import BusinessProfileFormPage from "./pages/businessProfile/BusinessProfileFormPage";
+import BusnessProfileEditor from "./pages/businessProfile/BusnessProfileEditor";
 
-import TermsConditions from './pages/landing/TermsConditions';
-import RefundPolicy from './pages/landing/RefundPolicy';
-import PrivacyPolicy from './pages/landing/PrivacyPolicy'
-import ContactUs from './pages/landing/ContactUs'
-import AboutUs from "./pages/landing/AboutUs"
-import AIMatchmaking from './pages/landing/AIMatchmaking'
-import EventManagementPlatform from './pages/landing/EventManagementPlatform'
-import ExportConsultancy from './pages/landing/ExportConsultancy'
-import TradeMissions from './pages/landing/TradeMissions'
-import Marketplace from './pages/marketplace/MarketplacePage'
-import Communities from './pages/landing/Communities'
-import SingleCommunity from './pages/landing/SingleCommunity'
-import CommunityPage from './pages/community/CommunityPage';
-import { COMMUNITY_DEMO } from './pages/community/mockCommunityData';
-import ProductPage from './pages/marketplace/ProductPage';
-import FreightCalculator from './pages/FreightCalculatorPage/FreightCalculator';
-import LoadCalculator from './pages/LoadCalculator/LoadCalculator';
-import PopupBridge from './features/notifications/PopupBridge';
-import PopupHost from './components/PopupHost';
-import ForgotPassword from './pages/auth/ForgotPassword';
-import ResetPassword from './pages/auth/ResetPassword';
-import RestoreEmail from './pages/auth/RestoreEmail';
+import TermsConditions from "./pages/landing/TermsConditions";
+import RefundPolicy from "./pages/landing/RefundPolicy";
+import PrivacyPolicy from "./pages/landing/PrivacyPolicy";
+import ContactUs from "./pages/landing/ContactUs";
+import AboutUs from "./pages/landing/AboutUs";
+import AIMatchmaking from "./pages/landing/AIMatchmaking";
+import EventManagementPlatform from "./pages/landing/EventManagementPlatform";
+import ExportConsultancy from "./pages/landing/ExportConsultancy";
+import TradeMissions from "./pages/landing/TradeMissions";
+import Marketplace from "./pages/marketplace/MarketplacePage";
+import Communities from "./pages/landing/Communities";
+import SingleCommunity from "./pages/landing/SingleCommunity";
+import CommunityPage from "./pages/community/CommunityPage";
+import { COMMUNITY_DEMO } from "./pages/community/mockCommunityData";
+import ProductPage from "./pages/marketplace/ProductPage";
+import FreightCalculator from "./pages/FreightCalculatorPage/FreightCalculator";
+import LoadCalculator from "./pages/LoadCalculator/LoadCalculator";
+import PopupBridge from "./features/notifications/PopupBridge";
+import PopupHost from "./components/PopupHost";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import RestoreEmail from "./pages/auth/RestoreEmail";
 import OpenToMeetAttendeesPage from "./pages/attendees/OpenToMeetAttendeesPage";
-import B2BMeetingsDashboard from './pages/admin/B2BMeetingsDashboard';
-import ShareLinkPage from './pages/share/ShareLinkPage';
-import AdminScanActor from './pages/admin/scan/AdminScanActor';
-import AdminScanMeet from './pages/admin/scan/AdminScanMeet';
-import AdminScanSession from './pages/admin/scan/AdminScanSession';
-import AdminActorInvitesPage from './pages/admin/AdminActorInvitesPage';
-import MarketPage from './pages/marketplace/MarketPage';
-import AdminBpOverview from './pages/admin/bp/AdminBpOverview';
-import AdminBpQueue from './pages/admin/bp/AdminBpQueue';
-import AdminBpTools from './pages/admin/bp/AdminBpTools';
+import B2BMeetingsDashboard from "./pages/admin/B2BMeetingsDashboard";
+import ShareLinkPage from "./pages/share/ShareLinkPage";
+import AdminScanActor from "./pages/admin/scan/AdminScanActor";
+import AdminScanMeet from "./pages/admin/scan/AdminScanMeet";
+import AdminScanSession from "./pages/admin/scan/AdminScanSession";
+import AdminActorInvitesPage from "./pages/admin/AdminActorInvitesPage";
+import MarketPage from "./pages/marketplace/MarketPage";
+import AdminBpOverview from "./pages/admin/bp/AdminBpOverview";
+import AdminBpQueue from "./pages/admin/bp/AdminBpQueue";
+import AdminBpTools from "./pages/admin/bp/AdminBpTools";
 
-import ExhibitorsBusinessProfilesPage from './pages/businessProfile/ExhibitorsBusinessProfilesPage';
-import AdminMatchmaking from './pages/admin/meets/AdminMatchmaking';
-import AdminVirtualMeets from './pages/admin/meets/AdminVirtualMeets';
-import VMeetRedirect from './pages/meetings/VMeetRedirect';
+import ExhibitorsBusinessProfilesPage from "./pages/businessProfile/ExhibitorsBusinessProfilesPage";
+import AdminMatchmaking from "./pages/admin/meets/AdminMatchmaking";
+import AdminVirtualMeets from "./pages/admin/meets/AdminVirtualMeets";
+import VMeetRedirect from "./pages/meetings/VMeetRedirect";
+import AdminSessionAttendance from "./pages/admin/meets/AdminSessionAttendance";
+import AdminMeetAttendance from "./pages/admin/meets/AdminMeetAttendance";
+import AdminEventAttendance from "./pages/admin/meets/AdminEventAttendance";
+import FeedbackPromptGate from "./components/feedback/FeedbackPromptGate";
 
 function SocketBootstrap() {
   const s = useStore();
   useEffect(() => {
-    adminSocket.enableDebug(true);           // optional
-    adminSocket.init(s).ensureConnected();   // connect once
-    return () => adminSocket.disconnect();   // cleanup on app exit
+    adminSocket.enableDebug(true); // optional
+    adminSocket.init(s).ensureConnected(); // connect once
+    return () => adminSocket.disconnect(); // cleanup on app exit
   }, [s]);
 
   return null;
 }
-
-function App() {
-
+function WithFeedback() {
   return (
     <>
-    <Routes>
-      <Route path="*" element={<NotFound />} />
-      
-      {/* Public route - NO LOGIN REQUIRED */}
-      <Route element={<PersistLogin />}>
-        <Route path="/s/:actorId/:eventId" element={<ShareLinkPage />} />
-        <Route path="/" element={<Main />} />
-        <Route path="/attendees/open-to-meet" element={<OpenToMeetAttendeesPage />} />
-        <Route path="/register" element={<RegisterLanding  />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword/>} />
-        <Route path="/reset-password" element={<ResetPassword/>} />
-        <Route path="/restore-email" element={<RestoreEmail/>} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/communities" element={<CommunityPage />} />
-        <Route path="/communities/:role" element={<CommunityPage initialActors={COMMUNITY_DEMO}/>} />
-        <Route path="/register/attendee" element={<AttendeeRegisterPage />} />
-        <Route path="/products/:productId" element={<ProductPage />} />
-        <Route path="/register/exhibitor" element={<ExhibitorRegisterPage />} />\
-        <Route path="/verify-email" element={<VerifEmail />} />
-        <Route path="/event/:eventId" element={<EventPage />} />
-        <Route path="/event/:eventId/old" element={<EventPageOld />} />
-        <Route path="/event/:eventId/speakers" element={<EventSpeakersPage />} />
-        <Route path="/event/:eventId/attendees" element={<EventAttendeesPage />} />
-        <Route path="/event/:eventId/exhibitors" element={<ExhibitorsPage />} />
-        <Route path="event/:eventId/schedule" element={<SchedulePage />} />
-        <Route path="/event/:eventId/tickets" element={<EventTicketsPage />} />
-        <Route path="/speakers" element={<GlobalSpeakersPage />} />
-        <Route path="/profile/:id" element={<ProfilePP />} />
-        <Route path="/BusinessProfile/:BPI" element={<BusinessProfilePage />} />
-        <Route path="/BusinessProfile/form" element={<BusinessProfileFormPage />} />
-        <Route path="/purchase" element={<TicketPurchasePage />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/services/ai-matchmaking" element={<AIMatchmaking />} />
-        <Route path="/services/event-management" element={<EventManagementPlatform/>} />
-        <Route path="/services/export-consultancy" element={<ExportConsultancy/>} />
-        <Route path="/services/trade-missions" element={<TradeMissions/>} />
-        <Route path="/marketplace" element={<MarketPage/>} />
-        <Route path="/communities" element={<Communities/>} />
-        <Route path="/communities/students" element={<SingleCommunity/>} />
-        <Route path="/logistics/freight-calculator" element={<FreightCalculator />} />
-        <Route path="/logistics/load-calculator" element={<LoadCalculator />} />
-        <Route path="/about-us" element={<AboutUs />} />
-        <Route path='/support' element={<ContactUs />} />
-        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-        <Route path='/refund-policy' element={<RefundPolicy />} />
-        <Route path='/terms' element={<TermsConditions/>} />
-        <Route path='/exhi' element={<ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />} />
-        <Route element={<RequireAuth allowedRoles={['attendee', 'speaker', 'exhibitor']} />}>
-          <Route path="/messages" element={<ActorsMessagesPage />} />
-          <Route path="/sessions" element={<SessionsPage />} />
-          <Route path="/meetings" element={<MeetingsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/BusinessProfile/dashboard" element={<BusnessProfileEditor />} />
-          <Route path="/BusinessProfile" element={<BusinessProfilePage />} />
-          <Route path="/meeting/:actorId" element={<MeetingPage />} />
-          <Route path="/sessions/:actorId" element={<SessionsPage />} />
-          <Route path="/vmeet/:meetingId" element={<VMeetRedirect />} />
-          <Route path="/vmeet/:meetingId/:actorId" element={<VMeetRedirect />} /> 
+      <Outlet />
+      <FeedbackPromptGate />
+    </>
+  );
+}
+function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="*" element={<NotFound />} />
 
-
-        </Route>
-        <Route element={<RequireAuth allowedRoles={['admin', 'super']} />}>
-
-          <Route path="/admin" element={<AdminShell nav={adminNav} user={adminUser} />}>
-            <Route index element={<AdminHome />} />
-            <Route path="events" element={<AdminEvents />} />
-            <Route path="events/new" element={<AdminEventEditor />} />
-            <Route path="members/requests" element={<AdminMemberRequests />} />
-            <Route path="members/attendees" element={<AdminAttendees />} />
-            <Route path="members/exhibitors" element={<AdminExhibitors />} />
-            <Route path="members/speakers" element={<AdminSpeakers />} />
-            <Route path="messages" element={<AdminMessages />} />
-            <Route path="tools/selects" element={<AdminSelects />} />
-            <Route path="/admin/b2b" element={<B2BMeetingsDashboard/>} />
-            <Route path="/admin/b2b/matchMake" element={<AdminMatchmaking/>}/>
-            <Route path="/admin/scanActor" element={<AdminScanActor/>} />
-            <Route path="/admin/scanMeet" element={<AdminScanMeet/>} />
-            <Route path="/admin/scanActor" element={<AdminScanActor/>} />
-            <Route path="/admin/scanSession" element={<AdminScanSession/>} />
-            <Route path="/admin/invites" element={<AdminActorInvitesPage />} />
-            <Route path="/admin/bp/overview" element={<AdminBpOverview/>}/>
-            <Route path="/admin/bp/queue" element={<AdminBpQueue/>}/>
-            <Route path="/admin/bp/tools" element={<AdminBpTools/>}/>
-            <Route path="/admin/links/generate" element={<AdminVirtualMeets/>}/>
+        {/* Public route - NO LOGIN REQUIRED */}
+        <Route element={<PersistLogin />}>
+          <Route element={<WithFeedback />}>
+            <Route path="/s/:actorId/:eventId" element={<ShareLinkPage />} />
+            <Route path="/" element={<Main />} />
+            <Route
+              path="/attendees/open-to-meet"
+              element={<OpenToMeetAttendeesPage />}
+            />
+            <Route path="/register" element={<RegisterLanding />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/restore-email" element={<RestoreEmail />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/communities" element={<CommunityPage />} />
+            <Route
+              path="/communities/:role"
+              element={<CommunityPage initialActors={COMMUNITY_DEMO} />}
+            />
+            <Route
+              path="/register/attendee"
+              element={<AttendeeRegisterPage />}
+            />
+            <Route path="/products/:productId" element={<ProductPage />} />
+            <Route
+              path="/register/exhibitor"
+              element={<ExhibitorRegisterPage />}
+            />
+            \
+            <Route path="/verify-email" element={<VerifEmail />} />
+            <Route path="/event/:eventId" element={<EventPage />} />
+            <Route path="/event/:eventId/old" element={<EventPageOld />} />
+            <Route
+              path="/event/:eventId/speakers"
+              element={<EventSpeakersPage />}
+            />
+            <Route
+              path="/event/:eventId/attendees"
+              element={<EventAttendeesPage />}
+            />
+            <Route
+              path="/event/:eventId/exhibitors"
+              element={<ExhibitorsPage />}
+            />
+            <Route path="event/:eventId/schedule" element={<SchedulePage />} />
+            <Route
+              path="/event/:eventId/tickets"
+              element={<EventTicketsPage />}
+            />
+            <Route path="/speakers" element={<GlobalSpeakersPage />} />
+            <Route path="/profile/:id" element={<ProfilePP />} />
+            <Route
+              path="/BusinessProfile/:BPI"
+              element={<BusinessProfilePage />}
+            />
+            <Route
+              path="/BusinessProfile/form"
+              element={<BusinessProfileFormPage />}
+            />
+            <Route path="/purchase" element={<TicketPurchasePage />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route
+              path="/services/ai-matchmaking"
+              element={<AIMatchmaking />}
+            />
+            <Route
+              path="/services/event-management"
+              element={<EventManagementPlatform />}
+            />
+            <Route
+              path="/services/export-consultancy"
+              element={<ExportConsultancy />}
+            />
+            <Route
+              path="/services/trade-missions"
+              element={<TradeMissions />}
+            />
+            <Route path="/marketplace" element={<MarketPage />} />
+            <Route path="/communities" element={<Communities />} />
+            <Route path="/communities/students" element={<SingleCommunity />} />
+            <Route
+              path="/logistics/freight-calculator"
+              element={<FreightCalculator />}
+            />
+            <Route
+              path="/logistics/load-calculator"
+              element={<LoadCalculator />}
+            />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/support" element={<ContactUs />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/terms" element={<TermsConditions />} />
+            <Route
+              path="/exhi"
+              element={
+                <ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />
+              }
+            />
+            <Route
+              element={
+                <RequireAuth
+                  allowedRoles={["attendee", "speaker", "exhibitor"]}
+                />
+              }
+            >
+              <Route path="/messages" element={<ActorsMessagesPage />} />
+              <Route path="/sessions" element={<SessionsPage />} />
+              <Route path="/meetings" element={<MeetingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/BusinessProfile/dashboard"
+                element={<BusnessProfileEditor />}
+              />
+              <Route
+                path="/BusinessProfile"
+                element={<BusinessProfilePage />}
+              />
+              <Route path="/meeting/:actorId" element={<MeetingPage />} />
+              <Route path="/sessions/:actorId" element={<SessionsPage />} />
+              <Route path="/vmeet/:meetingId" element={<VMeetRedirect />} />
+              <Route
+                path="/vmeet/:meetingId/:actorId"
+                element={<VMeetRedirect />}
+              />
+            </Route>
+            <Route element={<RequireAuth allowedRoles={["admin", "super"]} />}>
+              <Route
+                path="/admin"
+                element={<AdminShell nav={adminNav} user={adminUser} />}
+              >
+                <Route index element={<AdminHome />} />
+                <Route path="events" element={<AdminEvents />} />
+                <Route path="events/new" element={<AdminEventEditor />} />
+                <Route
+                  path="members/requests"
+                  element={<AdminMemberRequests />}
+                />
+                <Route path="members/attendees" element={<AdminAttendees />} />
+                <Route
+                  path="members/exhibitors"
+                  element={<AdminExhibitors />}
+                />
+                <Route path="members/speakers" element={<AdminSpeakers />} />
+                <Route path="messages" element={<AdminMessages />} />
+                <Route path="tools/selects" element={<AdminSelects />} />
+                <Route path="/admin/b2b" element={<B2BMeetingsDashboard />} />
+                <Route
+                  path="/admin/b2b/matchMake"
+                  element={<AdminMatchmaking />}
+                />
+                <Route path="/admin/scanActor" element={<AdminScanActor />} />
+                <Route path="/admin/scanMeet" element={<AdminScanMeet />} />
+                <Route
+                  path="/admin/sessions/attendace"
+                  element={<AdminSessionAttendance />}
+                />
+                <Route
+                  path="/admin/event/attendace"
+                  element={<AdminEventAttendance />}
+                />
+                <Route
+                  path="/admin/meet/attendace"
+                  element={<AdminMeetAttendance />}
+                />
+                <Route path="/admin/scanActor" element={<AdminScanActor />} />
+                <Route
+                  path="/admin/scanSession"
+                  element={<AdminScanSession />}
+                />
+                <Route
+                  path="/admin/invites"
+                  element={<AdminActorInvitesPage />}
+                />
+                <Route
+                  path="/admin/bp/overview"
+                  element={<AdminBpOverview />}
+                />
+                <Route path="/admin/bp/queue" element={<AdminBpQueue />} />
+                <Route path="/admin/bp/tools" element={<AdminBpTools />} />
+                <Route
+                  path="/admin/links/generate"
+                  element={<AdminVirtualMeets />}
+                />
+              </Route>
+            </Route>
           </Route>
         </Route>
-        
-      </Route>
-
-    </Routes>
-        <PopupBridge />
+      </Routes>
+      <PopupBridge />
       <PopupHost />
-
-  </>);
+      <FeedbackPromptGate />
+    </>
+  );
 }
 
 export default App;

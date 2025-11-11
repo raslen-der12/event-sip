@@ -568,7 +568,13 @@ export default function HeaderShell({ top, nav, cta ,logo }) {
               <Icon.b2b />
               <span className="tt">Open-to-Meet</span>
             </button>
-
+              <a
+              href="/attendees/open-to-meet"
+              className="mob-b2b d-lg-none"
+              aria-label="Open-to-Meet"
+            >
+              B2B
+            </a>
             {isAuthed && <NotificationBell actorId={ActorId} />}
             {isAuthed ? (
               <AvatarMenu />

@@ -435,3 +435,15 @@
   }
 }
 .lang-select:focus{ outline:2px solid rgba(99,102,241,.45); outline-offset:2px; }
+.mob-b2b{
+  display:inline-flex; align-items:center; justify-content:center;
+  height:34px; padding:0 10px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  color:#fff; background:rgba(255,255,255,.08);
+  font-weight:800; font-size:12px;
+  text-decoration:none;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.mob-b2b:active{ transform:translateY(1px); }
+@media (min-width: 992px){ .mob-b2b{ display:none !important; } }

@@ -9,7 +9,8 @@ import {
   useAdminSetVirtualLinkMutation,
   useAdminListSlotsQuery,             // ← NEW
   useAdminRescheduleMeetMutation,     // ← NEW
-  useAdminSetTableMutation            // ← NEW (optional: if you allow manual table override)
+  useAdminSetTableMutation,
+  useAdminRemindPendingMutation,
 } from '../../features/meetings/meetingsApiSlice';
 import { useGetEventsQuery } from '../../features/events/eventsApiSlice';
 import { format } from 'date-fns';
@@ -101,7 +102,9 @@ export default function B2BMeetingsDashboard(){
   const [q, setQ] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-
+const [remindPending, { isLoading: reminding }] = useAdminRemindPendingMutation();
+  const handleRemind = async () => {
+    try { const r = await remindPending({ eventId }).unwrap(); alert(`Reminded ${r.sent}/${r.targetedActors} actors.`); } catch (e){ alert(e?.data?.error || 'Failed to send reminders'); } };
   // events
   const { data: evData, isLoading: evLoading } = useGetEventsQuery();
   const events = useMemo(()=>{
@@ -182,6 +185,17 @@ export default function B2BMeetingsDashboard(){
               {!events.length ? <option value="" disabled>{evLoading ? 'Loading…' : 'No events'}</option> : null}
               {events.map(e => <option key={e._id || e.id} value={e._id || e.id}>{e.title || e.name}</option>)}
             </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+                type="button"
+                onClick={handleRemind}
+                disabled={reminding || !eventId}
+                title="Send reminders to actors with pending meetings"
+                className={`px-3 py-2 text-sm rounded-md border ${reminding ? 'opacity-60' : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'}`}
+                >
+                  Remind pending
+                </button>
           </div>
           <div className="flex flex-col">
             <label className="text-xs text-slate-500 mb-1">Search</label>

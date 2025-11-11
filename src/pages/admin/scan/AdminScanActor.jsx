@@ -4,6 +4,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useGetEventsQuery } from "../../../features/events/eventsApiSlice";
 import { useAdminScanActorAttendMutation } from "../../../features/meetings/meetingsApiSlice";
 import imageLink from "../../../utils/imageLink";
+import { Link } from "react-router-dom";
 
 /* -------------------------- utils -------------------------- */
 const isHex24 = (s) => /^[0-9a-fA-F]{24}$/.test(String(s || ""));
@@ -301,6 +302,7 @@ export default function AdminScanActor({ eventId: eventIdProp }) {
                 <option key={ev._id} value={ev._id}>{ev.title || ev.name || ev._id}</option>
               ))}
             </select>
+            <Link to="/admin/event/attendace" className="btn primary fs-6">see attandece list</Link>
           </div>
         )}
       </header>

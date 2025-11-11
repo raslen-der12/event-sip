@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useAdminScanMeetMutation } from "../../../features/meetings/meetingsApiSlice";
+import { Link } from "react-router-dom";
 
 /* --------------- utils --------------- */
 const isHex24 = (s) => /^[0-9a-fA-F]{24}$/.test(String(s || ""));
@@ -227,6 +228,8 @@ export default function AdminScanMeet() {
             <option value="physical">Physical</option>
             <option value="virtual">Virtual</option>
           </select>
+          <Link to="/admin/meet/attendace" className="btn primary fs-6">see meetings attandece list</Link>
+          
         </div>
       </header>
 

@@ -3,6 +3,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useAdminScanSessionMutation ,useListEventSessionsMiniQuery} from "../../../features/meetings/meetingsApiSlice";
 import { useGetEventsQuery,  } from "../../../features/events/eventsApiSlice";
 import imageLink from "../../../utils/imageLink";
+import { Link } from "react-router-dom";
 
 /* -------------------------- utils -------------------------- */
 const isHex24 = (s) => /^[0-9a-fA-F]{24}$/.test(String(s || ""));
@@ -304,7 +305,7 @@ export default function AdminScanSession({ eventId: eventIdProp, sessions: sessi
           )}
           <span className="text-sm text-zinc-500">Session</span>
           <select
-            className="border rounded-xl px-3 py-2 min-w-[260px]"
+            className="border rounded-xl px-3 py-2 w-[260px]"
             value={sessionId}
             onChange={(e)=>setSessionId(e.target.value)}
             title={fetchingSessions ? "Loading sessions..." : "Choose session"}
@@ -317,6 +318,7 @@ export default function AdminScanSession({ eventId: eventIdProp, sessions: sessi
               </option>
             ))}
           </select>
+          <Link to="/admin/sessions/attendace" className="btn primary fs-6">see sessions attandece list</Link>
         </div>
       </header>
 

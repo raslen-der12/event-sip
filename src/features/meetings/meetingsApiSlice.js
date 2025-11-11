@@ -222,6 +222,45 @@ getMeetJoinLink: builder.query({
   }),
   // keep the raw shape { ok, link, ... }
 }),
+getSessionAttendance: builder.query({
+      query: ({ eventId, from, to, q }) => ({
+        url: `/meets/admin/events/${eventId}/sessions/attendance`,
+        params: { from, to, q },
+      }),
+      // tag if you want cache invalidation later:
+      providesTags: (result, error, arg) => [{ type: 'SessionAttendance', id: arg.eventId || 'LIST' }],
+    }),
+    getEventAttendance: builder.query({
+  // GET /meets/admin/attendance?eventId=&q=
+  query: (params = {}) => {
+    const sp = new URLSearchParams();
+    if (params.eventId) sp.set('eventId', params.eventId);
+    if (params.q) sp.set('q', params.q);
+    return `/meets/admin/attendance?${sp.toString()}`;
+  },
+  transformResponse: (res) => res?.data ? res : res, // passthrough
+  providesTags: (_res, _err, params) => [{ type: 'EventAttendance', id: params?.eventId || 'ALL' }],
+}),
+
+// ===== ADMIN: Meeting attendance grouped by meeting =====
+getMeetAttendance: builder.query({
+  // GET /meets/admin/meets/attendance?eventId=&q=
+  query: (params = {}) => {
+    const sp = new URLSearchParams();
+    if (params.eventId) sp.set('eventId', params.eventId);
+    if (params.q) sp.set('q', params.q);
+    return `/meets/admin/meets/${params.eventId}/attendance?${sp.toString()}`;
+  },
+  transformResponse: (res) => res?.data ? res : res, // passthrough
+  providesTags: (_res, _err, params) => [{ type: 'MeetAttendance', id: params?.eventId || 'ALL' }],
+}),
+adminRemindPending: builder.mutation({
+  query: ({ eventId } = {}) => ({
+    url: '/meets/admin/remind-pending',
+    method: 'POST',
+    params: eventId ? { eventId } : undefined
+  })
+}),
   })
 })
 
@@ -252,4 +291,8 @@ export const {
     useGetAdminVirtualMeetsQuery,
     useGenerateAdminMeetLinkMutation,
     useGetMeetJoinLinkQuery,
+    useGetSessionAttendanceQuery,
+    useGetEventAttendanceQuery,
+    useGetMeetAttendanceQuery,
+    useAdminRemindPendingMutation,
 } = toolsApiSlice

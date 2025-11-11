@@ -40,12 +40,15 @@ export default function OpenToMeetAttendeesPage() {
     }
   }, [meId, navigate, location.pathname, location.search]);
   // toolbar state
+  const isNov13_2025 = React.useMemo(() => {
+  const d = new Date(); return d.getFullYear()===2025 && d.getMonth()===10 && d.getDate()===13;
+  }, []);
   const [q, setQ] = React.useState("");
   const [expanded, setExpanded] = React.useState(true);
   const [eventId, setEventId] = React.useState("all");
   const [country, setCountry] = React.useState("all");
   const [onlyOpen, setOnlyOpen] = React.useState(true); // preselect “open to meet”
-
+  const [attendedOnly, setAttendedOnly] = React.useState(isNov13_2025);
   // events for filters
   const { data: eventsRes } = useGetEventsQuery();
   const events = React.useMemo(() => {
@@ -69,14 +72,15 @@ export default function OpenToMeetAttendeesPage() {
   const args = React.useMemo(() => {
     return {
       onlyOpen,
+      attendedOnly,
       q: q.trim() || undefined,
       eventId: eventId !== "all" ? eventId : undefined,
       country: country !== "all" ? country : undefined,
       meId
     };
-  }, [q, onlyOpen, eventId, country]);
-
-  const { data: rawRes, isFetching } = useGetAttendeesForMeetingQuery(args, { skip: !meId });
+  }, [q, onlyOpen, attendedOnly, eventId, country, meId]);
+  const skipQuery = !meId || !eventId || eventId === "all";
+  const { data: rawRes, isFetching } = useGetAttendeesForMeetingQuery(args, { skip: skipQuery });
       console.log("rawRes",rawRes);
 
   // normalize payload from backend (handles {success,data:[]} or [] directly)
@@ -202,6 +206,10 @@ export default function OpenToMeetAttendeesPage() {
                 >
                   Open to meetings
                 </button>
+              </div>
+              <div className="gma-tabs">
+                <button type="button" className={`gma-tab ${!attendedOnly ? "is-active" : ""}`} onClick={() => setAttendedOnly(false)} aria-pressed={!attendedOnly}>Any attendance</button>
+                <button type="button" className={`gma-tab ${attendedOnly ? "is-active" : ""}`} onClick={() => setAttendedOnly(true)} aria-pressed={attendedOnly}>Attended event</button>
               </div>
 
               <div className="gma-end">
