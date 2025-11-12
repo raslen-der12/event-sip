@@ -312,7 +312,6 @@ function App() {
       </Routes>
       <PopupBridge />
       <PopupHost />
-      <FeedbackPromptGate />
     </>
   );
 }

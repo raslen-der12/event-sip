@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+// src/pages/admin/tools/AdminPollsPage.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAdminCreatePollMutation,
   useAdminListPollsQuery,
@@ -24,12 +25,7 @@ function useCountdown(iso) {
     return () => clearInterval(t);
   }, [iso]);
   const s = Math.ceil(left / 1000);
-  return {
-    leftMs: left,
-    h: Math.floor(s / 3600),
-    m: Math.floor((s % 3600) / 60),
-    s: s % 60,
-  };
+  return { leftMs: left, h: Math.floor(s / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
 }
 async function makeQr(text) {
   try {
@@ -38,6 +34,8 @@ async function makeQr(text) {
     return `https://chart.googleapis.com/chart?cht=qr&chs=512x512&chl=${encodeURIComponent(text)}`;
   }
 }
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+const sideExpr = (z) => `calc(min(82vw, 82vh) * ${z})`;
 
 /* UI bits */
 function Modal({ open, title, onClose, children, wide = false }) {
@@ -143,7 +141,15 @@ export default function AdminPollsPage() {
     else setQr("");
     return () => { live = false; };
   }, [qrOpen, pollUrl]);
+  const pollTitle = useMemo(() => {
+  // Prefer the live public payload (works even if the poll moved between states)
+  if (pub?.data?.title) return pub.data.title;
 
+  // Fallback: look it up in any list using the picked id
+  const all = [...(running || []), ...(upcoming || []), ...(finished || [])];
+  const hit = all.find(p => String(p._id) === String(pickedId));
+  return hit?.title || "";
+}, [pub?.data?.title, running, upcoming, finished, pickedId]);
   function openStart(id) { setPickedId(id); setStartOpen(true); }
   function openResults(id) { setPickedId(id); setResultsOpen(true); }
   function openQR(id) { setPickedId(id); setQrOpen(true); }
@@ -220,32 +226,32 @@ export default function AdminPollsPage() {
       )}
     </section>
   );
-
+const [zoom, setZoom] = useState(1); // 0.2 .. 2.0
+  useEffect(() => { if (!qrOpen) setZoom(1); }, [qrOpen]); // reset on close
   return (
     <div className="p-4 sm:p-6 space-y-6">
       {/* header */}
       <header className="space-y-3 sm:space-y-0 sm:flex sm:items-start sm:justify-between">
-  <div className="min-w-0">
-    <h1 className="text-2xl font-bold">Polls</h1>
-    <p className="text-sm text-zinc-600">Create → start → share QR → stop → view results.</p>
-  </div>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold">Polls</h1>
+          <p className="text-sm text-zinc-600">Create → start → share QR → stop → view results.</p>
+        </div>
 
-  {/* Right: stats + button (stack on mobile, inline on sm+) */}
-  <div className="w-full sm:w-auto sm:flex sm:items-center sm:gap-3">
-    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
-      <Stat k="Running" v={counts?.running ?? 0} />
-      <Stat k="Upcoming" v={counts?.upcoming ?? 0} />
-      <Stat k="Finished" v={counts?.finished ?? 0} />
-    </div>
-    <button
-      className="mt-2 w-full sm:mt-0 sm:w-auto px-4 py-2 rounded-xl bg-zinc-900 text-white"
-      onClick={() => setCreateOpen(true)}
-    >
-      + New poll
-    </button>
-  </div>
-</header>
-
+        {/* Right: stats + button (stack on mobile, inline on sm+) */}
+        <div className="w-full sm:w-auto sm:flex sm:items-center sm:gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <Stat k="Running" v={counts?.running ?? 0} />
+            <Stat k="Upcoming" v={counts?.upcoming ?? 0} />
+            <Stat k="Finished" v={counts?.finished ?? 0} />
+          </div>
+          <button
+            className="mt-2 w-full sm:mt-0 sm:w-auto px-4 py-2 rounded-xl bg-zinc-900 text-white"
+            onClick={() => setCreateOpen(true)}
+          >
+            + New poll
+          </button>
+        </div>
+      </header>
 
       {/* lists */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -270,21 +276,21 @@ export default function AdminPollsPage() {
             <div className="grid gap-2">
               {options.map((v, i) => (
                 <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <input
-                        className="min-w-0 flex-1 w-full border rounded-xl px-3 py-2"
-                        placeholder={`Option ${i + 1}`}
-                        value={v}
-                        onChange={(e) => setOption(i, e.target.value)}
-                    />
-                    <button
-                        type="button"
-                        className="w-full sm:w-auto px-3 py-2 rounded-xl border text-zinc-700 text-sm disabled:opacity-40"
-                        onClick={() => delOption(i)}
-                        disabled={options.length <= 2}
-                        title={options.length <= 2 ? "At least 2 options required" : "Remove"}
-                    >
-                        Remove
-                    </button>
+                  <input
+                    className="min-w-0 flex-1 w-full border rounded-xl px-3 py-2"
+                    placeholder={`Option ${i + 1}`}
+                    value={v}
+                    onChange={(e) => setOption(i, e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="w-full sm:w-auto px-3 py-2 rounded-xl border text-zinc-700 text-sm disabled:opacity-40"
+                    onClick={() => delOption(i)}
+                    disabled={options.length <= 2}
+                    title={options.length <= 2 ? "At least 2 options required" : "Remove"}
+                  >
+                    Remove
+                  </button>
                 </div>
               ))}
             </div>
@@ -318,7 +324,7 @@ export default function AdminPollsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
-            <button type="button" className="w-full sm:w-auto px-3 py-2 rounded-xl border">Cancel</button>
+            <button type="button" className="w-full sm:w-auto px-3 py-2 rounded-xl border" onClick={() => setCreateOpen(false)}>Cancel</button>
             <button className="w-full sm:w-auto px-4 py-2 rounded-xl bg-zinc-900 text-white" disabled={createState.isLoading}>
               {createState.isLoading ? "Creating…" : "Create"}
             </button>
@@ -369,28 +375,102 @@ export default function AdminPollsPage() {
 
       {/* QR fullscreen */}
       {qrOpen && (
-        <div className="fixed inset-0 z-[1200] bg-white text-zinc-900 flex flex-col items-center justify-center p-4 sm:p-6 gap-6">
+        <div className="fixed inset-0 z-[1200] bg-white text-zinc-900 flex flex-col items-center justify-center p-4 sm:p-6 gap-6 select-none">
+          {/* top-right actions */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex gap-2">
             <button className="px-3 py-2 rounded-xl border text-sm sm:text-base" onClick={() => setQrOpen(false)}>
               Exit full screen
             </button>
           </div>
 
+          {/* title + url */}
           <div className="text-center px-3">
-            <div className="text-xl sm:text-2xl font-bold mb-1 break-words">Scan to vote</div>
-            <div className="text-xs sm:text-sm text-zinc-500 break-all">{pollUrl}</div>
-          </div>
+            {pollTitle && (
+                <div className="text-xl sm:text-2xl font-bold mb-1 break-words">
+                {pollTitle}
+                </div>
+            )}
+            <div className="text-xs sm:text-sm text-zinc-500">Scan to vote</div>
+            </div>
 
+          {/* QR viewport (size grows/shrinks with zoom) */}
           <div
             className="rounded-xl overflow-hidden grid place-items-center bg-zinc-100"
-            style={{ width: "min(82vw, 82vh)", height: "min(82vw, 82vh)" }}
+            style={{ width: sideExpr(zoom), height: sideExpr(zoom) }}
           >
             {qr ? (
-              <img src={qr} alt="Poll QR" className="w-full h-full object-contain" />
+              <img src={qr} alt="Poll QR" className="w-full h-full object-contain" draggable={false} />
             ) : (
               <div className="text-zinc-500 text-sm">Generating QR…</div>
             )}
           </div>
+<div className="w-full max-w-md">
+  <div className="flex items-center gap-3">
+    {/* − button */}
+    <button
+      type="button"
+      onClick={() => setZoom((z) => clamp(z - 0.1, 0.05, 2.5))}
+      className="px-3 py-2 rounded-xl border font-semibold"
+      aria-label="Zoom out"
+    >
+      −
+    </button>
+
+    {/* Custom track */}
+    <div className="relative flex-1 h-3 select-none">
+      {/* track background */}
+      <div className="absolute inset-0 rounded-full bg-zinc-200" />
+      {/* filled progress */}
+      <div
+        className="absolute inset-y-0 left-0 rounded-full bg-zinc-900"
+        style={{
+          width: `${((zoom - 0.05) / (2.5 - 0.05)) * 100}%`,
+        }}
+      />
+      {/* draggable overlay (keeps native drag behavior without default look) */}
+      <input
+        type="range"
+        min="0.05"
+        max="2.5"
+        step="0.01"
+        value={zoom}
+        onChange={(e) => setZoom(clamp(parseFloat(e.target.value) || 1, 0.05, 2.5))}
+        className="absolute inset-0 w-full h-3 opacity-0 cursor-pointer"
+        aria-label="Zoom"
+      />
+      {/* thumb indicator (visual) */}
+      <div
+        className="absolute top-1/2 -translate-y-1/2 -ml-[10px] w-5 h-5 rounded-full bg-white border-2 border-zinc-900 shadow"
+        style={{
+          left: `calc(${((zoom - 0.05) / (2.5 - 0.05)) * 100}% )`,
+          pointerEvents: "none",
+        }}
+      />
+      {/* tick marks (0%, 50%, 100%) */}
+      <div className="absolute -bottom-2 left-0 h-2 w-px bg-zinc-400" />
+      <div className="absolute -bottom-2 left-1/2 h-2 w-px bg-zinc-400" />
+      <div className="absolute -bottom-2 right-0 h-2 w-px bg-zinc-400" />
+    </div>
+
+    {/* + button */}
+    <button
+      type="button"
+      onClick={() => setZoom((z) => clamp(z + 0.1, 0.05, 2.5))}
+      className="px-3 py-2 rounded-xl border font-semibold"
+      aria-label="Zoom in"
+    >
+      +
+    </button>
+
+    {/* percent badge */}
+    <div className="px-2 py-1 rounded-md bg-zinc-50 text-xs font-mono tabular-nums">
+      {Math.round(zoom * 100)}%
+    </div>
+  </div>
+
+  <div className="mt-1 text-[10px] text-zinc-500 text-center">Zoom</div>
+</div>
+
 
           {/* timer / stop */}
           {pub?.data?.status === "running" && pub?.data?.endsAt ? (

@@ -51,6 +51,7 @@ export const adminNav = [
     children: [
       { id: "stats",   label: "B2B stats",           href: "/admin/b2b" },
       { id: "b2bmm",   label: "B2B match make",           href: "/admin/b2b/matchMake" },
+      { id: "googleMeet", label: "generate google meet",         href: "/admin/links/generate" },
       { id: "scanActor", label: "confirm attandee QR",         href: "/admin/scanActor" },
       { id: "scanMeet", label: "confirm meet QR",  href: "/admin/scanMeet" },
       { id: "scanSession", label: "confirm session",  href: "/admin/scanSession" },
