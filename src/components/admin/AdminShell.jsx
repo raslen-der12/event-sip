@@ -11,7 +11,7 @@ export default function AdminShell({ nav = [], user, children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // restore desktop collapse (ignore on mobile)
+  // restore collapse for desktop
   useEffect(() => {
     const s = localStorage.getItem("adm_collapsed");
     if (s != null && !isMobileNow()) setCollapsed(s === "1");
@@ -20,7 +20,7 @@ export default function AdminShell({ nav = [], user, children }) {
     if (!isMobileNow()) localStorage.setItem("adm_collapsed", collapsed ? "1" : "0");
   }, [collapsed]);
 
-  // close drawer when resizing up
+  // auto-close drawer on resize up
   useEffect(() => {
     const onR = () => { if (!isMobileNow()) setMobileOpen(false); };
     window.addEventListener("resize", onR);
@@ -38,6 +38,8 @@ export default function AdminShell({ nav = [], user, children }) {
     <div className={`admin ${collapsed ? "is-collapsed" : ""} ${mobileOpen ? "sidebar-open" : ""}`}>
       <a href="#admin-main" className="skip-link">Skip to content</a>
 
+      {/* Sidebar (component should emit markup with .side-head/.side-nav etc.
+          If it doesn’t, wrap its content inside those containers in the component) */}
       <AdminSidebar
         items={nav}
         activeId={activeId}
@@ -47,15 +49,16 @@ export default function AdminShell({ nav = [], user, children }) {
         onCloseMobile={() => setMobileOpen(false)}
       />
 
+      {/* Main */}
       <div className="adm-main">
         <AdminTopbar user={user} onBurger={onToggleSidebar} />
         <main id="admin-main" className="adm-content" role="main" tabIndex={-1}>
-          {/* Use children if provided, otherwise nested routes */}
           {children ?? <Outlet />}
         </main>
         <footer className="adm-foot">© {new Date().getFullYear()} Eventra Admin</footer>
       </div>
 
+      {/* Mobile backdrop */}
       {mobileOpen && <button className="adm-backdrop" onClick={() => setMobileOpen(false)} aria-label="Close menu" />}
     </div>
   );

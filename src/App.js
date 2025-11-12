@@ -91,6 +91,8 @@ import AdminSessionAttendance from "./pages/admin/meets/AdminSessionAttendance";
 import AdminMeetAttendance from "./pages/admin/meets/AdminMeetAttendance";
 import AdminEventAttendance from "./pages/admin/meets/AdminEventAttendance";
 import FeedbackPromptGate from "./components/feedback/FeedbackPromptGate";
+import AdminPollsPage from "./pages/admin/polls/AdminPollsPage";
+import PollVotePage from "./pages/polls/PollVotePage";
 
 function SocketBootstrap() {
   const s = useStore();
@@ -132,6 +134,7 @@ function App() {
             <Route path="/restore-email" element={<RestoreEmail />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/communities" element={<CommunityPage />} />
+            <Route path="/poll/:pollId" element={<PollVotePage />} />
             <Route
               path="/communities/:role"
               element={<CommunityPage initialActors={COMMUNITY_DEMO} />}
@@ -297,6 +300,7 @@ function App() {
                 />
                 <Route path="/admin/bp/queue" element={<AdminBpQueue />} />
                 <Route path="/admin/bp/tools" element={<AdminBpTools />} />
+                <Route path="/admin/polls" element={<AdminPollsPage />} />
                 <Route
                   path="/admin/links/generate"
                   element={<AdminVirtualMeets />}

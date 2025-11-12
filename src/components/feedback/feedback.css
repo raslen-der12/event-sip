@@ -14,7 +14,7 @@
 .fbk-body{ padding:16px; display:flex; flex-direction:column; gap:12px; }
 .fbk-stars{ display:flex; gap:6px; }
 .fbk-star{
-  appearance:none; border:none; background:transparent; font-size:26px;
+  appearance:none; border:none; background:transparent; font-size:36px;
   cursor:pointer; line-height:1;
   filter:grayscale(1) opacity(0.6);
 }

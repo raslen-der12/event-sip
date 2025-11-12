@@ -437,8 +437,8 @@ export default function AdminScanSession({ eventId: eventIdProp, sessions: sessi
               <button
                 className="px-4 py-2 rounded-xl bg-zinc-900 text-white"
                 onClick={confirmCheckin}
-                disabled={confirmState.isLoading || preview.assigned === false}
-                title={preview.assigned === false ? "Actor is not assigned to this session" : "Confirm session check-in"}
+                disabled={confirmState.isLoading}
+                title="Confirm session check-in"
               >
                 {confirmState.isLoading ? "Confirming…" : (preview.alreadyCheckedIn ? "Confirm again" : "Confirm check-in")}
               </button>

@@ -34,16 +34,16 @@ export const adminNav = [
     icon: "messages",
     href: "/admin/messages"
   },
-  {
-    id: "financeGroup",
-    label: "Finance",
-    icon: "finance",
-    children: [
-      { id: "bills",   label: "Bills",           href: "/admin/finance/bills" },
-      { id: "refunds", label: "Refunds",         href: "/admin/finance/refunds" },
-      { id: "pricing", label: "Ticket pricing",  href: "/admin/finance/pricing" },
-    ],
-  },
+  // {
+  //   id: "financeGroup",
+  //   label: "Finance",
+  //   icon: "finance",
+  //   children: [
+  //     { id: "bills",   label: "Bills",           href: "/admin/finance/bills" },
+  //     { id: "refunds", label: "Refunds",         href: "/admin/finance/refunds" },
+  //     { id: "pricing", label: "Ticket pricing",  href: "/admin/finance/pricing" },
+  //   ],
+  // },
   {
     id: "B2B managment",
     label: "B2B",
@@ -66,6 +66,7 @@ export const adminNav = [
       { id: "adminTools", label: "admin tools",  href: "/admin/bp/tools" },
     ],
   },
+  { id: "polls", label: "polls management", icon: "finance", href: "/admin/polls" },
   {
     id : "forms",
     label: "Forms & Content",
