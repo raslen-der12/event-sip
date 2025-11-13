@@ -61,6 +61,36 @@ function MemberCard({ m }) {
             <div className="mk-muted" style={{ fontSize: 12 }}>
               {m.orgName || "—"} {m.country ? `• ${m.country}` : ""}
             </div>
+
+            {/* Attendance badge */}
+            {m.isAtt && (
+              <div style={{ marginTop: 4 }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    backgroundColor: "#16a34a", // green
+                    color: "#ffffff",
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "999px",
+                      backgroundColor: "rgba(255,255,255,0.9)",
+                    }}
+                  />
+                  Attended
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -124,13 +154,11 @@ function Pagination({ page, total, limit, onGo }) {
   const totalPages = Math.max(1, Math.ceil((total || 0) / (limit || 1)));
   if (totalPages <= 1) return null;
 
-  // windowed numeric pager (like most sites)
   const buildPages = () => {
     const p = page;
     const t = totalPages;
-    const set = new Set([1, t, p, p - 1, p + 1, 2, t - 1]); // keep edges + neighbors
+    const set = new Set([1, t, p, p - 1, p + 1, 2, t - 1]);
     const arr = [...set].filter((x) => x >= 1 && x <= t).sort((a, b) => a - b);
-    // insert ellipses
     const out = [];
     for (let i = 0; i < arr.length; i++) {
       out.push(arr[i]);
@@ -143,14 +171,41 @@ function Pagination({ page, total, limit, onGo }) {
   return (
     <nav
       className="mk-pager"
-      style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}
+      style={{
+        display: "flex",
+        gap: 8,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 16,
+        flexWrap: "wrap",
+      }}
     >
-      <button className="mk-btn " disabled={page <= 1} onClick={() => onGo(1)} title="First">«</button>
-      <button className="mk-btn " disabled={page <= 1} onClick={() => onGo(page - 1)} title="Previous">‹</button>
+      <button
+        className="mk-btn "
+        disabled={page <= 1}
+        onClick={() => onGo(1)}
+        title="First"
+      >
+        «
+      </button>
+      <button
+        className="mk-btn "
+        disabled={page <= 1}
+        onClick={() => onGo(page - 1)}
+        title="Previous"
+      >
+        ‹
+      </button>
 
       {pages.map((v, i) =>
         v === "…" ? (
-          <span key={`e-${i}`} className="mk-muted" style={{ padding: "6px 8px" }}>…</span>
+          <span
+            key={`e-${i}`}
+            className="mk-muted"
+            style={{ padding: "6px 8px" }}
+          >
+            …
+          </span>
         ) : (
           <button
             key={`p-${v}`}
@@ -163,8 +218,22 @@ function Pagination({ page, total, limit, onGo }) {
         )
       )}
 
-      <button className="mk-btn " disabled={page >= totalPages} onClick={() => onGo(page + 1)} title="Next">›</button>
-      <button className="mk-btn " disabled={page >= totalPages} onClick={() => onGo(totalPages)} title="Last">»</button>
+      <button
+        className="mk-btn "
+        disabled={page >= totalPages}
+        onClick={() => onGo(page + 1)}
+        title="Next"
+      >
+        ›
+      </button>
+      <button
+        className="mk-btn "
+        disabled={page >= totalPages}
+        onClick={() => onGo(totalPages)}
+        title="Last"
+      >
+        »
+      </button>
     </nav>
   );
 }
@@ -187,13 +256,12 @@ export default function CommunityPage() {
     const next = new URLSearchParams(sp);
     if (v === undefined || v === null || v === "") next.delete(k);
     else next.set(k, String(v));
-    if (k !== "page") next.set("page", "1"); // any filter change resets paging
+    if (k !== "page") next.set("page", "1");
     setSp(next, { replace: false });
   };
 
   const openRoleView = (role) => {
     const next = new URLSearchParams(sp);
-    // lock to selected role, one-page mode, and clear other filters
     next.set("subRole", String(role));
     next.set("view", "role");
     next.delete("q");
@@ -223,7 +291,7 @@ export default function CommunityPage() {
 
   // normalize/merge country list on the UI
   const uiCountries = useMemo(() => {
-    const map = new Map(); // canon => count
+    const map = new Map();
     (rawCountries || []).forEach((c) => {
       const key = canonCountry(c.code);
       map.set(key, (map.get(key) || 0) + (c.count || 0));
@@ -256,7 +324,6 @@ export default function CommunityPage() {
   const items = subRole ? data?.items || [] : [];
   const total = data?.total || 0;
 
-  // friendly summary like other sites: “A–B of T • Page P of N”
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
   const rangeStart = total ? (page - 1) * limit + 1 : 0;
   const rangeEnd = total ? Math.min(page * limit, total) : 0;
@@ -269,7 +336,6 @@ export default function CommunityPage() {
         <div className="mk-header card">
           <div className="mk-h-title">Community</div>
 
-          {/* When viewing a role, hide filters and show a "Back" row */}
           {viewMode === "role" && subRole ? (
             <div className="mk-toprow" style={{ alignItems: "center", gap: 12 }}>
               <button className="mk-btn ghost" onClick={exitRoleView}>
@@ -299,7 +365,6 @@ export default function CommunityPage() {
                 ))}
               </select>
 
-              {/* Role dropdown (user-friendly label) */}
               <select
                 className="mk-select"
                 value={subRole}
@@ -315,7 +380,6 @@ export default function CommunityPage() {
                 ))}
               </select>
 
-              {/* Country dropdown (canonicalized) */}
               <select
                 className="mk-select"
                 value={country}
@@ -334,7 +398,7 @@ export default function CommunityPage() {
           )}
         </div>
 
-        {/* Summary + small top pager (like many sites) */}
+        {/* Summary + small top pager */}
         <div className="mk-controls" style={{ alignItems: "center" }}>
           <div className="mk-muted">
             {isFetching
@@ -351,9 +415,7 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        {/* Content:
-            - If no role selected: grouped preview blocks, each with a single "View all {role}" button.
-            - If role selected: flat list with numeric pager; Back clears role and restores filters. */}
+        {/* Content */}
         {!subRole ? (
           <div>
             {isFetching && !groups.length
@@ -378,7 +440,6 @@ export default function CommunityPage() {
                 : items.map((m) => <MemberCard key={`m-${m.id}`} m={m} />)}
             </div>
 
-            {/* Bottom pager (common pattern) */}
             <Pagination
               page={page}
               total={total}
@@ -400,5 +461,5 @@ export default function CommunityPage() {
         bottomLinks={footerData.bottomLinks}
       />
     </>
-  );
+  );  
 }

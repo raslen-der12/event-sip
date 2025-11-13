@@ -241,6 +241,7 @@ export default function BusinessProfilePage({ profile: propProfile, onMessage, o
   const notFoundExplicit = !!idParam && !loading && !apiProfileRaw && !teamFetching && (idErr || !idProf);
 
   // Presentable fields
+  console.log("apiProfileRaw",apiProfileRaw);
   const p = apiProfileRaw
     ? {
         id: profileId,
