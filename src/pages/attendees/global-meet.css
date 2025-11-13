@@ -57,3 +57,39 @@
 .gma-btn.-outline { background: #fff; color: #0f172a; border: 1px solid #e5e7eb; }
 
 .gma-empty { padding: 18px; text-align: center; color: #475569; font-weight: 700; }
+@media (max-width: 768px) {
+  /* Make the advanced filter area vertical on phones */
+  .gma-adv {
+    display: flex;              /* in case it wasn't already */
+    flex-direction: column;     /* stack children: tabs, tabs, end */
+    align-items: stretch;
+    gap: 8px;
+  }
+  .gma-advanced{
+    flex-direction: column;
+  }
+
+  /* Each tabs row takes full width */
+  .gma-adv .gma-tabs {
+    width: 100%;
+    justify-content: space-between; /* keep buttons spread nicely */
+  }
+
+  /* Small vertical spacing between the first and second tabs rows */
+  .gma-adv .gma-tabs + .gma-tabs {
+    margin-top: 4px;
+  }
+
+  /* Optional: filters block below tabs adapts better on small screens */
+  .gma-adv .gma-end {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .gma-adv .gma-sortlab,
+  .gma-adv .gma-select {
+    flex: 1 1 100%;   /* labels/selects go full-width on very small screens */
+  }
+}
