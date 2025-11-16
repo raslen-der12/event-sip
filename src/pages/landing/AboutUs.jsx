@@ -7,17 +7,17 @@ export default function AboutUs() {
   const founders = [
     {
       name: "Douja Gharbi",
-      title: "Cofounder & CPO",
+      title: "co-founder Of SunUp Tunisia",
       image: "https://seketak-eg.com/wp-content/uploads/2025/02/douja-gharbi.png",
     },
     {
       name: "Assem Kamel",
-      title: "Cofounder & CEO Seketak",
+      title: "Co-founder & CEO OF SunUp Tunisia Co-founder & President of The LEE Experience Lebanon",
       image: "https://seketak-eg.com/wp-content/uploads/2025/04/Group-40185.png",
     },
     {
       name: "Manal Hassoun",
-      title: "Cofounder & CFRO",
+      title: "Co-founder & CEO of  The LEE Experience Lebanon",
       image: "https://seketak-eg.com/wp-content/uploads/2025/03/Manal-Hassoun-2.png",
     },
   ];
@@ -32,10 +32,13 @@ export default function AboutUs() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             About <span className="text-blue-600">Eventra</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-lg text-gray-600">
-            Empowering global businesses with intelligent matchmaking, end-to-end event solutions,
-            and strategic trade enablement — accelerating cross-border collaboration, innovation,
-            and sustainable growth across the Middle East, Africa, and beyond.
+          <p className="max-w-3xl mx-auto text-lg text-gray-600">
+            Eventra is a global B2B platform co-owned by SunUP Tunisia, specializing in Program Management, Monitoring & Evaluation, and The LEE Experience – Incubation and Acceleration (Lebanon).
+          <br></br><br />
+          
+The platform was developed in close collaboration with key ecosystem partners, including Seketak Incubator & Accelerator (Egypt) and RedStart Tunisia.
+
+Headquartered in Lebanon and operating across the MENA region, Africa, and beyond, Eventra facilitates high-impact business connections worldwide through its integrated suite of services—bridging regional strengths in entrepreneurship, innovation, and ecosystem development.
           </p>
         </div>
 
