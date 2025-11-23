@@ -40,7 +40,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
     getActorsListAdmin: builder.query({
       query: (args) => ({
         url: "/actors",
-        method: "POST",
+        method: "POST", 
         body: args,
       }),
       transformResponse: (res) => {
