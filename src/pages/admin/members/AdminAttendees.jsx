@@ -8,13 +8,12 @@ import {
   useGetActorsListAdminQuery,
   useGetAdminActorQuery,
   useCreateActorMutation,
+  useSetAttendeesVirtualMutation,
 } from "../../../features/Actor/adminApiSlice";
-
 import {
   useGetEventsQuery,
   useGetEventQuery, // used to resolve event name by id
 } from "../../../features/events/eventsApiSlice";
-
 import { useGetEventSessionsQuery } from "../../../features/events/scheduleApiSlice";
 import imageLink from "../../../utils/imageLink";
 
@@ -26,8 +25,9 @@ import enLocale from "i18n-iso-countries/langs/en.json";
 countries.registerLocale(enLocale);
 
 // Build an array of { code, name } sorted by name.
-// Do this once at module initialization so it doesn't rerun on every render.
-const ALL_COUNTRIES = Object.entries(countries.getNames("en", { select: "official" }))
+const ALL_COUNTRIES = Object.entries(
+  countries.getNames("en", { select: "official" })
+)
   .map(([code, name]) => ({ code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -40,7 +40,6 @@ function normalizeToAlpha2(input) {
   const s = String(input).trim();
   if (!s) return "";
   if (s.length === 2) return s.toUpperCase();
-  // Try to map full name (in English) to alpha2
   const mapped = countries.getAlpha2Code(s, "en");
   return mapped ? mapped.toUpperCase() : "";
 }
@@ -53,15 +52,23 @@ function EventName({ id, fallback = "—" }) {
 
 function flagChip(codeOrName) {
   if (!codeOrName) return "—";
-  // Accept either "TN" or "Tunisia" — try to map to alpha2
-  const alpha2 = normalizeToAlpha2(codeOrName) || String(codeOrName).trim().slice(0, 2).toUpperCase();
+  const alpha2 =
+    normalizeToAlpha2(codeOrName) ||
+    String(codeOrName).trim().slice(0, 2).toUpperCase();
   if (!alpha2 || alpha2.length !== 2) {
-    // If mapping failed, show the raw label instead of a flag
-    return <span className="flag-chip" title={String(codeOrName)}>{String(codeOrName)}</span>;
+    return (
+      <span className="flag-chip" title={String(codeOrName)}>
+        {String(codeOrName)}
+      </span>
+    );
   }
   return (
     <span className="flag-chip" title={alpha2}>
-      <ReactCountryFlag svg countryCode={alpha2} style={{ fontSize: "1em" }} />
+      <ReactCountryFlag
+        svg
+        countryCode={alpha2}
+        style={{ fontSize: "1em" }}
+      />
     </span>
   );
 }
@@ -69,10 +76,14 @@ function flagChip(codeOrName) {
 function isDefaultPhoto(src) {
   if (!src) return false;
   try {
-    return String(src).includes("/uploads/default/photodef.png") ||
-           String(src).endsWith(": /default/photodef.png") ||
-           String(src).endsWith("/default/photodef.png");
-  } catch { return false; }
+    return (
+      String(src).includes("/uploads/default/photodef.png") ||
+      String(src).endsWith(": /default/photodef.png") ||
+      String(src).endsWith("/default/photodef.png")
+    );
+  } catch {
+    return false;
+  }
 }
 
 function fmtUrl(u) {
@@ -81,6 +92,7 @@ function fmtUrl(u) {
   if (!s) return null;
   return /^https?:\/\//i.test(s) ? s : `https://${s}`;
 }
+
 function getId(x) {
   return (
     x?.data?._id ||
@@ -90,16 +102,22 @@ function getId(x) {
     String(x?.email || "") + String(x?.createdAt || "")
   );
 }
+
 function bool(v) {
   return v == null ? "—" : v ? "Yes" : "No";
 }
+
 function timeHM(d) {
   try {
-    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return new Date(d).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch {
     return "—";
   }
 }
+
 function dateYMD(d) {
   try {
     return new Date(d).toLocaleDateString();
@@ -113,13 +131,13 @@ function dateYMD(d) {
 export default function AdminAttendees() {
   const navigate = useNavigate();
 
-  // Filters: search | limit, and NEW: eventId
+  // Filters: search | limit | eventId
   const [search, setSearch] = React.useState("");
   const [limit, setLimit] = React.useState(20);
   const [eventFilterId, setEventFilterId] = React.useState("");
+
   const { data: events = [] } = useGetEventsQuery();
 
-  // Normalize possible shapes of events payload ([], {data:[]}, {data:{data:[]}})
   const eventsArr = React.useMemo(() => {
     if (Array.isArray(events)) return events;
     if (Array.isArray(events?.data)) return events.data;
@@ -127,10 +145,9 @@ export default function AdminAttendees() {
     return [];
   }, [events]);
 
-  // Prepare list query args
   const listArgs = React.useMemo(() => {
     const base = { role: ROLE };
-    if (eventFilterId) base.eventId = eventFilterId; // pass id to backend filter
+    if (eventFilterId) base.eventId = eventFilterId;
     if (search.trim()) return { ...base, search: search.trim() };
     return { ...base, limit: Number(limit) || 20 };
   }, [search, limit, eventFilterId]);
@@ -141,6 +158,44 @@ export default function AdminAttendees() {
     isFetching,
     refetch,
   } = useGetActorsListAdminQuery(listArgs);
+
+  const [selectedIds, setSelectedIds] = React.useState([]);
+  const [setAttendeesVirtual, { isLoading: savingVirtual }] =
+    useSetAttendeesVirtualMutation();
+
+  const toggleSelected = React.useCallback((id) => {
+    if (!id) return;
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const clearSelection = React.useCallback(() => setSelectedIds([]), []);
+
+  React.useEffect(() => {
+    setSelectedIds([]);
+  }, [search, limit, eventFilterId]);
+
+  // IDs on current page (for "select all" behaviour)
+  const allOnPageIds = Array.isArray(list)
+    ? list.map((it) => getId(it)).filter(Boolean)
+    : [];
+  const allSelectedOnPage =
+    allOnPageIds.length > 0 &&
+    allOnPageIds.every((id) => selectedIds.includes(id));
+
+  const onToggleSelectAllPage = () => {
+    setSelectedIds((prev) => {
+      if (allSelectedOnPage) {
+        // unselect all on this page
+        return prev.filter((id) => !allOnPageIds.includes(id));
+      }
+      // add all on this page
+      const s = new Set(prev);
+      allOnPageIds.forEach((id) => s.add(id));
+      return Array.from(s);
+    });
+  };
 
   /* ── Modal (full actor) */
   const [activeId, setActiveId] = React.useState(null);
@@ -167,6 +222,7 @@ export default function AdminAttendees() {
     sp.set("id", id);
     setSearchParams(sp, { replace: false });
   };
+
   const closeModal = () => {
     setModalOpen(false);
     const sp = new URLSearchParams(searchParams);
@@ -185,28 +241,33 @@ export default function AdminAttendees() {
   });
   const [roleKind, setRoleKind] = React.useState("");
 
-  // Load sessions for the selected event (and filter out tracker "Formation")
-  const { data: sessionsPack, isFetching: fetchingSessions } = useGetEventSessionsQuery(
-    createDraft.eventId ? { eventId: createDraft.eventId, track: "", includeCounts: 1 } : undefined,
-    { skip: !createDraft.eventId }
-  );
+  const { data: sessionsPack, isFetching: fetchingSessions } =
+    useGetEventSessionsQuery(
+      createDraft.eventId
+        ? { eventId: createDraft.eventId, track: "", includeCounts: 1 }
+        : undefined,
+      { skip: !createDraft.eventId }
+    );
 
   const cleanSessions = React.useMemo(() => {
-    const raw = sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
+    const raw =
+      sessionsPack?.data || sessionsPack?.sessions || sessionsPack || [];
     return (Array.isArray(raw) ? raw : []).filter(
       (s) => String(s?.track || "").trim().toLowerCase() !== "formation"
     );
   }, [sessionsPack]);
+
   const pickerSessions = React.useMemo(() => {
     return cleanSessions.map((s) => {
-      const start = s.startAt || s.startTime || s.start || s.startsAt || null;
-      const end   = s.endAt   || s.endTime   || s.end   || s.endsAt   || null;
+      const start =
+        s.startAt || s.startTime || s.start || s.startsAt || null;
+      const end = s.endAt || s.endTime || s.end || s.endsAt || null;
       return {
         _id: s._id || s.id,
         title: s.title || s.sessionTitle || "Session",
         track: s.track || "Session",
         startAt: start ? new Date(start).toISOString() : null,
-        endAt:   end   ? new Date(end).toISOString()   : null,
+        endAt: end ? new Date(end).toISOString() : null,
         room: {
           name: s?.room?.name || s?.roomName || "",
           capacity: Number(s?.room?.capacity || 0),
@@ -215,10 +276,16 @@ export default function AdminAttendees() {
       };
     });
   }, [cleanSessions]);
+
   const toggleSess = (id) => {
     setCreateDraft((prev) => {
       const has = prev.sessionIds.includes(id);
-      return { ...prev, sessionIds: has ? prev.sessionIds.filter((x) => x !== id) : [...prev.sessionIds, id] };
+      return {
+        ...prev,
+        sessionIds: has
+          ? prev.sessionIds.filter((x) => x !== id)
+          : [...prev.sessionIds, id],
+      };
     });
   };
 
@@ -234,7 +301,6 @@ export default function AdminAttendees() {
   const onCreateSubmit = async (e) => {
     e.preventDefault();
     if (!canCreate) return;
-
     const payload = {
       role: ROLE,
       eventId: createDraft.eventId,
@@ -242,15 +308,20 @@ export default function AdminAttendees() {
       personal: {
         fullName: createDraft.fullName.trim(),
         email: createDraft.email.trim(),
-        country: createDraft.country.trim().toUpperCase(), // ISO key for flag
+        country: createDraft.country.trim().toUpperCase(),
       },
       sessionIds: createDraft.sessionIds,
     };
-
     try {
       await createActor(payload).unwrap();
       setCreating(false);
-      setCreateDraft({ fullName: "", email: "", country: "", eventId: "", sessionIds: [] });
+      setCreateDraft({
+        fullName: "",
+        email: "",
+        country: "",
+        eventId: "",
+        sessionIds: [],
+      });
       setRoleKind("");
       refetch();
     } catch (err) {
@@ -264,10 +335,59 @@ export default function AdminAttendees() {
     if (search.trim()) return;
     setLimit((n) => (Number(n) || 20) + 5);
   };
-  const clearSearch = () => setSearch("");
+
+  const clearSearchTop = () => setSearch("");
+
   const onCustomLimit = (n) => {
     if (search.trim()) return;
     setLimit(Math.max(5, Number(n) || 20));
+  };
+
+  const onMakeSelectedVirtual = async () => {
+    if (!selectedIds.length) return;
+    try {
+      const payload = {
+        attendeeIds: selectedIds,
+        virtual: true,
+      };
+      if (eventFilterId) payload.eventId = eventFilterId;
+      await setAttendeesVirtual(payload).unwrap();
+      clearSelection();
+      refetch();
+    } catch (err) {
+      console.error("setAttendeesVirtual (selected) failed:", err);
+      alert(
+        err?.data?.message ||
+          "Failed to update virtual status for selected attendees"
+      );
+    }
+  };
+
+  // ALWAYS works:
+  // - if eventFilterId set: all attendees of that event
+  // - else: all attendees currently shown on this page
+  const onMakeAllVirtual = async () => {
+    try {
+      const payload = { virtual: true };
+      if (eventFilterId) {
+        payload.eventId = eventFilterId;
+      } else {
+        if (!allOnPageIds.length) {
+          alert("No attendees on this page.");
+          return;
+        }
+        payload.attendeeIds = allOnPageIds;
+      }
+      await setAttendeesVirtual(payload).unwrap();
+      clearSelection();
+      refetch();
+    } catch (err) {
+      console.error("setAttendeesVirtual (all) failed:", err);
+      alert(
+        err?.data?.message ||
+          "Failed to update virtual status for attendees"
+      );
+    }
   };
 
   return (
@@ -286,12 +406,14 @@ export default function AdminAttendees() {
                 onChange={(e) => setSearch(e.target.value)}
               />
               {search ? (
-                <button className="btn tiny" onClick={clearSearch}>
+                <button className="btn tiny" onClick={clearSearchTop}>
                   Clear
                 </button>
               ) : null}
             </div>
-            <div className="att-hint muted">When searching, “Results per page” is disabled.</div>
+            <div className="att-hint muted">
+              When searching, “Results per page” is disabled.
+            </div>
           </div>
 
           {/* Results per page */}
@@ -308,13 +430,17 @@ export default function AdminAttendees() {
                 disabled={!!search.trim()}
                 title={search ? "Disabled while searching" : "Custom limit"}
               />
-              <button className="btn tiny text-change" onClick={seeMore} disabled={!!search.trim()}>
+              <button
+                className="btn tiny text-change"
+                onClick={seeMore}
+                disabled={!!search.trim()}
+              >
                 See more (+5)
               </button>
             </div>
           </div>
 
-          {/* NEW: Event filter for the list */}
+          {/* Event filter */}
           <div className="att-ctrl">
             <label className="att-lbl">Filter by event</label>
             <select
@@ -334,21 +460,60 @@ export default function AdminAttendees() {
                 );
               })}
             </select>
-            <div className="att-hint muted">Shows only attendees registered to the selected event.</div>
+            <div className="att-hint muted">
+              Shows only attendees registered to the selected event.
+            </div>
           </div>
 
           {/* Actions */}
           <div className="att-actions">
-            <button className="btn" onClick={() => refetch()} disabled={isFetching}>
+            <button
+              className="btn"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
               {isFetching ? "Loading…" : "Refresh"}
             </button>
-            <button className="btn brand ml-4" onClick={() => setCreating((v) => !v)}>
+            <button
+              className="btn brand ml-4"
+              onClick={() => setCreating((v) => !v)}
+            >
               {creating ? "Close form" : "Create attendee"}
+            </button>
+            <button
+              className="btn tiny ml-4"
+              onClick={onToggleSelectAllPage}
+              disabled={!allOnPageIds.length}
+              title="Toggle selection for all attendees on this page"
+            >
+              {allSelectedOnPage ? "Unselect page" : "Select page"}
+            </button>
+            <button
+              className="btn tiny ml-4"
+              onClick={onMakeSelectedVirtual}
+              disabled={!selectedIds.length || savingVirtual}
+              title={
+                selectedIds.length
+                  ? "Mark selected attendees as virtual"
+                  : "Select attendees from the list first"
+              }
+            >
+              {savingVirtual
+                ? "Saving…"
+                : `Set ${selectedIds.length || ""} selected virtual`}
+            </button>
+            <button
+              className="btn tiny ml-4"
+              onClick={onMakeAllVirtual}
+              disabled={savingVirtual}
+              title="Mark all attendees (in event or current page) as virtual"
+            >
+              {savingVirtual ? "Saving…" : "Set all in event virtual"}
             </button>
           </div>
         </div>
 
-        {/* Create form (EXPANDED) */}
+        {/* Create form */}
         {creating && (
           <form className="att-create card soft p-10" onSubmit={onCreateSubmit}>
             <div className="att-create-grid att-create-grid--wide">
@@ -359,7 +524,12 @@ export default function AdminAttendees() {
                   <input
                     className="input"
                     value={createDraft.fullName}
-                    onChange={(e) => setCreateDraft({ ...createDraft, fullName: e.target.value })}
+                    onChange={(e) =>
+                      setCreateDraft({
+                        ...createDraft,
+                        fullName: e.target.value,
+                      })
+                    }
                   />
                 </label>
 
@@ -369,7 +539,12 @@ export default function AdminAttendees() {
                     className="input"
                     type="email"
                     value={createDraft.email}
-                    onChange={(e) => setCreateDraft({ ...createDraft, email: e.target.value })}
+                    onChange={(e) =>
+                      setCreateDraft({
+                        ...createDraft,
+                        email: e.target.value,
+                      })
+                    }
                   />
                 </label>
 
@@ -379,7 +554,12 @@ export default function AdminAttendees() {
                     <select
                       className="input"
                       value={createDraft.country}
-                      onChange={(e) => setCreateDraft({ ...createDraft, country: e.target.value })}
+                      onChange={(e) =>
+                        setCreateDraft({
+                          ...createDraft,
+                          country: e.target.value,
+                        })
+                      }
                     >
                       <option value="">— Select —</option>
                       {ALL_COUNTRIES.map((c) => (
@@ -388,7 +568,9 @@ export default function AdminAttendees() {
                         </option>
                       ))}
                     </select>
-                    <div className="flag-preview">{flagChip(createDraft.country)}</div>
+                    <div className="flag-preview">
+                      {flagChip(createDraft.country)}
+                    </div>
                   </div>
                 </label>
 
@@ -416,7 +598,11 @@ export default function AdminAttendees() {
                     className="input"
                     value={createDraft.eventId}
                     onChange={(e) =>
-                      setCreateDraft({ ...createDraft, eventId: e.target.value, sessionIds: [] })
+                      setCreateDraft({
+                        ...createDraft,
+                        eventId: e.target.value,
+                        sessionIds: [],
+                      })
                     }
                   >
                     <option value="">— Select event —</option>
@@ -431,50 +617,60 @@ export default function AdminAttendees() {
                     })}
                   </select>
                   <div className="att-hint muted">
-                    Sessions list will load after selecting the event. “Formation” track is excluded.
+                    Sessions list will load after selecting the event.
+                    “Formation” track is excluded.
                   </div>
                 </label>
               </div>
 
-              {/* Right column: sessions (compact) */}
+              {/* Right column: sessions */}
               <div className="att-col">
-                <div className="att-lbl">Assign sessions * (at least 1)</div>
+                <div className="att-lbl">
+                  Assign sessions * (at least 1)
+                </div>
                 {!createDraft.eventId ? (
-  <div className="muted">Select an event to load sessions.</div>
-) : fetchingSessions ? (
-  <div className="muted">Loading sessions…</div>
-) : !pickerSessions.length ? (
-  <div className="muted">No sessions for this event.</div>
-) : (
-  <SessionPicker
-    sessions={pickerSessions}
-    selectedIds={createDraft.sessionIds.map(String)}
-    onToggle={(s) => {
-      const id = String(s._id || s.id);
-      setCreateDraft((prev) => {
-        const has = prev.sessionIds.map(String).includes(id);
-        return {
-          ...prev,
-          sessionIds: has
-            ? prev.sessionIds.filter((x) => String(x) !== id)
-            : [...prev.sessionIds, id],
-        };
-      });
-    }}
-  />
-)}
-
-
+                  <div className="muted">
+                    Select an event to load sessions.
+                  </div>
+                ) : fetchingSessions ? (
+                  <div className="muted">Loading sessions…</div>
+                ) : !pickerSessions.length ? (
+                  <div className="muted">No sessions for this event.</div>
+                ) : (
+                  <SessionPicker
+                    sessions={pickerSessions}
+                    selectedIds={createDraft.sessionIds.map(String)}
+                    onToggle={(s) => {
+                      const id = String(s._id || s.id);
+                      setCreateDraft((prev) => {
+                        const has = prev.sessionIds
+                          .map(String)
+                          .includes(id);
+                        return {
+                          ...prev,
+                          sessionIds: has
+                            ? prev.sessionIds.filter(
+                                (x) => String(x) !== id
+                              )
+                            : [...prev.sessionIds, id],
+                        };
+                      });
+                    }}
+                  />
+                )}
               </div>
             </div>
 
             <div className="att-create-actions">
-              <button className="btn brand" disabled={!canCreate || creatingReq}>
+              <button
+                className="btn brand"
+                disabled={!canCreate || creatingReq}
+              >
                 {creatingReq ? "Creating…" : "Create attendee"}
               </button>
               <span className="att-hint muted ml-8">
-                The attendee will receive the same styled email as registration, with their selected
-                sessions attached in a PDF.
+                The attendee will receive the same styled email as registration,
+                with their selected sessions attached in a PDF.
               </span>
             </div>
           </form>
@@ -490,13 +686,23 @@ export default function AdminAttendees() {
             {eventFilterId ? " • filtered by event" : ""}
           </div>
         </div>
+
         <div className="att-grid">
           {isLoading && !list.length ? (
             skeletons(12)
           ) : list.length ? (
-            list.map((it) => (
-              <AttendeeRow key={getId(it)} item={it} onOpen={() => openModal(getId(it))} />
-            ))
+            list.map((it) => {
+              const id = getId(it);
+              return (
+                <AttendeeRow
+                  key={id}
+                  item={it}
+                  onOpen={() => openModal(id)}
+                  selected={selectedIds.includes(id)}
+                  onToggleSelect={() => toggleSelected(id)}
+                />
+              );
+            })
           ) : (
             <div className="muted">No attendees.</div>
           )}
@@ -519,17 +725,17 @@ export default function AdminAttendees() {
 
 /* ───────────────────────── Small components ───────────────────────── */
 
-function AttendeeRow({ item, onOpen }) {
+function AttendeeRow({ item, onOpen, selected, onToggleSelect }) {
   const name = item?.personal?.fullName || item?.name || "—";
   const email = item?.personal?.email || item?.email || "—";
   const countryKey =
-    (item?.personal && item.personal.country) || item?.country || ""; // ISO key expected OR full name
+    (item?.personal && item.personal.country) || item?.country || "";
   const pic = item?.personal?.profilePic || item?.profilePic;
   const verified = !!(item?.verified ?? item?.verifiedEmail);
   const eventId = item?.id_event || item?.eventId || item?.event?._id;
 
   return (
-    <button className="att-row" onClick={onOpen} title="Open">
+    <div className="att-row" onClick={onOpen} title="Open" role="button">
       <div className="att-avatar">
         {pic && !isDefaultPhoto(pic) ? (
           <img className="att-img" src={imageLink(pic)} alt={name} />
@@ -552,11 +758,21 @@ function AttendeeRow({ item, onOpen }) {
         </div>
       </div>
       <div className="att-right">
+        <input
+          type="checkbox"
+          checked={!!selected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onToggleSelect && onToggleSelect();
+          }}
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Select attendee"
+        />
         <span className={`pill-verify ${verified ? "ok" : "no"}`}>
           {verified ? "Email verified" : "Unverified"}
         </span>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -598,7 +814,8 @@ function ActorDetails({ actor }) {
   const eid = base?.id_event || actor?.event?._id || null;
 
   const goProfile = () => navigate(`/admin/members/attendee/${id}`);
-  const goMessage = () => navigate(`/admin/messages?actor=${id}&role=attendee`);
+  const goMessage = () =>
+    navigate(`/admin/messages?actor=${id}&role=attendee`);
 
   const websiteUrl = fmtUrl(base?.links?.website);
   const linkedinUrl = fmtUrl(base?.links?.linkedin);
@@ -606,26 +823,48 @@ function ActorDetails({ actor }) {
   return (
     <div className="att-detail">
       <div className="att-d-head">
-        <button className="att-d-avatar" onClick={goProfile} title="Open full profile">
+        <button
+          className="att-d-avatar"
+          onClick={goProfile}
+          title="Open full profile"
+        >
           {hasRealPhoto ? (
-            <img className="att-d-img" src={imageLink(photo)} alt={A.fullName} />
+            <img
+              className="att-d-img"
+              src={imageLink(photo)}
+              alt={A.fullName}
+            />
           ) : (
             <span className="att-fallback">
-              {(A.fullName || A.email || "?").slice(0, 1).toUpperCase()}
+              {(A.fullName || A.email || "?")
+                .slice(0, 1)
+                .toUpperCase()}
             </span>
           )}
         </button>
         <div className="att-d-meta">
           <div className="att-d-top">
-            <button className="att-d-name linklike" onClick={goProfile} title={A.fullName}>
+            <button
+              className="att-d-name linklike"
+              onClick={goProfile}
+              title={A.fullName}
+            >
               {A.fullName || "—"}
             </button>
 
-            <span className={`pill-verify big ${base.verified ? "ok" : "no"}`}>
+            <span
+              className={`pill-verify big ${
+                base.verified ? "ok" : "no"
+              }`}
+            >
               {base.verified ? "Email verified" : "Unverified"}
             </span>
 
-            <span className={`pill-status big ${base.adminVerified || "pending"}`}>
+            <span
+              className={`pill-status big ${
+                base.adminVerified || "pending"
+              }`}
+            >
               {base.adminVerified || "pending"}
             </span>
           </div>
@@ -641,21 +880,37 @@ function ActorDetails({ actor }) {
             <span className="muted">
               Event: <EventName id={eid} fallback="—" />
             </span>
-            {actor?.roleKind ? <span className="muted ml-10">Role-like: {actor.roleKind}</span> : null}
+            {actor?.roleKind ? (
+              <span className="muted ml-10">
+                Role-like: {actor.roleKind}
+              </span>
+            ) : null}
           </div>
 
           <div className="att-d-sub">
-            <span className="muted">Created: {dateYMD(base.createdAt)}</span>
+            <span className="muted">
+              Created: {dateYMD(base.createdAt)}
+            </span>
           </div>
 
           <div className="att-d-links">
             {websiteUrl ? (
-              <a className="linklike mr-8" href={websiteUrl} target="_blank" rel="noreferrer">
+              <a
+                className="linklike mr-8"
+                href={websiteUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Website
               </a>
             ) : null}
             {linkedinUrl ? (
-              <a className="linklike" href={linkedinUrl} target="_blank" rel="noreferrer">
+              <a
+                className="linklike"
+                href={linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
                 LinkedIn
               </a>
             ) : null}
@@ -664,7 +919,9 @@ function ActorDetails({ actor }) {
           {!!(A.preferredLanguages || []).length && (
             <div className="att-lang-row">
               {(A.preferredLanguages || []).map((l) => (
-                <span key={l} className="pill tiny">{l}</span>
+                <span key={l} className="pill tiny">
+                  {l}
+                </span>
               ))}
             </div>
           )}
@@ -698,12 +955,17 @@ function ActorDetails({ actor }) {
             <div className="att-sessions">
               {sess.map((s) => (
                 <div key={s._id || s.id} className="sess-row">
-                  <div className="sess-title line-1">{s.title || "Untitled"}</div>
+                  <div className="sess-title line-1">
+                    {s.title || "Untitled"}
+                  </div>
                   <div className="sess-sub tiny">
-                    <span className="tag">{s.track || "Session"}</span>
+                    <span className="tag">
+                      {s.track || "Session"}
+                    </span>
                     <span className="sep">•</span>
                     <span>
-                      {dateYMD(s.startAt)} {timeHM(s.startAt)}–{timeHM(s.endAt)}
+                      {dateYMD(s.startAt)} {timeHM(s.startAt)}–
+                      {timeHM(s.endAt)}
                     </span>
                     {s?.room?.name ? (
                       <>
@@ -720,12 +982,13 @@ function ActorDetails({ actor }) {
       </div>
 
       <div className="att-d-actions">
-        <button className="btn" onClick={goMessage}>Message</button>
+        <button className="btn" onClick={goMessage}>
+          Message
+        </button>
       </div>
     </div>
   );
 }
-
 
 /* ───────────────────────── Shared UI ───────────────────────── */
 
@@ -737,14 +1000,18 @@ function AttSection({ title, children }) {
     </div>
   );
 }
+
 function KV({ k, v }) {
   return (
     <div className="att-kv">
       <div className="att-k">{k}</div>
-      <div className="att-v">{v == null || v === "" ? "—" : v}</div>
+      <div className="att-v">
+        {v == null || v === "" ? "—" : v}
+      </div>
     </div>
   );
 }
+
 function skeletons(n = 8) {
   return Array.from({ length: n }).map((_, i) => (
     <div key={i} className="att-row sk">

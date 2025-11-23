@@ -40,7 +40,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
     getActorsListAdmin: builder.query({
       query: (args) => ({
         url: "/actors",
-        method: "POST", 
+        method: "POST",
         body: args,
       }),
       transformResponse: (res) => {
@@ -98,6 +98,13 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         { type: "Actors", id: "LIST" },
       ],
     }),
+    setAttendeesVirtual: builder.mutation({
+      query: (body) => ({
+        url: "/actors/admin/attendees/virtual",
+        method: "PATCH",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -112,4 +119,5 @@ export const {
   useAdminSetWhitelistMutation,
   useUploadActorPhotoMutation,
   useUpdateActorMutation,
+  useSetAttendeesVirtualMutation
 } = adminApiSlice;

@@ -182,12 +182,21 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
     }),
     getAdminSuggestions: builder.query({
       query: ({ eventId, limit = 50, pool = 400 } = {}) => ({
-        url: `/meets/admin/suggested`,
+        url: `/meets/admin/suggested/virtual`,
         method: 'GET',
         params: { eventId, limit, pool }
       }),
       transformResponse: (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []),
       providesTags: (result) => [{ type: 'AdminMatchSuggestions', id: 'LIST' }]
+    }),
+    getAdminSuggestionsVirtual: builder.query({
+      query: ({ eventId, limit = 50, pool = 400 } = {}) => ({
+        url: `/meets/admin/suggested/virtual`,
+        method: 'GET',
+        params: { eventId, limit, pool }
+      }),
+      transformResponse: (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []),
+      providesTags: (result) => [{ type: 'AdminMatchVirtualSuggestions', id: 'LIST' }]
     }),
     getAdminVirtualMeets: builder.query({
   query: ({ eventId, status } = {}) => ({
@@ -288,6 +297,7 @@ export const {
     useExportConfirmedMeetsQuery, 
     useListEventSessionsMiniQuery,
     useGetAdminSuggestionsQuery,
+    useGetAdminSuggestionsVirtualQuery,
     useGetAdminVirtualMeetsQuery,
     useGenerateAdminMeetLinkMutation,
     useGetMeetJoinLinkQuery,
