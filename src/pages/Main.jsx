@@ -32,6 +32,7 @@ import {
 } from "./main.mock";
 
 import useAuth from "../lib/hooks/useAuth";
+import EventManagerCTA from "../components/eventManager/EventManagerCTA";
 
 export default function Main() {
   const { role, status, ActorId } = useAuth();
@@ -185,7 +186,7 @@ export default function Main() {
         ctaText="Contact Us"
         ctaHref="/contact"
       />
-
+      <EventManagerCTA />
       <Footer
         brand={footerData.brand}
         columns={footerData.columns}

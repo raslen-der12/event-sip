@@ -11,7 +11,7 @@ export default function ContactUs({
   ariaLabel = "Open contact form",
 }) {
   return (
-    <section className="cu-sec">
+    <section className="cu-sec mb-0 pb-0 cu-bg">
       <div className="cu-card">
         <figure className="cu-hero">
           <img src={image} alt="" loading="lazy" />

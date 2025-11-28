@@ -93,6 +93,11 @@ import AdminEventAttendance from "./pages/admin/meets/AdminEventAttendance";
 import FeedbackPromptGate from "./components/feedback/FeedbackPromptGate";
 import AdminPollsPage from "./pages/admin/polls/AdminPollsPage";
 import PollVotePage from "./pages/polls/PollVotePage";
+import EventManagerPage from "./pages/eventManager/EventManagerPage";
+import AdminEventManagerApplications from "./pages/admin/eventManager/AdminEventManagerApplications";
+import EventManagerDashboardPage from "./pages/eventManager/EventManagerDashboardPage";
+import EventManagerShell from "./components/eventManager/EventManagerShell";
+import EventManagerEventPage from "./pages/eventManager/EventManagerEventPage";
 
 function SocketBootstrap() {
   const s = useStore();
@@ -121,6 +126,7 @@ function App() {
         {/* Public route - NO LOGIN REQUIRED */}
         <Route element={<PersistLogin />}>
           <Route element={<WithFeedback />}>
+            <Route path="/event-manager" element={<EventManagerPage />} />
             <Route path="/s/:actorId/:eventId" element={<ShareLinkPage />} />
             <Route path="/" element={<Main />} />
             <Route
@@ -219,6 +225,10 @@ function App() {
                 <ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />
               }
             />
+            <Route path="/event-manager/dashboard" element={<EventManagerShell />}>
+              <Route index element={<EventManagerDashboardPage />} />
+              <Route path=":eventId" element={<EventManagerEventPage />} />
+            </Route>
             <Route
               element={
                 <RequireAuth
@@ -257,6 +267,10 @@ function App() {
                 <Route
                   path="members/requests"
                   element={<AdminMemberRequests />}
+                />
+                <Route
+                  path="event-managers"
+                  element={<AdminEventManagerApplications />}
                 />
                 <Route path="members/attendees" element={<AdminAttendees />} />
                 <Route

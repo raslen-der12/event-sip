@@ -18,6 +18,12 @@ export const adminNav = [
     href: "/admin/members/requests"
   },
   {
+    id : " requestsManager",
+    label: "event manager Requests",
+    icon: "requests",
+    href: "/admin/event-managers"
+  },
+  {
     id: "peopleGroup",
     label: "People",
     icon: "actors",
