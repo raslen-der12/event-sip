@@ -12,11 +12,12 @@ export default function AvatarMenu() {
       isLoading : logoutLoading,
       isSuccess,
   }] = useSendLogoutMutation()
-  const nav = useNavigate();
+  const nav = useNavigate(); 
+  
   const { role, ActorId, status } = useAuth();
   const [wlOpen, setWlOpen] = useState(false);
   const isAuthed = status !== "Guest" && !!ActorId;
-
+  
   // Fetch light profile data (will be cached for /profile page)
   const { data: profile, isLoading } = useGetProfileQuery(
     { id: ActorId, role },

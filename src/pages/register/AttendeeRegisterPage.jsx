@@ -115,6 +115,7 @@ const SUBROLE_OPTIONS = [
   "Universities & Academies",
   "NGOs & Civil Society",
   "Public Sector & Government",
+  "Other"
 ];
 
 function triggerPopup({ title, body, type = "success", link }) {

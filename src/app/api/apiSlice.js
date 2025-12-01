@@ -14,27 +14,41 @@ const baseQuery = fetchBaseQuery({
 })
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
-    console.log("args",args);
-    console.log("api",api);
-    console.log("extraOptions",extraOptions);
     let result = await baseQuery(args, api, extraOptions)
-    console.log(result);
-    // If you want, handle other status codes, too
-    if (result?.error?.status === 403) {
+    
+    const isLoginCall =
+        (typeof args === "string" && args.includes("/auth/login")) ||
+        (args && typeof args === "object" && typeof args.url === "string" && args.url.includes("/auth/login"))
 
-        // send refresh token to get new access token 
+    // ⛔ For the login endpoint: NEVER try refresh
+    if (isLoginCall) {
+        return result
+    }
+
+    // Handle token-expired logic
+    if (result?.error?.status === 403) {
+        const code = result.error?.data?.code
+        console.log("args",args);
+        console.log("api",api);
+        console.log("extraOptions",extraOptions);
+        // Business error (EMAIL_NOT_VERIFIED) → just pass through
+        if (code === "EMAIL_NOT_VERIFIED") {
+            return result
+        }
+
+        // Try refresh for real token-expired 403
         const refreshResult = await baseQuery('/auth/refresh', api, extraOptions)
         if (refreshResult?.data) {
-
-            // store the new token 
             api.dispatch(setCredentials({ ...refreshResult.data }))
-
-            // retry original query with new access token
             result = await baseQuery(args, api, extraOptions)
         } else {
-
             if (refreshResult?.error?.status === 403) {
-                refreshResult.error.data.message = "Your login has expired."
+                if (refreshResult.error.data) {
+                    refreshResult.error.data.message =
+                        refreshResult.error.data.message || "Your login has expired."
+                } else {
+                    refreshResult.error.data = { message: "Your login has expired." }
+                }
             }
             return refreshResult
         }

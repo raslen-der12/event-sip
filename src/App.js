@@ -98,6 +98,7 @@ import AdminEventManagerApplications from "./pages/admin/eventManager/AdminEvent
 import EventManagerDashboardPage from "./pages/eventManager/EventManagerDashboardPage";
 import EventManagerShell from "./components/eventManager/EventManagerShell";
 import EventManagerEventPage from "./pages/eventManager/EventManagerEventPage";
+import RegisterPage from "./pages/register";
 
 function SocketBootstrap() {
   const s = useStore();
@@ -126,6 +127,7 @@ function App() {
         {/* Public route - NO LOGIN REQUIRED */}
         <Route element={<PersistLogin />}>
           <Route element={<WithFeedback />}>
+            <Route path="/register/new" element={<RegisterPage />} />
             <Route path="/event-manager" element={<EventManagerPage />} />
             <Route path="/s/:actorId/:eventId" element={<ShareLinkPage />} />
             <Route path="/" element={<Main />} />
@@ -225,10 +227,23 @@ function App() {
                 <ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />
               }
             />
-            <Route path="/event-manager/dashboard" element={<EventManagerShell />}>
-              <Route index element={<EventManagerDashboardPage />} />
-              <Route path=":eventId" element={<EventManagerEventPage />} />
-            </Route>
+            <Route
+  path="/event-manager/dashboard/*"
+  element={
+    <RequireAuth allowedRoles={[ "attendee",
+                    "speaker",
+                    "exhibitor",
+                    "event-manager",
+                    "admin",
+                    "user",
+                    "visitor", ]}>
+      <EventManagerShell />
+    </RequireAuth>
+  }
+>
+  <Route index element={<EventManagerDashboardPage />} />
+  <Route path=":eventId" element={<EventManagerEventPage />} />
+</Route>
             <Route
               element={
                 <RequireAuth

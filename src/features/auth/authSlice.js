@@ -8,8 +8,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, { payload }) => {
-      state.token    = payload.accessToken;
-      state.ActorId = payload.ActorId;
+      if (Object.prototype.hasOwnProperty.call(payload, 'accessToken')) {
+        state.token = payload.accessToken;
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, 'ActorId')) {
+        state.ActorId = payload.ActorId;
+      }
     },
     logOut: () => initialState,
   },

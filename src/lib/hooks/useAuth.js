@@ -1,59 +1,106 @@
-// src/hooks/useAuth.js
-import { useSelector } from 'react-redux';
+// src/lib/hooks/useAuth.js
+import { useSelector } from "react-redux";
 import { selectCurrentToken } from "../../features/auth/authSlice";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
+/**
+ * Central place to decode the access token into convenient flags.
+ * Backward-compatible with old tokens AND works with v2 tokens.
+ */
 const useAuth = () => {
   const token = useSelector(selectCurrentToken);
 
-  // keep old flags & status defaults
+  // role flags
   let isSuper = false;
   let isAdmin = false;
   let isSpeaker = false;
   let isExhibitor = false;
   let isAttendee = false;
+
+  // human friendly status
   let status = "Guest";
 
-  // old return keys (default/guest)
-  let email = '';
-  let role = '';
-  let ActorId = '';
+  // base fields
+  let email = "";
+  let role = "";
+  let ActorId = "";
   let virtualMeet = false;
-  // new-but-non-breaking extras (safe defaults)
-  let userId = '';
+
+  // extended metadata
+  let userId = "";
   let subRole = [];
-  let actorType = '';
-  let actorHeadline = '';
+  let actorType = "";
+  let actorHeadline = "";
+  let rawUserInfo = null;
 
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      const info = decoded?.UserInfo || {};
+      const info = decoded?.UserInfo || decoded || {};
 
-      email = info.email || '';
-      role = info.role ?? '';
-      ActorId = info.ActorId || '';
-      virtualMeet = info.virtualMeet;
-      // optional extras if you added them to the token
-      userId = info.userId || info.id || info._id || '';
-      subRole = Array.isArray(info.subRole) ? info.subRole : (info.subRole ? [info.subRole] : []);
-      actorType = info.actorType || '';
-      actorHeadline = info.actorHeadline || '';
+      rawUserInfo = info;
 
-      // preserve original role logic (no behavior change)
-      isSuper = role?.includes?.('super') || false;
-      isAdmin = role?.includes?.('admin') || false;
-      isSpeaker = role?.includes?.('speaker') || false;
-      isExhibitor = role?.includes?.('exhibitor') || false;
-      isAttendee = role?.includes?.('attendee') || false;
+      email = info.email || "";
+      role = info.role ?? "";
+      ActorId = info.ActorId || info.id || info._id || "";
+      virtualMeet = Boolean(info.virtualMeet);
 
+      userId =
+        info.userId ||
+        info.user_id ||
+        info.id ||
+        info._id ||
+        ActorId;
+
+      subRole = Array.isArray(info.subRole)
+        ? info.subRole
+        : info.subRole
+        ? [info.subRole]
+        : [];
+
+      actorType = info.actorType || "";
+      actorHeadline = info.actorHeadline || "";
+
+      const roleLc = String(role || "").toLowerCase();
+      const actorTypeLc = String(actorType || "").toLowerCase();
+      const subRoleLc = subRole.map((r) => String(r || "").toLowerCase());
+
+      // detect flags
+      isSuper =
+        roleLc.includes("super") ||
+        subRoleLc.includes("super") ||
+        subRoleLc.includes("superadmin");
+
+      isAdmin =
+        roleLc === "admin" ||
+        roleLc.includes("admin") ||
+        subRoleLc.includes("admin");
+
+      isSpeaker =
+        roleLc.includes("speaker") ||
+        actorTypeLc === "speaker" ||
+        actorTypeLc === "speakers" ||
+        subRoleLc.includes("speaker");
+
+      isExhibitor =
+        roleLc.includes("exhibitor") ||
+        actorTypeLc === "exhibitor" ||
+        subRoleLc.includes("exhibitor");
+
+      isAttendee =
+        roleLc.includes("attendee") ||
+        actorTypeLc === "attendee" ||
+        subRoleLc.includes("attendee");
+
+      // compute status with sane default for v2 ("user")
       if (isSuper) status = "Super";
-      if (isAdmin) status = "Admin";
-      if (isSpeaker) status = "Speaker";
-      if (isExhibitor) status = "Exhibitor";
-      if (isAttendee) status = "Attendee";
+      else if (isAdmin) status = "Admin";
+      else if (isSpeaker) status = "Speaker";
+      else if (isExhibitor) status = "Exhibitor";
+      else if (isAttendee) status = "Attendee";
+      else if (roleLc === "user" && email) status = "User";
+      else if (email) status = "User";
 
-      // old shape + added token + user bundle
       return {
         email,
         role,
@@ -65,8 +112,8 @@ const useAuth = () => {
         isAttendee,
         virtualMeet,
         ActorId,
-        token, // <-- NEW: convenient access for Authorization headers
-        user: { // <-- NEW: grouped decoded info (non-breaking addition)
+        token,
+        user: {
           email,
           role,
           ActorId,
@@ -75,16 +122,15 @@ const useAuth = () => {
           actorType,
           actorHeadline,
           virtualMeet,
-          // include raw for future needs without extra decodes
-          raw: info
-        }
+          raw: rawUserInfo,
+        },
       };
-    } catch (_e) {
-      // invalid/expired token -> fall through to guest shape below
+    } catch {
+      // invalid / expired token -> fall through to guest
     }
   }
 
-  // guest / no token fallthrough (unchanged keys, plus token & user)
+  // guest / no token
   return {
     email,
     role,
@@ -96,8 +142,8 @@ const useAuth = () => {
     status,
     virtualMeet,
     ActorId,
-    token: '',   // NEW but harmless
-    user: null,  // NEW but harmless
+    token: "",
+    user: null,
   };
 };
 

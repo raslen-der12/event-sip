@@ -1,91 +1,303 @@
 /* uses tokens.css variables */
-.auth-wrap{
+
+.auth-wrap {
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  background: #fafbff;
+  padding: 32px 16px;
+  background: radial-gradient(
+    circle at top,
+    #eef2ff 0,
+    #fafbff 35%,
+    #f5f5ff 100%
+  );
 }
 
-.auth-card{
+.auth-card {
   width: min(460px, 92%);
-  background: var(--surface, #fff);
+  background: var(--surface, #ffffff);
   border: 1px solid var(--line, #e5e7eb);
-  border-radius: var(--radius-xl, 16px);
-  box-shadow: 0 24px 48px rgba(2, 6, 23, .06);
-  padding: 18px;
+  border-radius: var(--radius-xl, 18px);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+  padding: 22px 20px 20px;
 }
 
-.auth-head{ text-align: left; margin-bottom: 8px; }
-.auth-title{ margin: 0; font-weight: 900; letter-spacing: .2px; color: var(--ink-1, #0f1221); font-size: 22px; }
-.auth-sub{ margin: 4px 0 0; color: var(--muted, #6b7280); font-weight: 700; }
+.auth-head {
+  text-align: left;
+  margin-bottom: 10px;
+}
+.auth-title {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: var(--ink-1, #0f1221);
+  font-size: 22px;
+}
+.auth-sub {
+  margin: 4px 0 0;
+  color: var(--muted, #6b7280);
+  font-weight: 600;
+  font-size: 13px;
+}
 
-.auth-alert{
-  margin: 10px 0;
+.auth-alert {
+  margin: 10px 0 14px;
   padding: 10px 12px;
   border-radius: 10px;
   background: #fef2f2;
   color: #991b1b;
   border: 1px solid #fecaca;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 13px;
 }
 
-.btn-google{
+/* Google button */
+
+.btn-google {
   width: 100%;
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
   border: 1px solid var(--line, #e5e7eb);
-  background: #fff;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 999px;
   padding: 10px 14px;
-  font-weight: 900; color: var(--ink, #0f1221);
+  font-weight: 800;
+  color: var(--ink-1, #0f1221);
   cursor: pointer;
+  font-size: 14px;
+  transition: background 120ms ease, box-shadow 120ms ease,
+    transform 80ms ease, opacity 80ms ease;
 }
-.btn-google:hover{ background: #f7f8fc; }
+.btn-google svg {
+  flex-shrink: 0;
+}
+.btn-google:hover {
+  background: #f7f8fc;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+.btn-google:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+.btn-google:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.btn-google.btn-google-loading span {
+  opacity: 0.9;
+}
 
-.auth-sep{
-  display: grid; place-items: center;
-  margin: 12px 0; position: relative; color: var(--muted, #6b7280);
+/* Separator */
+
+.auth-sep {
+  display: grid;
+  place-items: center;
+  margin: 14px 0;
+  position: relative;
+  color: var(--muted, #6b7280);
 }
-.auth-sep::before{
-  content:""; position: absolute; left: 0; right: 0; height: 1px; top: 50%;
+.auth-sep::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  top: 50%;
   background: var(--line, #e5e7eb);
 }
-.auth-sep span{
-  position: relative; padding: 0 8px; background: #fff; border-radius: 999px;
-  border: 1px solid var(--line, #e5e7eb); font-weight: 800; font-size: 12px;
+.auth-sep span {
+  position: relative;
+  padding: 0 10px;
+  background: #ffffff;
+  border-radius: 999px;
+  border: 1px solid var(--line, #e5e7eb);
+  font-weight: 700;
+  font-size: 11px;
 }
 
-.auth-field{ display: grid; gap: 6px; margin-top: 10px; }
-.auth-label{ font-weight: 900; color: var(--ink-1, #0f1221); }
-.auth-input{
+/* Form */
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.auth-label {
+  font-weight: 800;
+  color: var(--ink-1, #0f1221);
+  font-size: 13px;
+}
+.auth-input {
   width: 100%;
   border: 1px solid var(--line, #e5e7eb);
-  border-radius: 10px; padding: 10px 12px;
-  background: #fff; color: var(--ink-1, #0f1221); font-weight: 800;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: var(--ink-1, #0f1221);
+  font-weight: 600;
+  font-size: 14px;
 }
-.auth-input:focus{
-  outline: 3px solid color-mix(in oklab, var(--brand-600, #6f42c1) 25%, transparent);
+.auth-input::placeholder {
+  color: #9ca3af;
+  font-weight: 500;
+}
+.auth-input:focus {
+  outline: 3px solid
+    color-mix(in oklab, var(--brand-600, #6f42c1) 22%, transparent);
   outline-offset: 2px;
+  border-color: color-mix(
+    in oklab,
+    var(--brand-600, #6f42c1) 40%,
+    #e5e7eb
+  );
 }
 
-.auth-actions{
-  margin-top: 14px;
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+/* Remember toggle + actions */
+
+.auth-remember-row {
+  margin-top: 10px;
 }
 
-.auth-btn{
-  padding: 10px 16px; border-radius: 999px; border: 1px solid transparent;
-  color: #fff; font-weight: 900; cursor: pointer;
+.remember-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.remember-toggle-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  padding: 2px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.remember-toggle-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+  transform: translateX(0);
+  transition: transform 120ms ease;
+}
+
+.remember-toggle input:checked + .remember-toggle-track {
+  background: var(--brand-500, #6366f1);
+  border-color: var(--brand-500, #6366f1);
+}
+
+.remember-toggle input:checked
+  + .remember-toggle-track
+  .remember-toggle-thumb {
+  transform: translateX(16px);
+}
+
+.remember-toggle-label {
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  font-weight: 600;
+}
+
+.auth-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Primary submit button */
+
+.auth-btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
   background: var(--brand-2);
-  box-shadow: 0 10px 22px color-mix(in oklab, var(--brand-600, #6f42c1) 22%, transparent);
+  box-shadow: 0 12px 24px
+    color-mix(in oklab, var(--brand-600, #6f42c1) 26%, transparent);
+  font-size: 14px;
+  white-space: nowrap;
+  transition: transform 80ms ease, box-shadow 120ms ease,
+    background 120ms ease, opacity 80ms ease;
 }
-.auth-btn:disabled{ opacity: .7; cursor: not-allowed; }
-
-.link-muted{ color: var(--muted, #6b7280); font-weight: 800; text-decoration: none; }
-.link-muted:hover{ text-decoration: underline; }
-
-.auth-foot{
-  margin-top: 12px; text-align: center; color: var(--muted, #6b7280);
+.auth-btn:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px
+    color-mix(in oklab, var(--brand-600, #6f42c1) 32%, transparent);
 }
-.link-strong{ color: var(--brand-700, #5a35a2); font-weight: 900; text-decoration: none; }
-.link-strong:hover{ text-decoration: underline; }
+.auth-btn:active:enabled {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px
+    color-mix(in oklab, var(--brand-600, #6f42c1) 24%, transparent);
+}
+.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Links & footer */
+
+.link-muted {
+  color: var(--muted, #6b7280);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 12px;
+}
+.link-muted:hover {
+  text-decoration: underline;
+}
+
+.auth-foot {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--muted, #6b7280);
+  font-size: 13px;
+}
+.link-strong {
+  color: var(--brand-700, #5a35a2);
+  font-weight: 800;
+  text-decoration: none;
+}
+.link-strong:hover {
+  text-decoration: underline;
+}
+/* stack "forgot password" + "resend" nicely on the right */
+.auth-links-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* make the resend button look like a text link */
+.link-as-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}

@@ -1,0 +1,643 @@
+/* ============ Eventra Register Page (namespaced: evreg-*) ============ */
+
+.evreg-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background:
+    radial-gradient(circle at top left, #e0ecff 0, transparent 45%),
+    radial-gradient(circle at top right, #e7d8ff 0, transparent 40%),
+    linear-gradient(135deg, #f9fafb, #f3f4ff);
+}
+
+.evreg-card {
+  width: 100%;
+  max-width: 960px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  padding: 20px 20px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* header */
+
+.evreg-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.evreg-head-main {
+  max-width: 520px;
+}
+
+.evreg-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.1px;
+  color: #020617;
+}
+
+.evreg-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.evreg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.evreg-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* desktop tabs */
+
+.evreg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  overflow-x: auto;
+}
+
+.evreg-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+}
+
+.evreg-tab--active {
+  background: #eef2ff;
+  border-color: rgba(79, 70, 229, 0.6);
+}
+
+.evreg-tab--done {
+  opacity: 0.9;
+}
+
+.evreg-tab-index {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #111827;
+  background: #e5e7eb;
+}
+
+.evreg-tab--active .evreg-tab-index {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.evreg-tab-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.evreg-tab-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.evreg-tab-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* MOBILE DOT NAV */
+
+.evreg-steps-dots {
+  display: none;
+}
+
+/* wizard */
+
+.evreg-wizard {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.evreg-step-wrapper {
+  overflow: hidden;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.evreg-step-track {
+  display: flex;
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  width: 100%;
+  max-width: 100%;
+}
+
+.evreg-step {
+  flex: 0 0 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.evreg-step-body {
+  padding-top: 4px;
+}
+
+.evreg-step-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #020617;
+}
+
+.evreg-step-sub {
+  margin: 3px 0 10px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* alerts */
+
+.evreg-alert {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.evreg-alert--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.evreg-alert--success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+/* fields */
+
+.evreg-field {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.evreg-label {
+  font-weight: 500;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.evreg-input {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 11px;
+  font-size: 14px;
+  background: #ffffff;
+  color: #020617;
+  font-weight: 400;
+  box-sizing: border-box;
+}
+
+.evreg-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.evreg-input:focus {
+  outline: 2px solid
+    color-mix(in oklab, var(--brand-600, #6f42c1) 26%, transparent);
+  outline-offset: 1px;
+  border-color: color-mix(
+    in oklab,
+    var(--brand-600, #6f42c1) 40%,
+    #e5e7eb
+  );
+}
+
+.evreg-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.evreg-hint-center {
+  text-align: center;
+}
+
+/* Step 0: Google + email under it */
+
+.evreg-auth-block {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.evreg-auth-google-box {
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px dashed rgba(209, 213, 219, 0.9);
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.evreg-auth-google-container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.evreg-auth-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.evreg-auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(209, 213, 219, 0.9);
+}
+
+.evreg-auth-divider-text {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.evreg-auth-email-box {
+  padding: 8px 10px 10px;
+  border-radius: 14px;
+  border: 1px dashed rgba(209, 213, 219, 0.9);
+  background: #ffffff;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* actor cards */
+
+.evreg-side-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 10px 0 6px;
+}
+
+.evreg-actor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .evreg-actor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.evreg-actor-card {
+  border-radius: 14px;
+  border: 1px solid rgba(209, 213, 219, 0.95);
+  padding: 8px 10px 9px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease,
+    transform 80ms ease;
+}
+
+.evreg-actor-card:hover {
+  border-color: rgba(129, 140, 248, 0.8);
+  box-shadow: 0 10px 28px rgba(148, 163, 184, 0.2);
+  transform: translateY(-1px);
+}
+
+.evreg-actor-card--active {
+  border-color: rgba(79, 70, 229, 0.9);
+  background: radial-gradient(
+    circle at top,
+    rgba(129, 140, 248, 0.08),
+    #ffffff 55%
+  );
+  box-shadow: 0 14px 32px rgba(79, 70, 229, 0.25);
+}
+
+.evreg-actor-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.evreg-actor-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.evreg-actor-desc {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.evreg-side-hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* password meter */
+
+.evreg-pwd-meter-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evreg-pwd-meter {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  position: relative;
+  overflow: hidden;
+}
+
+.evreg-pwd-meter-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  border-radius: 999px;
+  transition:
+    width 140ms ease,
+    background 140ms ease;
+}
+
+.evreg-pwd-meter-bar[data-evreg-level="1"] {
+  width: 33%;
+  background: #fb923c;
+}
+
+.evreg-pwd-meter-bar[data-evreg-level="2"] {
+  width: 66%;
+  background: #facc15;
+}
+
+.evreg-pwd-meter-bar[data-evreg-level="3"] {
+  width: 100%;
+  background: #22c55e;
+}
+
+.evreg-pwd-meter-label {
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+/* wizard footer buttons */
+
+.evreg-wizard-footer {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.evreg-wizard-btn {
+  min-width: 120px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 80ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.evreg-wizard-btn--primary {
+  background: var(--brand-2);
+  color: #ffffff;
+  box-shadow: 0 10px 24px
+    color-mix(in oklab, var(--brand-600, #6f42c1) 25%, transparent);
+}
+
+.evreg-wizard-btn--primary:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px
+    color-mix(in oklab, var(--brand-600, #6f42c1) 30%, transparent);
+}
+
+.evreg-wizard-btn--ghost {
+  background: #ffffff;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.evreg-wizard-btn--ghost:hover:enabled {
+  background: #f9fafb;
+}
+
+.evreg-wizard-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* footer */
+
+.evreg-footnote {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.evreg-footer {
+  margin-top: 14px;
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.evreg-footer--wizard {
+  margin-top: 10px;
+}
+
+.evreg-link-strong {
+  color: var(--brand-700, #5a35a2);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.evreg-link-strong:hover {
+  text-decoration: underline;
+}
+
+/* ───────────────── MOBILE DOT SYSTEM ───────────────── */
+
+.evreg-dot {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    transform 180ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease,
+    padding 220ms ease;
+}
+
+.evreg-dot-circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #cbd5ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+  font-weight: 600;
+  color: #ffffff;
+  transition:
+    width 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    height 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background 220ms ease,
+    transform 220ms ease,
+    font-size 120ms ease;
+}
+
+.evreg-dot-label {
+  display: none;
+  font-size: 11px;
+  color: #111827;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* active dot = expanded pill with number + label */
+.evreg-dot--active {
+  background: #eef2ff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.28);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.evreg-dot--active .evreg-dot-circle {
+  width: 20px;
+  height: 20px;
+  background: #4f46e5;
+  font-size: 11px;
+}
+
+.evreg-dot--active .evreg-dot-label {
+  display: inline;
+}
+
+/* visited step (done) but not active */
+.evreg-dot--done:not(.evreg-dot--active) .evreg-dot-circle {
+  background: #818cf8;
+}
+
+/* subtle scale for inactive */
+.evreg-dot:not(.evreg-dot--active) {
+  transform: translateY(0) scale(0.96);
+}
+
+/* RESPONSIVE: show dots on mobile, tabs on desktop */
+
+@media (max-width: 640px) {
+  .evreg-tabs {
+    display: none;
+  }
+
+  .evreg-steps-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+}

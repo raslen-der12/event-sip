@@ -250,6 +250,15 @@ export const toolsApiSlice = apiSlice.injectEndpoints({
       transformResponse: unwrap,
       providesTags: (_res) => [{ type: 'UnreadCounts', id: 'MAP' }],
     }),
+    getOtherActorTypeLabels: builder.query({
+      query: () => ({
+        url: "/auth/user/other-labels",
+        method: "GET",
+      }),
+      transformResponse: (resp) => resp?.data ?? resp ?? [],
+      providesTags: (result) =>
+        result ? [{ type: "OtherActorLabels", id: "LIST" }] : [],
+    }),
   }),
 });
 
@@ -273,5 +282,6 @@ export const {
   useGetMeetingPrefsQuery,
   useResolveShareLinkQuery,
   useListSpeakerSessionsQuery,
-  useGetUnreadCountsQuery
+  useGetUnreadCountsQuery,
+  useGetOtherActorTypeLabelsQuery,
 } = toolsApiSlice;

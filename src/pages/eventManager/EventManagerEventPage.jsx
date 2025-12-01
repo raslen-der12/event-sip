@@ -1,5 +1,5 @@
 // src/pages/eventManager/EventManagerEventPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   useGetManagerDashboardEventQuery,
@@ -12,14 +12,18 @@ import {
   FiUsers,
   FiPlus,
   FiTrash2,
+  FiMapPin,
+  FiClock,
+  FiLayers,
 } from "react-icons/fi";
-import "./event-manager-dashboard.css";
+import "./event-manager-event.css";
 
 const TABS = [
   { id: "basics", label: "Event data" },
   { id: "schedule", label: "Schedule" },
-  { id: "tickets", label: "Tickets" },
-  { id: "organizers", label: "Organizers & gallery" },
+  { id: "tickets", label: "Tickets & access" },
+  { id: "organizers", label: "Organizers & partners" },
+  { id: "gallery", label: "Media & gallery" },
 ];
 
 const toDateInput = (value) => {
@@ -33,10 +37,9 @@ const toTimeInput = (value) => {
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) {
-    // if backend ever sends "HH:MM"
-    return String(value).slice(0, 5);
+    return String(value).slice(0, 5); // "HH:MM"
   }
-  return d.toISOString().slice(11, 16); // HH:MM
+  return d.toISOString().slice(11, 16);
 };
 
 const EventManagerEventPage = () => {
@@ -213,7 +216,6 @@ const EventManagerEventPage = () => {
 
   const handleReset = () => {
     if (!data?.event) return;
-    // Re-run mapping from last server payload
     const e = data.event;
 
     setBasics({
@@ -337,29 +339,6 @@ const EventManagerEventPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="emd-root">
-        <div className="emd-inner">
-          <p>Loading event...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="emd-root">
-        <div className="emd-inner">
-          <p>Failed to load event.</p>
-          {error?.data?.message && (
-            <p className="emd-error">{error.data.message}</p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   const updateSchedule = updateArrayField(setSchedule);
   const updateTickets = updateArrayField(setTickets);
   const updateOrganizers = updateArrayField(setOrganizers);
@@ -370,6 +349,52 @@ const EventManagerEventPage = () => {
   const removeOrganizer = removeArrayItem(setOrganizers);
   const removeGalleryItem = removeArrayItem(setGallery);
 
+  const sessionsCount = schedule.length;
+  const ticketsCount = tickets.length;
+  const totalCapacity = useMemo(
+    () =>
+      tickets.reduce((sum, t) => {
+        const v = parseInt(t.capacity || "0", 10);
+        return sum + (Number.isNaN(v) ? 0 : v);
+      }, 0),
+    [tickets]
+  );
+
+  const dateRangeLabel = useMemo(() => {
+    if (!basics.startDate && !basics.endDate) return "Dates not set";
+    const start = basics.startDate || "?";
+    const end = basics.endDate || start;
+    return `${start} – ${end}`;
+  }, [basics.startDate, basics.endDate]);
+
+  const locationLabel = useMemo(() => {
+    const parts = [basics.city, basics.country].filter(Boolean);
+    return parts.length ? parts.join(", ") : "Location not set";
+  }, [basics.city, basics.country]);
+
+  if (isLoading) {
+    return (
+      <div className="emd-root">
+        <div className="emd-inner">
+          <p className="emd-loading">Loading event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="emd-root">
+        <div className="emd-inner">
+          <p className="emd-error-title">Failed to load event.</p>
+          {error?.data?.message && (
+            <p className="emd-error">{error.data.message}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="emd-root">
       <div className="emd-inner">
@@ -377,16 +402,28 @@ const EventManagerEventPage = () => {
         <div className="emd-main-header">
           <div className="emd-main-header-left">
             <span className="emd-main-icon">
-              <FiCalendar />
+              <FiLayers />
             </span>
             <div>
               <p className="emd-main-title">
                 {basics.title || "Untitled event"}
               </p>
               <p className="emd-main-caption">
-                View and update the event created from your Event Manager
-                onboarding.
+                Full control on event data, schedule, access and partners.
               </p>
+              <div className="emd-meta-chips">
+                <span className="emd-chip emd-chip--muted">
+                  <FiCalendar />
+                  {dateRangeLabel}
+                </span>
+                <span className="emd-chip emd-chip--muted">
+                  <FiMapPin />
+                  {locationLabel}
+                </span>
+                {dirty && (
+                  <span className="emd-chip emd-chip--warn">Unsaved changes</span>
+                )}
+              </div>
             </div>
           </div>
           <div className="emd-main-header-right">
@@ -406,6 +443,41 @@ const EventManagerEventPage = () => {
             >
               {isSaving ? "Saving..." : "Save changes"}
             </button>
+          </div>
+        </div>
+
+        {/* Quick stats row */}
+        <div className="emd-stats-row">
+          <div className="emd-stat-card">
+            <div className="emd-stat-label">
+              <FiCalendar />
+              Sessions
+            </div>
+            <div className="emd-stat-value">{sessionsCount}</div>
+            <div className="emd-stat-hint">
+              Control agenda in the Schedule tab.
+            </div>
+          </div>
+          <div className="emd-stat-card">
+            <div className="emd-stat-label">
+              <FiTag />
+              Ticket plans
+            </div>
+            <div className="emd-stat-value">{ticketsCount}</div>
+            <div className="emd-stat-hint">
+              Total capacity:{" "}
+              {totalCapacity ? `${totalCapacity} seats` : "not defined yet"}
+            </div>
+          </div>
+          <div className="emd-stat-card">
+            <div className="emd-stat-label">
+              <FiUsers />
+              Organizers
+            </div>
+            <div className="emd-stat-value">{organizers.length}</div>
+            <div className="emd-stat-hint">
+              Partners visible on the public page.
+            </div>
           </div>
         </div>
 
@@ -455,9 +527,10 @@ const EventManagerEventPage = () => {
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {tab.id === "basics" && <FiCalendar />}
-                    {tab.id === "schedule" && <FiCalendar />}
+                    {tab.id === "schedule" && <FiClock />}
                     {tab.id === "tickets" && <FiTag />}
-                    {tab.id === "organizers" && <FiImage />}
+                    {tab.id === "organizers" && <FiUsers />}
+                    {tab.id === "gallery" && <FiImage />}
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -468,9 +541,17 @@ const EventManagerEventPage = () => {
           <main className="emd-main">
             {/* BASICS TAB */}
             {activeTab === "basics" && (
-              <section className="emd-main-body">
+              <section className="emd-main-body emd-section-card">
+                <div className="emd-section-header">
+                  <h2>Event data</h2>
+                  <p>
+                    Name, audience, description, dates and location. This is the
+                    base of your public event page.
+                  </p>
+                </div>
+
                 <div className="emw-grid">
-                  <div className="emw-col">
+                  <div className="emw-column">
                     <div className="emw-field">
                       <label className="emw-label">Event name</label>
                       <input
@@ -478,6 +559,7 @@ const EventManagerEventPage = () => {
                         type="text"
                         value={basics.title}
                         onChange={handleBasicsChange("title")}
+                        placeholder="Africa Trade & Innovation Summit"
                       />
                     </div>
                     <div className="emw-field">
@@ -487,55 +569,66 @@ const EventManagerEventPage = () => {
                         type="text"
                         value={basics.target}
                         onChange={handleBasicsChange("target")}
+                        placeholder="SMEs, startups, NGOs…"
                       />
                     </div>
                     <div className="emw-field">
                       <label className="emw-label">Description</label>
                       <textarea
                         className="emw-textarea"
-                        rows={4}
+                        rows={6}
                         value={basics.description}
                         onChange={handleBasicsChange("description")}
+                        placeholder="Describe what happens in this event and who it is for."
                       />
                     </div>
                   </div>
-                  <div className="emw-col">
-                    <div className="emw-field">
-                      <label className="emw-label">Start date</label>
-                      <input
-                        className="emw-input"
-                        type="date"
-                        value={basics.startDate}
-                        onChange={handleBasicsChange("startDate")}
-                      />
+
+                  <div className="emw-column">
+                    <div className="emw-field-inline">
+                      <div className="emw-field">
+                        <label className="emw-label">Start date</label>
+                        <input
+                          className="emw-input"
+                          type="date"
+                          value={basics.startDate}
+                          onChange={handleBasicsChange("startDate")}
+                        />
+                      </div>
+                      <div className="emw-field">
+                        <label className="emw-label">End date</label>
+                        <input
+                          className="emw-input"
+                          type="date"
+                          value={basics.endDate}
+                          onChange={handleBasicsChange("endDate")}
+                        />
+                      </div>
                     </div>
-                    <div className="emw-field">
-                      <label className="emw-label">End date</label>
-                      <input
-                        className="emw-input"
-                        type="date"
-                        value={basics.endDate}
-                        onChange={handleBasicsChange("endDate")}
-                      />
+
+                    <div className="emw-field-inline">
+                      <div className="emw-field">
+                        <label className="emw-label">City</label>
+                        <input
+                          className="emw-input"
+                          type="text"
+                          value={basics.city}
+                          onChange={handleBasicsChange("city")}
+                          placeholder="City"
+                        />
+                      </div>
+                      <div className="emw-field">
+                        <label className="emw-label">Country</label>
+                        <input
+                          className="emw-input"
+                          type="text"
+                          value={basics.country}
+                          onChange={handleBasicsChange("country")}
+                          placeholder="Country"
+                        />
+                      </div>
                     </div>
-                    <div className="emw-field">
-                      <label className="emw-label">City</label>
-                      <input
-                        className="emw-input"
-                        type="text"
-                        value={basics.city}
-                        onChange={handleBasicsChange("city")}
-                      />
-                    </div>
-                    <div className="emw-field">
-                      <label className="emw-label">Country</label>
-                      <input
-                        className="emw-input"
-                        type="text"
-                        value={basics.country}
-                        onChange={handleBasicsChange("country")}
-                      />
-                    </div>
+
                     <div className="emw-field">
                       <label className="emw-label">Venue name</label>
                       <input
@@ -543,26 +636,32 @@ const EventManagerEventPage = () => {
                         type="text"
                         value={basics.venueName}
                         onChange={handleBasicsChange("venueName")}
+                        placeholder="Convention center, hotel…"
                       />
                     </div>
-                    <div className="emw-field">
-                      <label className="emw-label">Capacity</label>
-                      <input
-                        className="emw-input"
-                        type="number"
-                        min="0"
-                        value={basics.capacity}
-                        onChange={handleBasicsChange("capacity")}
-                      />
-                    </div>
-                    <div className="emw-field">
-                      <label className="emw-label">Cover image URL</label>
-                      <input
-                        className="emw-input"
-                        type="text"
-                        value={basics.cover}
-                        onChange={handleBasicsChange("cover")}
-                      />
+
+                    <div className="emw-field-inline">
+                      <div className="emw-field">
+                        <label className="emw-label">Capacity</label>
+                        <input
+                          className="emw-input"
+                          type="number"
+                          min="0"
+                          value={basics.capacity}
+                          onChange={handleBasicsChange("capacity")}
+                          placeholder="Total seats"
+                        />
+                      </div>
+                      <div className="emw-field">
+                        <label className="emw-label">Cover image URL</label>
+                        <input
+                          className="emw-input"
+                          type="text"
+                          value={basics.cover}
+                          onChange={handleBasicsChange("cover")}
+                          placeholder="https://…"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -571,7 +670,15 @@ const EventManagerEventPage = () => {
 
             {/* SCHEDULE TAB */}
             {activeTab === "schedule" && (
-              <section className="emd-main-body">
+              <section className="emd-main-body emd-section-card">
+                <div className="emd-section-header">
+                  <h2>Schedule</h2>
+                  <p>
+                    Build your event agenda. Later we’ll plug this into rooms,
+                    speakers and registrations.
+                  </p>
+                </div>
+
                 <div className="emw-field">
                   <label className="emw-label">Sessions</label>
                   {schedule.length === 0 && (
@@ -582,8 +689,7 @@ const EventManagerEventPage = () => {
                   {schedule.map((s, index) => (
                     <div
                       key={s.id || index}
-                      className="emw-input-inline"
-                      style={{ marginBottom: 6 }}
+                      className="emw-input-inline emd-row"
                     >
                       <input
                         className="emw-input"
@@ -642,7 +748,15 @@ const EventManagerEventPage = () => {
 
             {/* TICKETS TAB */}
             {activeTab === "tickets" && (
-              <section className="emd-main-body">
+              <section className="emd-main-body emd-section-card">
+                <div className="emd-section-header">
+                  <h2>Tickets & access</h2>
+                  <p>
+                    Define ticket types and capacities. Later this connects with
+                    billing and check-in.
+                  </p>
+                </div>
+
                 <div className="emw-field">
                   <label className="emw-label">Ticket plans</label>
                   {tickets.length === 0 && (
@@ -654,8 +768,7 @@ const EventManagerEventPage = () => {
                   {tickets.map((t, index) => (
                     <div
                       key={t.id || index}
-                      className="emw-input-inline"
-                      style={{ marginBottom: 6 }}
+                      className="emw-input-inline emd-row"
                     >
                       <input
                         className="emw-input"
@@ -714,133 +827,135 @@ const EventManagerEventPage = () => {
               </section>
             )}
 
-            {/* ORGANIZERS & GALLERY TAB */}
+            {/* ORGANIZERS TAB */}
             {activeTab === "organizers" && (
-              <section className="emd-main-body">
-                <div className="emw-grid">
-                  <div className="emw-col">
-                    <div className="emw-field">
-                      <label className="emw-label">Organizers</label>
-                      {organizers.length === 0 && (
-                        <p className="emw-help">
-                          No organizers yet. Add your team members here.
-                        </p>
-                      )}
-                      {organizers.map((o, index) => (
-                        <div
-                          key={o.id || index}
-                          className="emw-input-inline"
-                          style={{ marginBottom: 6 }}
-                        >
-                          <input
-                            className="emw-input"
-                            type="text"
-                            placeholder="Name"
-                            value={o.name}
-                            onChange={(e) =>
-                              updateOrganizers(
-                                index,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                          />
-                          <input
-                            className="emw-input"
-                            type="text"
-                            placeholder="Role"
-                            value={o.role}
-                            onChange={(e) =>
-                              updateOrganizers(
-                                index,
-                                "role",
-                                e.target.value
-                              )
-                            }
-                          />
-                          <input
-                            className="emw-input"
-                            type="text"
-                            placeholder="Link (LinkedIn, website...)"
-                            value={o.link}
-                            onChange={(e) =>
-                              updateOrganizers(
-                                index,
-                                "link",
-                                e.target.value
-                              )
-                            }
-                          />
-                          <button
-                            type="button"
-                            className="emw-btn-icon"
-                            onClick={() => removeOrganizer(index)}
-                          >
-                            <FiTrash2 />
-                          </button>
-                        </div>
-                      ))}
+              <section className="emd-main-body emd-section-card">
+                <div className="emd-section-header">
+                  <h2>Organizers & partners</h2>
+                  <p>
+                    Highlight your organizing team and partners. They will be
+                    visible on the public page.
+                  </p>
+                </div>
+
+                <div className="emw-field">
+                  <label className="emw-label">Organizers</label>
+                  {organizers.length === 0 && (
+                    <p className="emw-help">
+                      No organizers yet. Add your team members here.
+                    </p>
+                  )}
+                  {organizers.map((o, index) => (
+                    <div
+                      key={o.id || index}
+                      className="emw-input-inline emd-row"
+                    >
+                      <input
+                        className="emw-input"
+                        type="text"
+                        placeholder="Name"
+                        value={o.name}
+                        onChange={(e) =>
+                          updateOrganizers(index, "name", e.target.value)
+                        }
+                      />
+                      <input
+                        className="emw-input"
+                        type="text"
+                        placeholder="Role"
+                        value={o.role}
+                        onChange={(e) =>
+                          updateOrganizers(index, "role", e.target.value)
+                        }
+                      />
+                      <input
+                        className="emw-input"
+                        type="text"
+                        placeholder="Link (LinkedIn, website...)"
+                        value={o.link}
+                        onChange={(e) =>
+                          updateOrganizers(index, "link", e.target.value)
+                        }
+                      />
                       <button
                         type="button"
-                        className="emw-btn-secondary"
-                        onClick={addOrganizerRow}
+                        className="emw-btn-icon"
+                        onClick={() => removeOrganizer(index)}
                       >
-                        <FiPlus />
-                        Add organizer
+                        <FiTrash2 />
                       </button>
                     </div>
-                  </div>
-                  <div className="emw-col">
-                    <div className="emw-field">
-                      <label className="emw-label">Gallery media</label>
-                      {gallery.length === 0 && (
-                        <p className="emw-help">
-                          Add images or media URLs to showcase your event.
-                        </p>
-                      )}
-                      {gallery.map((g, index) => (
-                        <div
-                          key={g.id || index}
-                          className="emw-input-inline"
-                          style={{ marginBottom: 6 }}
-                        >
-                          <input
-                            className="emw-input"
-                            type="text"
-                            placeholder="Title"
-                            value={g.title}
-                            onChange={(e) =>
-                              updateGallery(index, "title", e.target.value)
-                            }
-                          />
-                          <input
-                            className="emw-input"
-                            type="text"
-                            placeholder="File URL"
-                            value={g.file}
-                            onChange={(e) =>
-                              updateGallery(index, "file", e.target.value)
-                            }
-                          />
-                          <button
-                            type="button"
-                            className="emw-btn-icon"
-                            onClick={() => removeGalleryItem(index)}
-                          >
-                            <FiTrash2 />
-                          </button>
-                        </div>
-                      ))}
+                  ))}
+                  <button
+                    type="button"
+                    className="emw-btn-secondary"
+                    onClick={addOrganizerRow}
+                  >
+                    <FiPlus />
+                    Add organizer
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* GALLERY TAB */}
+            {activeTab === "gallery" && (
+              <section className="emd-main-body emd-section-card">
+                <div className="emd-section-header">
+                  <h2>Media & gallery</h2>
+                  <p>
+                    Add images or media URLs that will be used across the event
+                    page and marketing blocks.
+                  </p>
+                </div>
+
+                <div className="emw-field">
+                  <label className="emw-label">Gallery media</label>
+                  {gallery.length === 0 && (
+                    <p className="emw-help">
+                      Add images or media URLs to showcase your event.
+                    </p>
+                  )}
+                  {gallery.map((g, index) => (
+                    <div
+                      key={g.id || index}
+                      className="emw-input-inline emd-row"
+                    >
+                      <input
+                        className="emw-input"
+                        type="text"
+                        placeholder="Title"
+                        value={g.title}
+                        onChange={(e) =>
+                          updateGallery(index, "title", e.target.value)
+                        }
+                      />
+                      <input
+                        className="emw-input"
+                        type="text"
+                        placeholder="File URL"
+                        value={g.file}
+                        onChange={(e) =>
+                          updateGallery(index, "file", e.target.value)
+                        }
+                      />
                       <button
                         type="button"
-                        className="emw-btn-secondary"
-                        onClick={addGalleryRow}
+                        className="emw-btn-icon"
+                        onClick={() => removeGalleryItem(index)}
                       >
-                        <FiPlus />
-                        Add media
+                        <FiTrash2 />
                       </button>
                     </div>
-                  </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="emw-btn-secondary"
+                    onClick={addGalleryRow}
+                  >
+                    <FiPlus />
+                    Add media
+                  </button>
                 </div>
               </section>
             )}

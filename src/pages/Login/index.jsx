@@ -6,73 +6,304 @@ import "../../styles/tokens.css";
 import usePersist from "../../lib/hooks/usePersist";
 import "../../styles/global.css";
 import { setCredentials } from "../../features/auth/authSlice";
-import { useLoginMutation } from "../../features/auth/authApiSlice";
+import {
+  useLoginMutation,
+  useGoogleExchangeMutation,
+  useLazyResendVerificationForVisitorQuery,
+} from "../../features/auth/authApiSlice";
 
 import HeaderShell from "../../components/layout/HeaderShell";
 import { topbar, nav, cta } from "../main.mock";
 import Footer from "../../components/footer/Footer";
 import { footerData } from "../main.mock";
+
+// ---- Google Identity helper -----------------------------------------
+
+const GOOGLE_CLIENT_ID =
+  process.env.REACT_APP_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || "";
+let gsiScriptPromise = null;
+
+function ensureGoogleScript() {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return Promise.reject(
+      new Error("Google auth is only available in the browser.")
+    );
+  }
+
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    return Promise.resolve(window.google);
+  }
+
+  if (gsiScriptPromise) return gsiScriptPromise;
+
+  gsiScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector("script[data-google-identity]");
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.google));
+      existing.addEventListener("error", () =>
+        reject(new Error("Failed to load Google script"))
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.dataset.googleIdentity = "1";
+    script.onload = () => resolve(window.google);
+    script.onerror = () => reject(new Error("Failed to load Google script"));
+    document.head.appendChild(script);
+  });
+
+  return gsiScriptPromise;
+}
+
 export default function LoginPage() {
   const userRef = useRef(null);
 
   const navigate = useNavigate();
   const { search } = useLocation();
+  const dispatch = useDispatch();
+
   const [login, { isLoading }] = useLoginMutation();
+  const [googleExchange] = useGoogleExchangeMutation();
+  const [triggerResend, { isFetching: isResending }] =
+    useLazyResendVerificationForVisitorQuery();
 
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
+  const [errorActorId, setErrorActorId] = useState(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const [persist, setPersist] = usePersist();
 
-  // ✅ run once: avoid infinite renders
-
-  const dispatch = useDispatch();
-
-  // focus the email field once
   useEffect(() => {
     userRef.current?.focus();
   }, []);
 
-  // clear error when user edits fields
   useEffect(() => {
     setError("");
+    setErrorCode("");
+    setErrorActorId(null);
   }, [email, pwd]);
 
   const from = new URLSearchParams(search).get("from") || "/";
 
-  const API_URL =  process.env.REACT_APP_API_URL || 'https://api.eventra.cloud';
-
-  const onGoogleLogin = () => {
-    const redirect_uri = `${window.location.origin}/oauth/callback`;
-    const url = `${API_URL}/auth/google?redirect_uri=${encodeURIComponent(
-      redirect_uri
-    )}`;
-    window.location.assign(url);
+  const extractActorIdFromPayload = (payload) => {
+    if (!payload || typeof payload !== "object") return null;
+    return (
+      payload.actorId ||
+      payload.ActorId ||
+      payload.userId ||
+      payload.id ||
+      payload?.user?._id ||
+      payload?.user?.id ||
+      null
+    );
   };
 
-  const onSubmit = async (e) => {
+  // ---- Email / password login ---------------------------------------
+
+   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setErrorCode("");
+    setErrorActorId(null);
+
+    // Enforce "stay logged in"
+    if (!persist) {
+      setError("You must keep this device signed in to continue.");
+      return;
+    }
+
     try {
-      const {data} = await login({
-        loginInput: email,
-        pwd,
-      }).unwrap();
-      // persist ONLY after a successful login
-      setPersist(true);
-      dispatch(setCredentials({ accessToken : data.accessToken, ActorId : data.actorId }));
+      const resp = await login({ email, pwd }).unwrap();
+      console.log("[login resp]", resp);
+
+      // support both shapes:
+      //  - new: { success, message, data: { accessToken, user... } }
+      //  - old: { accessToken, ActorId, role }
+      const httpStatus = resp?._httpStatus ?? 200;
+      const envelope = resp || {};
+      const payload = envelope.data || envelope;
+
+      const accessToken =
+        payload.accessToken || envelope.accessToken || null;
+
+      const actorId = extractActorIdFromPayload(payload);
+
+      if (!accessToken) {
+        // treat as business error
+        const code =
+          envelope.code ||
+          payload.code ||
+          (httpStatus >= 400 ? "HTTP_ERROR" : "");
+        const msg =
+          envelope.message ||
+          payload.message ||
+          (httpStatus === 401 || httpStatus === 403
+            ? "Login failed. Please check your email & password."
+            : "Login failed. Please try again.");
+
+        setErrorCode(code || "");
+        setErrorActorId(actorId);
+        setError(msg);
+        return;
+      }
+
+      // Success path
+      if (persist) {
+        setPersist(true);
+      }
+
+      dispatch(
+        setCredentials({
+          accessToken,
+          ActorId: actorId,
+        })
+      );
+
       setEmail("");
       setPwd("");
+
       navigate(from, { replace: true });
+    } catch (err) {
+      // HTTP errors (403, EMAIL_NOT_VERIFIED, etc.) or network
+      console.log("[login catch]", err);
+
+      const errData = err?.data || {};
+      const code = errData.code || "";
+      const msg =
+        errData.message ||
+        errData.msg ||
+        err?.error ||
+        err?.message ||
+        "Unable to contact the server. Please try again.";
+      const actorFromErr = extractActorIdFromPayload(errData);
+
+      setErrorCode(code);
+      setErrorActorId(actorFromErr);
+      setError(msg);
+    }
+  };
+
+
+  // ---- Google login (unchanged, still using backend errors) ---------
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setErrorCode("");
+    setErrorActorId(null);
+    setIsGoogleLoading(true);
+
+    try {
+      if (!GOOGLE_CLIENT_ID) {
+        throw new Error("Google login is not configured yet.");
+      }
+
+      const google = await ensureGoogleScript();
+      if (!google?.accounts?.id) {
+        throw new Error("Google auth is not available in this browser.");
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        callback: async (response) => {
+          if (!response?.credential) {
+            setError("Google login was cancelled. Try again.");
+            setIsGoogleLoading(false);
+            return;
+          }
+
+          try {
+            const resp = await googleExchange({
+              idToken: response.credential,
+            }).unwrap();
+
+            const payload = resp?.data || resp || {};
+            const accessToken = payload.accessToken;
+            const actorId = extractActorIdFromPayload(payload);
+
+            if (!accessToken) {
+              throw new Error("No access token returned from server");
+            }
+
+            // For Google, we force persist so refresh works smoothly.
+            setPersist(true);
+
+            dispatch(
+              setCredentials({
+                accessToken,
+                ActorId: actorId,
+              })
+            );
+
+            setIsGoogleLoading(false);
+            navigate(from, { replace: true });
+          } catch (err) {
+            const errData = err?.data || {};
+            const code = errData.code || "";
+            const actorFromErr = extractActorIdFromPayload(errData);
+            const msg =
+              errData.message ||
+              errData.msg ||
+              err?.error ||
+              err?.message ||
+              "Google login failed.";
+
+            setErrorCode(code);
+            setErrorActorId(actorFromErr);
+            setError(msg);
+            setIsGoogleLoading(false);
+          }
+        },
+      });
+
+      google.accounts.id.prompt();
+    } catch (err) {
+      setError(
+        err?.message || "Google login is not available. Please try again later."
+      );
+      setErrorCode("");
+      setErrorActorId(null);
+      setIsGoogleLoading(false);
+    }
+  };
+
+    const handleResendVerification = async () => {
+    setError("");
+    try {
+      if (errorActorId) {
+        // old path: attendee / speaker / exhibitor, use actorId
+        await triggerResend({ actorId: errorActorId }).unwrap();
+      } else if (email) {
+        // new path: platform user, use email only
+        await triggerResend({ email }).unwrap();
+      } else {
+        setError("We need your email to resend the verification link.");
+        return;
+      }
+
+      setErrorCode("");
+      setErrorActorId(null);
+      setError("Verification email sent. Please check your inbox.");
     } catch (err) {
       const msg =
         err?.data?.message ||
         err?.error ||
-        "Login failed. Check your email & password.";
+        err?.message ||
+        "Could not resend verification email.";
       setError(msg);
     }
   };
+
+
+  const canSubmit = !!email && !!pwd && !!persist && !isLoading;
 
   return (
     <>
@@ -82,13 +313,34 @@ export default function LoginPage() {
         <div className="auth-card">
           <header className="auth-head">
             <h1 className="auth-title">Welcome back</h1>
-            <p className="auth-sub">Sign in to continue to Eventra</p>
+            <p className="auth-sub">
+              Sign in to continue to Eventra and manage your events in one
+              place.
+            </p>
           </header>
 
           {error ? <div className="auth-alert">{error}</div> : null}
 
+          {/* Google */}
+          <button
+            type="button"
+            className={
+              "btn-google" + (isGoogleLoading ? " btn-google-loading" : "")
+            }
+            onClick={handleGoogleLogin}
+            disabled={isGoogleLoading}
+          >
+            <GoogleIcon />
+            <span>
+              {isGoogleLoading ? "Connecting to Google…" : "Continue with Google"}
+            </span>
+          </button>
 
+          <div className="auth-sep">
+            <span>or continue with email</span>
+          </div>
 
+          {/* Email / password */}
           <form onSubmit={onSubmit} noValidate>
             <div className="auth-field">
               <label htmlFor="email" className="auth-label">
@@ -103,6 +355,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
                 required
+                placeholder="you@example.com"
               />
             </div>
 
@@ -118,34 +371,50 @@ export default function LoginPage() {
                 onChange={(e) => setPwd(e.target.value)}
                 autoComplete="current-password"
                 required
+                placeholder="••••••••"
               />
             </div>
-            <div className="auth-field">
-              <label
-                className="check"
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                  marginTop: 8,
-                }}
-              >
+
+            {/* Remember / toggle */}
+            <div className="auth-remember-row">
+              <label className="remember-toggle">
                 <input
                   type="checkbox"
                   checked={persist}
                   onChange={(e) => setPersist(e.target.checked)}
                 />
-                <span>Trust this device</span>
+                <span className="remember-toggle-track">
+                  <span className="remember-toggle-thumb" />
+                </span>
+                <span className="remember-toggle-label">
+                  Keep me signed in on this device
+                </span>
               </label>
             </div>
 
             <div className="auth-actions">
-              <button className="auth-btn" type="submit" disabled={isLoading || !email || !pwd || !persist}>
+              <button className="auth-btn" type="submit" disabled={!canSubmit}>
                 {isLoading ? "Signing in…" : "Sign in"}
               </button>
-              <Link className="link-muted" to="/forgot-password">
-                Forgot password?
-              </Link>
+
+              <div className="auth-links-column">
+                <Link className="link-muted" to="/forgot-password">
+                  Forgot password?
+                </Link>
+
+                {errorCode === "EMAIL_NOT_VERIFIED" && (
+                  <button
+                    type="button"
+                    className="link-muted link-as-button"
+                    onClick={handleResendVerification}
+                    disabled={isResending || (!errorActorId && !email)}
+                  >
+                    {isResending
+                      ? "Sending verification…"
+                      : "Resend verification email"}
+                  </button>
+                )}
+              </div>
             </div>
           </form>
 
