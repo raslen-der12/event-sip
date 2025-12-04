@@ -29,29 +29,23 @@ const EventManagerShell = () => {
   const auth = useAuth();
   const location = useLocation();
 
-  const isInDashboard = location.pathname.startsWith("/event-manager/dashboard");
+  const isInDashboardPage =
+    location.pathname.startsWith("/event-manager/dashboard");
 
-  // If onboarding not done → let the wizard take full screen (no header/aside)
-  let onboardingDone = true;
-  if (typeof window !== "undefined") {
-    onboardingDone =
-      window.localStorage?.getItem("em_dashboard_onboarding_done") === "1";
-  }
-  const isWizardFullScreen = isInDashboard && !onboardingDone;
-
-  const raw = auth.user?.raw || {};
+  // --- User display info, safe against undefined auth.user ---
+  const raw = auth?.user?.raw || {};
   const displayName =
     raw.name ||
     raw.fullName ||
     raw.actorName ||
     raw.companyName ||
-    auth.email ||
+    auth?.email ||
     "Event manager";
 
   const displayRole =
     raw.actorHeadline ||
-    auth.actorHeadline ||
-    (auth.status
+    auth?.actorHeadline ||
+    (auth?.status
       ? `${auth.status}${auth.actorType ? " · " + auth.actorType : ""}`
       : "Attendee");
 
@@ -63,20 +57,9 @@ const EventManagerShell = () => {
       .map((s) => s[0]?.toUpperCase())
       .join("") || "EM";
 
-  const actorProfileLink = auth.ActorId
+  const actorProfileLink = auth?.ActorId
     ? `/profile/${auth.ActorId}`
     : "/profile";
-
-  if (isWizardFullScreen) {
-    return (
-      <div className="ems-wizard-fullscreen">
-        <Outlet />
-      </div>
-    );
-  }
-
-  const isInDashboardPage =
-    location.pathname.startsWith("/event-manager/dashboard");
 
   return (
     <div className="ems-root">
@@ -120,7 +103,7 @@ const EventManagerShell = () => {
         </div>
       </header>
 
-      {/* Body: smaller aside + main content */}
+      {/* Body: aside + main content */}
       <div className="ems-body">
         <aside className="ems-aside">
           <div className="ems-aside-inner">

@@ -80,6 +80,13 @@ export const eventManagerApiSlice = apiSlice.injectEndpoints({
         body: payload,
       }),
     }),
+    getClosestManagedEvent: builder.query({
+      query: () => "/event-manager/dashboard/events/closest",
+      providesTags: (result) =>
+        result?.eventId
+          ? [{ type: "EventManagerEvent", id: result.eventId }]
+          : [{ type: "EventManagerEvent", id: "CLOSEST" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -92,4 +99,5 @@ export const {
   useGetManagerDashboardEventQuery,
   useUpdateManagerDashboardEventMutation,
   useCreateEventFromWizardMutation,
+  useGetClosestManagedEventQuery
 } = eventManagerApiSlice;

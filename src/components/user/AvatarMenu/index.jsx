@@ -2,29 +2,46 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../../lib/hooks/useAuth";
 import { useGetProfileQuery } from "../../../features/Actor/toolsApiSlice";
-import "./avatar-menu.css";
 import { useSendLogoutMutation } from "../../../features/auth/authApiSlice";
+import { useGetClosestManagedEventQuery } from "../../../features/eventManager/eventManagerApiSlice";
 import imageLink from "../../../utils/imageLink";
 import WhitelistModal from "../../../pages/meetings/WhitelistModal";
+import "./avatar-menu.css";
 
 export default function AvatarMenu() {
-     const [sendLogout, {
-      isLoading : logoutLoading,
-      isSuccess,
-  }] = useSendLogoutMutation()
-  const nav = useNavigate(); 
-  
+  const [sendLogout, { isSuccess }] = useSendLogoutMutation();
+  const nav = useNavigate();
+
   const { role, ActorId, status } = useAuth();
+  
   const [wlOpen, setWlOpen] = useState(false);
   const isAuthed = status !== "Guest" && !!ActorId;
-  
-  // Fetch light profile data (will be cached for /profile page)
+
+  // Light profile
   const { data: profile, isLoading } = useGetProfileQuery(
     { id: ActorId, role },
     { skip: !isAuthed }
   );
 
-   let pic =
+  // Detect event-manager-like role
+  const normalizedRole = (role || "").toString().toLowerCase();
+  const isEventManagerRole =
+    normalizedRole.includes("event") && normalizedRole.includes("manager");
+
+  // Closest managed event for this event manager
+  const { data: closestEventData } = useGetClosestManagedEventQuery(
+    undefined,
+    { skip: !isEventManagerRole }
+  );
+  console.log("closestEventData",closestEventData);
+
+  const closestEventId =
+    closestEventData?.eventId ||
+    closestEventData?.event?.id ||
+    closestEventData?.event?._id ||
+    null;
+
+  const pic =
     profile?.personal?.profilePic ||
     profile?.identity?.orgLogo ||
     profile?.identity?.logo ||
@@ -45,6 +62,7 @@ export default function AvatarMenu() {
 
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+
   useEffect(() => {
     const onDoc = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -56,19 +74,15 @@ export default function AvatarMenu() {
   if (!isAuthed) return null;
 
   return (
-    
     <div className={`avatar-menu ${open ? "open" : ""}`} ref={ref}>
       {wlOpen && (
-         <WhitelistModal
-           open={true}
-           autoOpen={false}                 // force-open manually
-           onClose={(ok) => {
-            setWlOpen(false);
-            
-           }}
-           
+        <WhitelistModal
+          open={true}
+          autoOpen={false}
+          onClose={() => setWlOpen(false)}
         />
-       )}
+      )}
+
       <button
         className="avatar-btn"
         onClick={() => setOpen((o) => !o)}
@@ -109,12 +123,14 @@ export default function AvatarMenu() {
         >
           View meetings
         </button>
+
         <button
           className="avatar-item"
           onClick={() => setWlOpen(true)}
         >
           Edit availability
         </button>
+
         <button
           className="avatar-item"
           onClick={() => {
@@ -124,6 +140,7 @@ export default function AvatarMenu() {
         >
           View sessions
         </button>
+
         <button
           className="avatar-item"
           onClick={() => {
@@ -133,6 +150,20 @@ export default function AvatarMenu() {
         >
           View messages
         </button>
+
+        {/* NEW: event manager → direct link to closest event dashboard */}
+        {isEventManagerRole && closestEventId && (
+          <button
+            className="avatar-item"
+            onClick={() => {
+              setOpen(false);
+              nav(`/event-manager/dashboard/${closestEventId}`);
+            }}
+          >
+            View my event
+          </button>
+        )}
+
         <button
           className="avatar-item"
           onClick={() => {
@@ -151,7 +182,7 @@ export default function AvatarMenu() {
             localStorage.clear();
             window.location.reload();
             if (isSuccess) {
-                console.log("Logout successful");
+              console.log("Logout successful");
             }
           }}
         >

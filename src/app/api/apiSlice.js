@@ -15,7 +15,9 @@ const baseQuery = fetchBaseQuery({
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions)
-    
+            console.log("args",args);
+        console.log("api",api);
+        console.log("result",result);
     const isLoginCall =
         (typeof args === "string" && args.includes("/auth/login")) ||
         (args && typeof args === "object" && typeof args.url === "string" && args.url.includes("/auth/login"))
@@ -28,9 +30,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     // Handle token-expired logic
     if (result?.error?.status === 403) {
         const code = result.error?.data?.code
-        console.log("args",args);
-        console.log("api",api);
-        console.log("extraOptions",extraOptions);
+
         // Business error (EMAIL_NOT_VERIFIED) → just pass through
         if (code === "EMAIL_NOT_VERIFIED") {
             return result

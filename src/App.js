@@ -99,6 +99,8 @@ import EventManagerDashboardPage from "./pages/eventManager/EventManagerDashboar
 import EventManagerShell from "./components/eventManager/EventManagerShell";
 import EventManagerEventPage from "./pages/eventManager/EventManagerEventPage";
 import RegisterPage from "./pages/register";
+import EventManagerAttendeesPage from "./pages/eventManager/EventManagerAttendeesPage";
+import EventManagerOverviewPage from "./pages/eventManager/EventManagerOverviewPage";
 
 function SocketBootstrap() {
   const s = useStore();
@@ -227,23 +229,7 @@ function App() {
                 <ExhibitorsBusinessProfilesPage apiBase="http://localhost:3500/bp-public" />
               }
             />
-            <Route
-  path="/event-manager/dashboard/*"
-  element={
-    <RequireAuth allowedRoles={[ "attendee",
-                    "speaker",
-                    "exhibitor",
-                    "event-manager",
-                    "admin",
-                    "user",
-                    "visitor", ]}>
-      <EventManagerShell />
-    </RequireAuth>
-  }
->
-  <Route index element={<EventManagerDashboardPage />} />
-  <Route path=":eventId" element={<EventManagerEventPage />} />
-</Route>
+            
             <Route
               element={
                 <RequireAuth
@@ -270,6 +256,14 @@ function App() {
                 path="/vmeet/:meetingId/:actorId"
                 element={<VMeetRedirect />}
               />
+            </Route>
+            <Route element={ <RequireAuth allowedRoles={[ "attendee","speaker","exhibitor","event-manager","admin","user","visitor", ]} />}>
+              <Route path="/event-manager/dashboard" element={<EventManagerShell />}>
+                <Route index element={<EventManagerDashboardPage />} />
+                <Route path=":eventId" element={<EventManagerEventPage />} />
+                <Route path="/event-manager/dashboard/attendees" element={<EventManagerAttendeesPage />}/>
+                <Route path="/event-manager/dashboard/overview" element={<EventManagerOverviewPage /> }/>
+              </Route>
             </Route>
             <Route element={<RequireAuth allowedRoles={["admin", "super"]} />}>
               <Route
