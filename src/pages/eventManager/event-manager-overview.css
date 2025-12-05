@@ -305,7 +305,7 @@
 }
 
 .emov-card--activity {
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .emov-card-header {
@@ -313,6 +313,12 @@
   flex-direction: column;
   gap: 2px;
   margin-bottom: 8px;
+}
+
+.emov-card-header--row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .emov-card-title {
@@ -326,18 +332,64 @@
   color: #6b7280;
 }
 
-/* Chart simplified */
+.emov-card-title-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emov-card-title-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.emov-card-title-icon--indigo {
+  color: #4f46e5;
+}
+.emov-card-title-icon--blue {
+  color: #0ea5e9;
+}
+
+/* Small inline chips */
+
+.emov-chip-inline {
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emov-chip-inline--ghost {
+  background: transparent;
+  border-color: #e5e7eb;
+  cursor: pointer;
+}
+
+.emov-chip-inline--ghost:hover {
+  background: #f9fafb;
+}
+
+/* Chart */
 
 .emov-chart {
   margin-top: 4px;
 }
 
+/* IMPORTANT: real height so px bars always show */
 .emov-chart-body {
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  min-height: 160px;
+  height: 160px;
   padding-top: 8px;
+}
+
+.emov-chart-body--compact {
+  height: 130px;
 }
 
 .emov-chart-bar-item {
@@ -355,7 +407,43 @@
   background: linear-gradient(180deg, #6366f1, #e5e7eb);
 }
 
+.emov-chart-bar--green {
+  background: linear-gradient(180deg, #22c55e, #e5e7eb);
+}
+
 .emov-chart-bar-label {
+  font-size: 9px;
+  color: #9ca3af;
+}
+
+/* Line chart */
+
+.emov-line-chart-wrapper {
+  margin-top: 4px;
+}
+
+.emov-line-chart {
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+.emov-line-path {
+  stroke: #6366f1;
+  stroke-width: 2;
+  fill: none;
+}
+
+.emov-line-chart-labels {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.emov-line-chart-label {
+  flex: 1;
+  text-align: center;
   font-size: 9px;
   color: #9ca3af;
 }
@@ -440,7 +528,6 @@
   border-radius: 999px;
 }
 
-/* segment colors */
 .emov-segment-dot--indigo {
   background: #6366f1;
 }
@@ -464,6 +551,33 @@
   color: #6b7280;
 }
 
+/* Days at a glance */
+
+.emov-days-label-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.emov-days-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 500;
+}
+
+.emov-days-text {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.emov-days-metrics {
+  font-size: 11px;
+  color: #6b7280;
+}
+
 /* Activity */
 
 .emov-activity-list {
@@ -473,11 +587,15 @@
   gap: 8px;
 }
 
+.emov-activity-list--compact .emov-activity-item {
+  padding: 0;
+}
+
 .emov-activity-item {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
 }
 
@@ -503,17 +621,32 @@
   background: #4f46e5;
 }
 
+.emov-activity-icon-svg {
+  width: 16px;
+  height: 16px;
+  color: #4f46e5;
+}
+
 .emov-activity-main {
   flex: 1;
   min-width: 0;
 }
 
+.emov-activity-header-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
 .emov-activity-title {
+      margin-bottom: 1px;
   font-size: 12px;
   color: #111827;
 }
 
 .emov-activity-company {
+  margin-bottom: 4px;
   font-size: 11px;
   color: #6b7280;
 }
@@ -522,4 +655,124 @@
   font-size: 11px;
   color: #9ca3af;
   white-space: nowrap;
+}
+
+.emov-activity-tag {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.emov-activity-tag--reg {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+
+.emov-activity-tag--meet {
+  background: #ecfdf3;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.emov-activity-tag--exh {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.emov-activity-tag--speak {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+/* Small activity card */
+
+.emov-card--activity-small {
+  padding-top: 10px;
+}
+
+/* Pie chart */
+
+.emov-pie-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+@media (max-width: 640px) {
+  .emov-pie-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.emov-pie-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: #eef2ff;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.emov-pie-center {
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: #4b5563;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.emov-pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emov-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.emov-pie-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.emov-pie-dot--onsite {
+  background: #6366f1;
+}
+
+.emov-pie-dot--virtual {
+  background: #22c55e;
+}
+
+.emov-pie-dot--hybrid {
+  background: #f97316;
+}
+
+.emov-pie-legend-label {
+  color: #111827;
+}
+
+.emov-pie-legend-value {
+  margin-left: auto;
+  color: #6b7280;
 }

@@ -24,32 +24,22 @@ import {
 } from "../../features/eventManager/eventManagerApiSlice";
 
 /* ────────────────────────── Step config ─────────────────────────── */
-
+/* 3 tabs: Core info, Dates & location, Application */
 const WIZARD_STEPS = [
   {
-    id: "basics",
-    label: "Event basics",
-    caption: "Type, dates, location, sector & contact",
+    id: "core",
+    label: "Core information",
+    caption: "Event name, audience, type & sector",
   },
   {
-    id: "schedule",
-    label: "Sessions",
-    caption: "Agenda, descriptions & learning outcomes",
-  },
-  {
-    id: "tickets",
-    label: "Tickets & services",
-    caption: "Ticket types and included tools",
-  },
-  {
-    id: "organizers",
-    label: "Organizers & media",
-    caption: "Partners and event visuals",
+    id: "dates",
+    label: "Dates & location",
+    caption: "Dates, city, venue, capacity & cover",
   },
   {
     id: "manager",
     label: "Application",
-    caption: "Free trial & Event Manager request",
+    caption: "Free trial & contact details",
   },
 ];
 
@@ -135,6 +125,7 @@ const defaultBasics = {
   contactPhone: "",
 };
 
+/* kept only for backend – UI for sessions is removed */
 const defaultSchedule = [
   {
     id: "s1",
@@ -151,6 +142,7 @@ const defaultSchedule = [
   },
 ];
 
+/* kept only for backend – UI for tickets is removed */
 const defaultTickets = [
   {
     id: "t1",
@@ -161,6 +153,7 @@ const defaultTickets = [
   },
 ];
 
+/* kept only for backend – UI for organizers / media is removed at creation */
 const defaultOrganizers = [
   {
     id: "o1",
@@ -182,6 +175,7 @@ const defaultManager = {
   workEmail: "",
   phone: "",
   notes: "",
+  contactName: "",
 };
 
 /* ────────────────────────── Manager tab ────────────────────────── */
@@ -204,46 +198,60 @@ function ManagerAccountStep({
       ? "You are already approved as Event Manager. This event will follow your existing plan."
       : applicationStatus === "Rejected"
       ? "Your previous Event Manager request was rejected. You can still send a new one with updated information."
-      : "Your first event will use a free trial plan and stay unpublished. Creating it will make your account act as Event Manager. If we reject the request later, we will revert it back to a normal user.";
-
+      : "Your first event uses a free trial plan. It stays unpublished until you are ready, and we review your Event Manager request.";
 
   return (
     <div className="emw-step emw-step-manager">
       <div className="emw-manager-layout">
+        {/* LEFT: application form + banner */}
         <div className="emw-manager-main">
-          <h2 className="emw-step-title">
+          <h2 className="emw-step-title" style={{ fontWeight: 500 }}>
             {isFirstTime
-              ? "Apply as Event Manager (free trial)"
+              ? "Application & free trial"
               : "Event Manager application"}
           </h2>
-          <p className="emw-step-desc">{statusLabel}</p>
+          <p className="emw-step-desc" style={{ fontWeight: 400 }}>
+            {statusLabel}
+          </p>
 
-          <div className="emw-manager-banner">
+          {/* Redesigned free trial card */}
+          <div
+            className="emw-manager-banner"
+            style={{
+              background:
+                "linear-gradient(135deg, #ecfdf3 0%, #eff6ff 60%, #ffffff 100%)",
+              border: "1px solid rgba(22, 163, 74, 0.25)",
+            }}
+          >
             <div className="emw-manager-banner-main">
-              <span className="emw-chip emw-chip-free">Free trial</span>
-              <p className="emw-manager-banner-title">
-                Create your first event with core tools unlocked.
+              <span className="emw-chip emw-chip-free">
+                Free trial for your first event
+              </span>
+              <p
+                className="emw-manager-banner-title"
+                style={{ fontWeight: 500 }}
+              >
+                Launch your first event with core tools included.
               </p>
               <p className="emw-manager-banner-text">
-                Ticketing, hybrid mode, attendees QR and basic speakers /
-                exhibitors are included. Advanced automation is kept for paid
-                plans.
+                Ticketing and hybrid mode are enabled by default. You can add
+                advanced features later from the dashboard by upgrading your
+                plan.
               </p>
             </div>
             <div className="emw-manager-banner-meta">
               <p className="emw-manager-banner-line">
                 <span>Event status</span>
-                <strong>Draft · Unpublished</strong>
+                <span>Draft · Unpublished</span>
               </p>
               <p className="emw-manager-banner-line">
-                <span>Account impact</span>
-                <strong>
-                  Your account will act as Event Manager for this event.
-                </strong>
+                <span>Account</span>
+                <span>Your account temporarily acts as Event Manager.</span>
               </p>
             </div>
           </div>
 
+          {/* Application form – only the fields you requested */}
           <div className="emw-grid-2">
             <label className="emw-field">
               <span className="emw-label">
@@ -253,93 +261,57 @@ function ManagerAccountStep({
                 type="text"
                 className="emw-input"
                 placeholder="Organization behind this event"
-                value={manager.companyName}
+                value={manager.companyName || ""}
                 onChange={onChange("companyName")}
               />
             </label>
 
-            <label className="emw-field">
-              <span className="emw-label">Partnership type</span>
-              <select
-                className="emw-input"
-                value={manager.organizerType}
-                onChange={onChange("organizerType")}
-              >
-                <option value="">Select…</option>
-                <option value="association">Association / NGO</option>
-                <option value="company">Private company</option>
-                <option value="public">Public institution</option>
-                <option value="agency">Event / communication agency</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="emw-grid-2">
             <label className="emw-field">
               <span className="emw-label">Website</span>
               <input
                 type="url"
                 className="emw-input"
                 placeholder="https://..."
-                value={manager.website}
+                value={manager.website || ""}
                 onChange={onChange("website")}
               />
             </label>
+          </div>
 
+          <div className="emw-grid-2">
             <label className="emw-field">
-              <span className="emw-label">Work email <span>*</span></span>
+              <span className="emw-label">
+                Work email <span>*</span>
+              </span>
               <input
                 type="email"
                 className="emw-input"
                 placeholder="name@organization.com"
-                value={manager.workEmail}
+                value={manager.workEmail || ""}
                 onChange={onChange("workEmail")}
               />
             </label>
-          </div>
 
-          <div className="emw-grid-2">
-            <label className="emw-field">
-              <span className="emw-label">Country</span>
-              <input
-                type="text"
-                className="emw-input"
-                placeholder="Country"
-                value={manager.country}
-                onChange={onChange("country")}
-              />
-            </label>
-            <label className="emw-field">
-              <span className="emw-label">City</span>
-              <input
-                type="text"
-                className="emw-input"
-                placeholder="City"
-                value={manager.city}
-                onChange={onChange("city")}
-              />
-            </label>
-          </div>
-
-          <div className="emw-grid-2">
             <label className="emw-field">
               <span className="emw-label">Contact person full name</span>
               <input
                 type="text"
                 className="emw-input"
                 placeholder="Person in charge of this event"
-                value={manager.contactName}
+                value={manager.contactName || ""}
                 onChange={onChange("contactName")}
               />
             </label>
+          </div>
+
+          <div className="emw-grid-2">
             <label className="emw-field">
               <span className="emw-label">Contact phone</span>
               <input
                 type="tel"
                 className="emw-input"
                 placeholder="+216..."
-                value={manager.phone}
+                value={manager.phone || ""}
                 onChange={onChange("phone")}
               />
             </label>
@@ -351,14 +323,23 @@ function ManagerAccountStep({
               rows={3}
               className="emw-input emw-textarea"
               placeholder="Share context about your event, goals, and what you expect from the platform."
-              value={manager.notes}
+              value={manager.notes || ""}
               onChange={onChange("notes")}
             />
           </label>
+
+          <p className="emw-manager-side-note">
+            This information is only used by the Eventra team to validate your
+            Event Manager request and to help you configure the right tools for
+            your event.
+          </p>
         </div>
 
+        {/* RIGHT: free plan services checklist (restored) */}
         <div className="emw-manager-side">
-          <p className="emw-group-title">Services for this event</p>
+          <p className="emw-group-title" style={{ fontWeight: 500 }}>
+            Services for this event
+          </p>
           <p className="emw-group-caption">
             Free trial options are auto-enabled. Pro services are visible but
             locked. Upgrading your plan will unlock them.
@@ -368,14 +349,21 @@ function ManagerAccountStep({
             {SERVICE_CONFIG.map((s) => {
               const isFree = s.tier === "free";
               const isChecked = isFree;
-              const isDisabled = true; // all switches read-only (plan driven)
               return (
                 <div
                   key={s.id}
                   className={`emw-service-item emw-service-item--${s.tier}`}
                 >
                   <label className="emw-service-main">
-                    <span className={`emw-check ${isChecked ? "emw-check--on" : "emw-check--off"} ${s.tier === "pro" ? "emw-check--pro" : ""}`}></span>
+                    <span
+                      className={[
+                        "emw-check",
+                        isChecked ? "emw-check--on" : "emw-check--off",
+                        s.tier === "pro" ? "emw-check--pro" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    />
                     <span className="emw-service-label">{s.label}</span>
                   </label>
                   <span
@@ -422,10 +410,10 @@ const EventManagerDashboardPage = () => {
     const format = normalizeEventFormat("Conference");
     return { ...defaultBasics, eventType: "Conference", format };
   });
-  const [schedule, setSchedule] = useState(defaultSchedule);
-  const [tickets, setTickets] = useState(defaultTickets);
-  const [organizers, setOrganizers] = useState(defaultOrganizers);
-  const [gallery, setGallery] = useState(defaultGallery);
+  const [schedule, setSchedule] = useState(defaultSchedule); // backend only
+  const [tickets, setTickets] = useState(defaultTickets); // backend only
+  const [organizers, setOrganizers] = useState(defaultOrganizers); // backend only
+  const [gallery, setGallery] = useState(defaultGallery); // backend only
   const [manager, setManager] = useState(defaultManager);
 
   const stepsCount = WIZARD_STEPS.length;
@@ -464,12 +452,10 @@ const EventManagerDashboardPage = () => {
     try {
       let finalBasics = { ...basics };
 
-      // Derive final format based on type if missing
       if (!finalBasics.format) {
         finalBasics.format = normalizeEventFormat(finalBasics.eventType);
       }
 
-      // Require minimal fields
       if (
         !finalBasics.title ||
         !finalBasics.startDate ||
@@ -484,19 +470,16 @@ const EventManagerDashboardPage = () => {
         return;
       }
 
-      // Ensure we have a cover: for now we just require basics.cover (URLs will be replaced later by uploads)
       const hasCoverFile = !!basics.coverFile;
       if (!hasCoverFile) {
         alert("Please add a cover image for your event.");
-        setActiveWizardStepIndex(0);
+        setActiveWizardStepIndex(1);
         scrollWizardTop();
         return;
       }
 
-      // we don't need to send a URL cover anymore; backend will use the uploaded file
       finalBasics.cover = "";
 
-      // Minimal manager fields if it's the first application
       if (isFirstTimeManager) {
         if (!manager.companyName || !manager.workEmail) {
           alert(
@@ -508,13 +491,10 @@ const EventManagerDashboardPage = () => {
         }
       }
 
-      // Strip local-only fields
       const basicsForServer = { ...finalBasics };
       delete basicsForServer.coverFile;
 
-      // remove fileFile from gallery meta
       const galleryMeta = (gallery || []).map((g) => {
-        // keep only serializable fields
         const { fileFile, ...rest } = g;
         return rest;
       });
@@ -526,12 +506,10 @@ const EventManagerDashboardPage = () => {
       formData.append("organizers", JSON.stringify(organizers || []));
       formData.append("gallery", JSON.stringify(galleryMeta));
 
-      // real cover file
       if (basics.coverFile) {
         formData.append("cover", basics.coverFile);
       }
 
-      // gallery files (same field name, multiple files)
       (gallery || []).forEach((g) => {
         if (g.fileFile) {
           formData.append("gallery", g.fileFile);
@@ -554,7 +532,6 @@ const EventManagerDashboardPage = () => {
         return;
       }
 
-      // Optional: derive eventMonth from startDate for application
       let eventMonth = null;
       if (finalBasics.startDate) {
         const d = new Date(finalBasics.startDate);
@@ -565,7 +542,6 @@ const EventManagerDashboardPage = () => {
         }
       }
 
-      // First-time: send Event Manager application with free trial
       if (isFirstTimeManager) {
         try {
           await applyEventManager({
@@ -593,7 +569,6 @@ const EventManagerDashboardPage = () => {
             "[EventManagerDashboard] applyEventManager failed",
             err
           );
-          // Not blocking the event creation – just notify.
           alert(
             "Your event was created, but we could not submit the Event Manager application. You can retry later from the dashboard."
           );
@@ -672,8 +647,10 @@ const WizardLayout = ({
         <header className="emw-header">
           <div className="emw-header-main">
             <div className="emw-chip">New · Event Manager space</div>
-            <h1 className="emw-title">Create your event & free trial.</h1>
-            <p className="emw-sub">
+            <h1 className="emw-title" style={{ fontWeight: 500 }}>
+              Create your event & free trial.
+            </h1>
+            <p className="emw-sub" style={{ fontWeight: 400 }}>
               Start directly with event creation. Your first event uses a free
               trial plan, stays unpublished, and will turn your account into an
               Event Manager. If we later reject the request, your account will
@@ -715,7 +692,12 @@ const WizardLayout = ({
               >
                 <span className="emw-stepper-index">{idx + 1}</span>
                 <span className="emw-stepper-text">
-                  <span className="emw-stepper-label">{step.label}</span>
+                  <span
+                    className="emw-stepper-label"
+                    style={{ fontWeight: 500 }}
+                  >
+                    {step.label}
+                  </span>
                   <span className="emw-stepper-caption">{step.caption}</span>
                 </span>
               </button>
@@ -729,31 +711,19 @@ const WizardLayout = ({
           key={activeStep.id}
         >
           <div className="emw-card-header">
-            <h2 className="emw-card-title">{activeStep.label}</h2>
+            <h2 className="emw-card-title" style={{ fontWeight: 500 }}>
+              {activeStep.label}
+            </h2>
             <p className="emw-card-caption">{activeStep.caption}</p>
           </div>
           <div className="emw-card-body">
-            {activeStep.id === "basics" && (
-              <WizardStepBasics basics={basics} setBasics={setBasics} />
+            {activeStep.id === "core" && (
+              <WizardStepBasicsCore basics={basics} setBasics={setBasics} />
             )}
-            {activeStep.id === "schedule" && (
-              <WizardStepSchedule
-                schedule={schedule}
-                setSchedule={setSchedule}
-              />
-            )}
-            {activeStep.id === "tickets" && (
-              <WizardStepTickets
-                tickets={tickets}
-                setTickets={setTickets}
-              />
-            )}
-            {activeStep.id === "organizers" && (
-              <WizardStepOrganizersGallery
-                organizers={organizers}
-                setOrganizers={setOrganizers}
-                gallery={gallery}
-                setGallery={setGallery}
+            {activeStep.id === "dates" && (
+              <WizardStepBasicsDatesLocation
+                basics={basics}
+                setBasics={setBasics}
               />
             )}
             {activeStep.id === "manager" && (
@@ -814,9 +784,10 @@ const WizardLayout = ({
   );
 };
 
-/* ────────────────────────── Wizard Steps ───────────────────────── */
+/* ────────────────────────── Wizard Steps (3 tabs used) ─────────── */
 
-const WizardStepBasics = ({ basics, setBasics }) => {
+/* Step 1: Core info */
+const WizardStepBasicsCore = ({ basics, setBasics }) => {
   const onChange = (field) => (e) => {
     const value = e.target.value;
     setBasics((prev) => {
@@ -828,64 +799,13 @@ const WizardStepBasics = ({ basics, setBasics }) => {
     });
   };
 
-  const todayStr = useMemo(
-    () => new Date().toISOString().slice(0, 10),
-    []
-  );
-  const handleCoverFileChange = (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-
-  const previewUrl = URL.createObjectURL(file);
-  setBasics((prev) => ({
-    ...prev,
-    cover: previewUrl,  // used for preview
-    coverFile: file,    // real file sent to backend
-  }));
-};
-  const handleStartDateChange = (e) => {
-    const value = e.target.value;
-    setBasics((prev) => {
-      let endDate = prev.endDate;
-      if (endDate && value && endDate < value) {
-        endDate = value;
-      }
-      return { ...prev, startDate: value, endDate };
-    });
-  };
-
-  const handleEndDateChange = (e) => {
-    const value = e.target.value;
-    setBasics((prev) => {
-      let endDate = value || "";
-      if (prev.startDate && endDate && endDate < prev.startDate) {
-        endDate = prev.startDate;
-      }
-      return { ...prev, endDate };
-    });
-  };
-
-  const startDateForInput = basics.startDate || "";
-  const endDateForInput = basics.endDate || "";
-  const endMin = basics.startDate || todayStr;
-
-  const startLabel = basics.startDate
-    ? formatDateLabel(basics.startDate)
-    : "Start date";
-  const endLabel = basics.endDate
-    ? formatDateLabel(basics.endDate)
-    : "End date";
-
-  const onContactChange = (field) => (e) => {
-    const value = e.target.value;
-    setBasics((prev) => ({ ...prev, [field]: value }));
-  };
-
   return (
     <div className="emw-grid">
       <div className="emw-column">
         <div className="emw-group">
-          <p className="emw-group-title">Core information</p>
+          <p className="emw-group-title" style={{ fontWeight: 500 }}>
+            Core information
+          </p>
           <p className="emw-group-caption">
             This appears on your public event page and across the platform.
           </p>
@@ -981,12 +901,76 @@ const WizardStepBasics = ({ basics, setBasics }) => {
           </label>
         </div>
       </div>
+    </div>
+  );
+};
 
+/* Step 2: Dates & location */
+const WizardStepBasicsDatesLocation = ({ basics, setBasics }) => {
+  const todayStr = useMemo(
+    () => new Date().toISOString().slice(0, 10),
+    []
+  );
+
+  const handleCoverFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setBasics((prev) => ({
+      ...prev,
+      cover: previewUrl, // preview
+      coverFile: file, // real file
+    }));
+  };
+
+  const handleStartDateChange = (e) => {
+    const value = e.target.value;
+    setBasics((prev) => {
+      let endDate = prev.endDate;
+      if (endDate && value && endDate < value) {
+        endDate = value;
+      }
+      return { ...prev, startDate: value, endDate };
+    });
+  };
+
+  const handleEndDateChange = (e) => {
+    const value = e.target.value;
+    setBasics((prev) => {
+      let endDate = value || "";
+      if (prev.startDate && endDate && endDate < prev.startDate) {
+        endDate = prev.startDate;
+      }
+      return { ...prev, endDate };
+    });
+  };
+
+  const onChange = (field) => (e) => {
+    const value = e.target.value;
+    setBasics((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const startDateForInput = basics.startDate || "";
+  const endDateForInput = basics.endDate || "";
+  const endMin = basics.startDate || todayStr;
+
+  const startLabel = basics.startDate
+    ? formatDateLabel(basics.startDate)
+    : "Start date";
+  const endLabel = basics.endDate
+    ? formatDateLabel(basics.endDate)
+    : "End date";
+
+  return (
+    <div className="emw-grid">
       <div className="emw-column">
         <div className="emw-group">
-          <p className="emw-group-title">Dates & location</p>
+          <p className="emw-group-title" style={{ fontWeight: 500 }}>
+            Dates & location
+          </p>
           <p className="emw-group-caption">
-            You can refine rooms and detailed schedule in the next step.
+            You can refine rooms and detailed schedule later in the dashboard.
           </p>
 
           <div className="emw-field-inline">
@@ -1064,99 +1048,70 @@ const WizardStepBasics = ({ basics, setBasics }) => {
             </label>
 
             <div className="emw-field">
-                      <label className="emw-label">
-                        Cover image file (temporary)
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="emw-input"
-                        onChange={handleCoverFileChange}
-                      />
-                      {basics.cover && (
-                        <p className="emw-help">
-                          Preview generated from selected file (not uploaded yet).
-                        </p>
-                      )}
-                    </div>
+              <span className="emw-label">Cover image file</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="emw-input"
+                onChange={handleCoverFileChange}
+              />
+              {basics.cover && (
+                <p className="emw-help">
+                  Preview generated from selected file (not uploaded yet).
+                </p>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Preview card on the right */}
+      <div className="emw-column">
         <div className="emw-group">
-          <p className="emw-group-title">Contact person</p>
+          <p className="emw-group-title" style={{ fontWeight: 500 }}>
+            Event preview
+          </p>
           <p className="emw-group-caption">
-            These details are used by the Eventra team and optionally on the
-            event page.
+            Quick preview of how your basic details appear on the event page.
           </p>
 
-          <label className="emw-field">
-            <span className="emw-label">Name</span>
-            <input
-              type="text"
-              className="emw-input"
-              placeholder="Contact person for the event"
-              value={basics.contactName}
-              onChange={onContactChange("contactName")}
-            />
-          </label>
-
-          <div className="emw-field-inline">
-            <label className="emw-field">
-              <span className="emw-label">Email</span>
-              <input
-                type="email"
-                className="emw-input"
-                placeholder="contact@event.com"
-                value={basics.contactEmail}
-                onChange={onContactChange("contactEmail")}
-              />
-            </label>
-            <label className="emw-field">
-              <span className="emw-label">Phone</span>
-              <input
-                type="tel"
-                className="emw-input"
-                placeholder="+216..."
-                value={basics.contactPhone}
-                onChange={onContactChange("contactPhone")}
-              />
-            </label>
-          </div>
-        </div>
-
-        <div className="emw-preview-card">
-          <div className="emw-preview-media">
-            {basics.cover ? (
-              <img src={basics.cover} alt="" />
-            ) : (
-              <div className="emw-preview-placeholder">
-                <FiImage />
-              </div>
-            )}
-          </div>
-          <div className="emw-preview-body">
-            <p className="emw-preview-title">
-              {basics.title || "Your event name"}
-            </p>
-            <p className="emw-preview-meta">
-              <FiCalendar />
-              {startLabel} – {endLabel}
-            </p>
-            <p className="emw-preview-meta">
-              <FiMapPin />
-              {basics.city || "City"},{" "}
-              {basics.country || "Country"}
-            </p>
-            <p className="emw-preview-desc">
-              {basics.description ||
-                "Short description preview of your event page."}
-            </p>
+          <div className="emw-preview-card">
+            <div className="emw-preview-media">
+              {basics.cover ? (
+                <img src={basics.cover} alt="" />
+              ) : (
+                <div className="emw-preview-placeholder">
+                  <FiImage />
+                </div>
+              )}
+            </div>
+            <div className="emw-preview-body">
+              <p className="emw-preview-title">
+                {basics.title || "Your event name"}
+              </p>
+              <p className="emw-preview-meta">
+                <FiCalendar />
+                {startLabel} – {endLabel}
+              </p>
+              <p className="emw-preview-meta">
+                <FiMapPin />
+                {basics.city || "City"},{" "}
+                {basics.country || "Country"}
+              </p>
+              <p className="emw-preview-desc">
+                {basics.description ||
+                  "Short description preview of your event page."}
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+/* ────────────────────────── Legacy steps (kept, unused) ────────── */
+/* Keeping them in file in case you want to re-enable more tabs later. */
 
 const WizardStepSchedule = ({ schedule, setSchedule }) => {
   const [draft, setDraft] = useState({
@@ -1178,10 +1133,7 @@ const WizardStepSchedule = ({ schedule, setSchedule }) => {
 
   const addSession = () => {
     if (!draft.sessionTitle || !draft.startTime || !draft.endTime) return;
-    setSchedule((prev) => [
-      ...prev,
-      { id: `s-${Date.now()}`, ...draft },
-    ]);
+    setSchedule((prev) => [...prev, { id: `s-${Date.now()}`, ...draft }]);
     setDraft({
       sessionTitle: "",
       startTime: "",
@@ -1377,28 +1329,6 @@ const WizardStepSchedule = ({ schedule, setSchedule }) => {
                     {s.description && (
                       <p className="emw-timeline-desc">{s.description}</p>
                     )}
-                    <div className="emw-timeline-extra">
-                      {s.targetAudience && (
-                        <p>
-                          <strong>Audience:</strong> {s.targetAudience}
-                        </p>
-                      )}
-                      {s.topics && (
-                        <p>
-                          <strong>Topics:</strong> {s.topics}
-                        </p>
-                      )}
-                      {s.learningObjectives && (
-                        <p>
-                          <strong>Objectives:</strong> {s.learningObjectives}
-                        </p>
-                      )}
-                      {s.expectedOutcomes && (
-                        <p>
-                          <strong>Outcomes:</strong> {s.expectedOutcomes}
-                        </p>
-                      )}
-                    </div>
                   </div>
                   <button
                     type="button"
@@ -1589,11 +1519,11 @@ const WizardStepOrganizersGallery = ({
     link: "",
   });
   const [galleryDraft, setGalleryDraft] = useState({
-  title: "",
-  type: "image",
-  file: "",
-  fileFile: null, // real File
-});
+    title: "",
+    type: "image",
+    file: "",
+    fileFile: null,
+  });
 
   const onChangeOrgDraft = (field) => (e) => {
     setOrgDraft((prev) => ({ ...prev, [field]: e.target.value }));
@@ -1602,16 +1532,18 @@ const WizardStepOrganizersGallery = ({
   const onChangeGalleryDraft = (field) => (e) => {
     setGalleryDraft((prev) => ({ ...prev, [field]: e.target.value }));
   };
-const handleGalleryFileChange = (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const previewUrl = URL.createObjectURL(file);
-  setGalleryDraft((prev) => ({
-    ...prev,
-    file: previewUrl, // preview src
-    fileFile: file,   // real file
-  }));
-};
+
+  const handleGalleryFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    setGalleryDraft((prev) => ({
+      ...prev,
+      file: previewUrl,
+      fileFile: file,
+    }));
+  };
+
   const addOrganizer = () => {
     if (!orgDraft.name) return;
     setOrganizers((prev) => [...prev, { id: `o-${Date.now()}`, ...orgDraft }]);
@@ -1623,24 +1555,24 @@ const handleGalleryFileChange = (e) => {
   };
 
   const addMedia = () => {
-  if (!galleryDraft.file) return;
-  setGallery((prev) => [
-    ...prev,
-    {
-      id: `g-${Date.now()}`,
-      title: galleryDraft.title,
-      type: galleryDraft.type,
-      file: galleryDraft.file,       // preview
-      fileFile: galleryDraft.fileFile, // real File
-    },
-  ]);
-  setGalleryDraft({
-    title: "",
-    type: "image",
-    file: "",
-    fileFile: null,
-  });
-};
+    if (!galleryDraft.file) return;
+    setGallery((prev) => [
+      ...prev,
+      {
+        id: `g-${Date.now()}`,
+        title: galleryDraft.title,
+        type: galleryDraft.type,
+        file: galleryDraft.file,
+        fileFile: galleryDraft.fileFile,
+      },
+    ]);
+    setGalleryDraft({
+      title: "",
+      type: "image",
+      file: "",
+      fileFile: null,
+    });
+  };
 
   const removeMedia = (id) => {
     setGallery((prev) => prev.filter((g) => g.id !== id));

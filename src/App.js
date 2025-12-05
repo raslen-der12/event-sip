@@ -101,6 +101,8 @@ import EventManagerEventPage from "./pages/eventManager/EventManagerEventPage";
 import RegisterPage from "./pages/register";
 import EventManagerAttendeesPage from "./pages/eventManager/EventManagerAttendeesPage";
 import EventManagerOverviewPage from "./pages/eventManager/EventManagerOverviewPage";
+import EventManagerExhibitorsPage from "./pages/eventManager/EventManagerExhibitorsPage";
+import EventManagerB2BMeetingsPage from "./pages/eventManager/EventManagerB2BMeetingsPage";
 
 function SocketBootstrap() {
   const s = useStore();
@@ -263,6 +265,8 @@ function App() {
                 <Route path=":eventId" element={<EventManagerEventPage />} />
                 <Route path="/event-manager/dashboard/attendees" element={<EventManagerAttendeesPage />}/>
                 <Route path="/event-manager/dashboard/overview" element={<EventManagerOverviewPage /> }/>
+                <Route path="/event-manager/dashboard/exhibitors" element={<EventManagerExhibitorsPage /> }/>
+                <Route path="/event-manager/dashboard/agenda" element={<EventManagerB2BMeetingsPage /> }/>
               </Route>
             </Route>
             <Route element={<RequireAuth allowedRoles={["admin", "super"]} />}>
